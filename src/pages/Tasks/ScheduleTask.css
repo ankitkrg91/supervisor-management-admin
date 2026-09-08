@@ -1,0 +1,362 @@
+.schedule-task-page {
+    width: 100%;
+}
+
+/* =========================
+   MAIN CARD
+========================= */
+
+.schedule-task-card {
+    display: grid;
+    grid-template-columns: minmax(550px, 1fr) minmax(400px, 0.9fr);
+    gap: 20px;
+
+    padding: 38px;
+
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+
+    box-shadow: var(--shadow);
+}
+
+/* =========================
+   FORM
+========================= */
+
+.schedule-task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.schedule-field {
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    align-items: center;
+    gap: 16px;
+}
+
+.schedule-field>label,
+.schedule-checkbox-field>label {
+    color: var(--text-secondary);
+
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.schedule-field input,
+.schedule-field select {
+    width: 100%;
+    height: 45px;
+
+    padding: 0 14px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+
+    background: var(--input-bg);
+    color: var(--text-primary);
+
+    font-size: 14px;
+
+    outline: none;
+}
+
+.schedule-field input:focus,
+.schedule-field select:focus {
+    border-color: var(--primary);
+}
+
+.schedule-field input::placeholder {
+    color: var(--text-muted);
+}
+
+/* =========================
+   CLIENT
+========================= */
+
+.schedule-input-with-action {
+    display: grid;
+    grid-template-columns: 1fr 48px;
+    gap: 16px;
+}
+
+.schedule-remove-button {
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 7px;
+
+    background: var(--danger);
+    color: white;
+
+    cursor: pointer;
+}
+
+.schedule-remove-button:hover {
+    opacity: 0.9;
+}
+
+/* =========================
+   SITE
+========================= */
+
+.schedule-site-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+}
+
+.schedule-blue-button {
+    min-width: 123px;
+    min-height: 45px;
+
+    padding: 0 15px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: var(--primary);
+    color: white;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow: 0 7px 16px rgba(37, 99, 235, 0.2);
+}
+
+.schedule-blue-button:hover {
+    background: var(--primary-hover);
+}
+
+/* =========================
+   CHECKBOXES
+========================= */
+
+.schedule-checkbox-field {
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    align-items: center;
+    gap: 16px;
+
+    min-height: 35px;
+}
+
+.schedule-checkbox-field input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+
+    accent-color: var(--primary);
+
+    cursor: pointer;
+}
+
+.schedule-checkbox-content {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+
+    color: var(--text-secondary);
+
+    font-size: 14px;
+}
+
+/* =========================
+   DATE
+========================= */
+
+.schedule-date-wrapper {
+    height: 45px;
+
+    display: flex;
+    align-items: center;
+
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+
+    background: var(--input-bg);
+
+    overflow: hidden;
+}
+
+.schedule-date-wrapper input {
+    flex: 1;
+
+    border: none;
+
+    background: transparent;
+}
+
+.schedule-date-wrapper svg {
+    width: 45px;
+    height: 100%;
+
+    padding: 12px;
+
+    color: var(--text-secondary);
+
+    background: var(--card-bg-hover);
+}
+
+/* =========================
+   ASSIGNED TO
+========================= */
+
+.schedule-assigned-row {
+    display: grid;
+    grid-template-columns: 1fr 180px;
+    gap: 16px;
+}
+
+.non-system-button {
+    line-height: 17px;
+    text-align: center;
+}
+
+/* =========================
+   SUBMIT
+========================= */
+
+.schedule-submit-button {
+    width: 100%;
+    height: 46px;
+
+    margin-top: 18px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: var(--primary);
+    color: white;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.2);
+}
+
+.schedule-submit-button:hover {
+    background: var(--primary-hover);
+}
+
+/* =========================
+   MAP
+========================= */
+
+.schedule-map-container {
+    position: relative;
+
+    min-height: 420px;
+    height: 420px;
+
+    overflow: hidden;
+
+    border-radius: 4px;
+
+    border: 1px solid var(--border-color);
+}
+
+.schedule-map {
+    width: 100%;
+    height: 100%;
+}
+
+/* =========================
+   MAP TYPE SWITCH
+========================= */
+
+.schedule-map-switch {
+    position: absolute;
+
+    top: 10px;
+    left: 10px;
+
+    z-index: 1000;
+
+    display: flex;
+
+    background: white;
+
+    border-radius: 4px;
+
+    overflow: hidden;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.schedule-map-switch button {
+    height: 38px;
+
+    padding: 0 14px;
+
+    border: none;
+
+    background: white;
+
+    color: #555;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+.schedule-map-switch button.active {
+    color: #111;
+    font-weight: 600;
+}
+
+.schedule-map-switch button:hover {
+    background: #f1f1f1;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1200px) {
+    .schedule-task-card {
+        grid-template-columns: 1fr;
+    }
+
+    .schedule-map-container {
+        min-height: 450px;
+        height: 450px;
+
+        order: -1;
+    }
+}
+
+@media (max-width: 700px) {
+    .schedule-task-card {
+        padding: 20px;
+    }
+
+    .schedule-field,
+    .schedule-checkbox-field {
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+
+    .schedule-site-row,
+    .schedule-assigned-row {
+        grid-template-columns: 1fr;
+    }
+
+    .schedule-input-with-action {
+        grid-template-columns: 1fr 45px;
+    }
+}

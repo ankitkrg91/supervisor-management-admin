@@ -1,0 +1,347 @@
+.cancel-bulk-task-page {
+    width: 100%;
+    min-height: 100%;
+}
+
+.cancel-bulk-task-card {
+    max-width: 1100px;
+    margin: 0 auto;
+
+    padding: 28px;
+
+    background: var(--card-bg);
+
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+
+    box-shadow: var(--shadow);
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.cancel-bulk-task-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+.cancel-bulk-task-header h1 {
+    color: var(--text-primary);
+
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.cancel-bulk-task-header p {
+    margin-top: 7px;
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+}
+
+.cancel-bulk-task-icon {
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary);
+}
+
+/* =========================
+   DIVIDER
+========================= */
+
+.cancel-bulk-task-divider {
+    height: 1px;
+
+    margin: 24px 0;
+
+    background: var(--border-color);
+}
+
+/* =========================
+   FORMAT
+========================= */
+
+.cancel-bulk-format-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 18px;
+
+    background: var(--bg-tertiary);
+
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+}
+
+.cancel-bulk-format-row h3 {
+    color: var(--text-primary);
+
+    font-size: 15px;
+}
+
+.cancel-bulk-format-row p {
+    margin-top: 5px;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+}
+
+.cancel-bulk-download-button {
+    height: 42px;
+
+    padding: 0 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+
+    background: transparent;
+    color: var(--primary);
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.cancel-bulk-download-button:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+/* =========================
+   UPLOAD
+========================= */
+
+.cancel-bulk-upload-box {
+    margin-top: 22px;
+
+    min-height: 230px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+
+    background: var(--bg-tertiary);
+}
+
+.cancel-bulk-upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    text-align: center;
+}
+
+.cancel-bulk-upload-content>svg {
+    margin-bottom: 10px;
+
+    color: var(--primary);
+}
+
+.cancel-bulk-upload-content h3 {
+    color: var(--text-primary);
+
+    font-size: 16px;
+}
+
+.cancel-bulk-upload-content p {
+    margin-top: 5px;
+    margin-bottom: 16px;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+}
+
+.cancel-bulk-file-input {
+    display: none;
+}
+
+.cancel-bulk-choose-button {
+    height: 40px;
+
+    padding: 0 20px;
+
+    border: none;
+    border-radius: 6px;
+
+    background: var(--primary);
+    color: #fff;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.cancel-bulk-choose-button:hover {
+    background: var(--primary-hover);
+}
+
+.cancel-bulk-file-name {
+    max-width: 400px;
+
+    margin-top: 10px;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* =========================
+   WARNING
+========================= */
+
+.cancel-bulk-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    margin-top: 20px;
+    padding: 14px 16px;
+
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 7px;
+
+    background: rgba(245, 158, 11, 0.08);
+
+    color: var(--warning);
+}
+
+.cancel-bulk-warning p {
+    margin-top: 4px;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.cancel-bulk-status {
+    margin-top: 18px;
+    padding: 12px 14px;
+
+    border-radius: 6px;
+
+    background: var(--bg-tertiary);
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+
+.cancel-bulk-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    margin-top: 24px;
+}
+
+.cancel-bulk-clear-button,
+.cancel-bulk-upload-button {
+    height: 44px;
+
+    padding: 0 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    border-radius: 6px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.cancel-bulk-clear-button {
+    border: 1px solid var(--border-color);
+
+    background: var(--card-bg);
+    color: var(--text-secondary);
+}
+
+.cancel-bulk-clear-button:hover {
+    background: var(--card-bg-hover);
+    color: var(--text-primary);
+}
+
+.cancel-bulk-upload-button {
+    border: none;
+
+    background: var(--danger);
+    color: #fff;
+
+    box-shadow: 0 7px 16px rgba(239, 68, 68, 0.18);
+}
+
+.cancel-bulk-upload-button:hover {
+    opacity: 0.9;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 700px) {
+    .cancel-bulk-task-card {
+        padding: 18px;
+    }
+
+    .cancel-bulk-format-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cancel-bulk-download-button {
+        width: 100%;
+    }
+
+    .cancel-bulk-actions {
+        flex-direction: column-reverse;
+    }
+
+    .cancel-bulk-clear-button,
+    .cancel-bulk-upload-button {
+        width: 100%;
+    }
+}

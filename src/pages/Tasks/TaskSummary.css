@@ -1,0 +1,433 @@
+.task-summary-page {
+    width: 100%;
+}
+
+/* =========================
+   CHART CARD
+========================= */
+
+.task-summary-chart-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+
+.task-summary-chart-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.task-summary-chart-header h1 {
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.task-summary-chart-content {
+    min-height: 210px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 45px;
+
+    padding: 20px;
+}
+
+/* =========================
+   DONUT
+========================= */
+
+.task-donut {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-donut-progress {
+    width: 165px;
+    height: 165px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-donut-inner {
+    width: 118px;
+    height: 118px;
+
+    border-radius: 50%;
+
+    background: var(--card-bg);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--text-primary);
+}
+
+.task-donut-inner strong {
+    font-size: 25px;
+}
+
+.task-donut-inner span {
+    margin-top: 3px;
+
+    color: var(--text-muted);
+    font-size: 10px;
+}
+
+/* =========================
+   LEGEND
+========================= */
+
+.task-summary-legend {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    color: var(--text-secondary);
+
+    font-size: 14px;
+}
+
+.legend-dot {
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+}
+
+.legend-dot.completed {
+    background: #16a34a;
+}
+
+.legend-dot.missed {
+    background: #dc2626;
+}
+
+/* =========================
+   TABLES
+========================= */
+
+.task-summary-tables {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+.task-summary-table-card {
+    min-width: 0;
+
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+
+    box-shadow: var(--shadow);
+
+    padding: 10px 0 0;
+}
+
+.task-summary-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding: 0 8px 16px;
+}
+
+/* =========================
+   SEARCH
+========================= */
+
+.task-summary-search {
+    width: 240px;
+    height: 35px;
+
+    display: flex;
+    align-items: center;
+
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+
+    background: var(--input-bg);
+
+    overflow: hidden;
+}
+
+.task-summary-search input {
+    flex: 1;
+
+    min-width: 0;
+
+    height: 100%;
+
+    padding: 0 10px;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+    color: var(--text-primary);
+
+    font-size: 13px;
+}
+
+.task-summary-search input::placeholder {
+    color: var(--text-muted);
+}
+
+.task-summary-search svg {
+    margin-right: 8px;
+    color: var(--text-muted);
+}
+
+/* =========================
+   EXPORT
+========================= */
+
+.task-summary-export-buttons {
+    display: flex;
+    align-items: center;
+}
+
+.task-summary-export-buttons button {
+    width: 47px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border-color);
+    border-left: none;
+
+    background: var(--card-bg-hover);
+    color: var(--text-secondary);
+
+    cursor: pointer;
+}
+
+.task-summary-export-buttons button:first-child {
+    border-left: 1px solid var(--border-color);
+    border-radius: 6px 0 0 6px;
+}
+
+.task-summary-export-buttons button:last-child {
+    border-radius: 0 6px 6px 0;
+}
+
+.task-summary-export-buttons button:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.task-summary-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.task-summary-table {
+    width: 100%;
+    min-width: 560px;
+
+    border-collapse: collapse;
+
+    font-size: 13px;
+}
+
+.task-summary-table th {
+    height: 48px;
+
+    padding: 0 12px;
+
+    background: var(--bg-tertiary);
+
+    border-bottom: 1px solid var(--border-color);
+
+    color: var(--text-secondary);
+
+    text-align: left;
+
+    white-space: nowrap;
+}
+
+.task-summary-table th>span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.task-summary-table th small {
+    float: right;
+    margin-left: 12px;
+    color: var(--text-muted);
+}
+
+.task-summary-table td {
+    min-height: 48px;
+
+    padding: 10px 12px;
+
+    border-bottom: 1px solid var(--border-color);
+
+    color: var(--text-secondary);
+}
+
+.task-summary-table tbody tr:nth-child(odd) {
+    background: var(--bg-tertiary);
+}
+
+.task-summary-table tbody tr:nth-child(even) {
+    background: var(--card-bg);
+}
+
+.task-summary-table tbody tr:hover {
+    background: var(--card-bg-hover);
+}
+
+.task-summary-table td a {
+    color: var(--text-secondary);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.task-summary-table td a:hover {
+    color: var(--primary);
+}
+
+.task-summary-empty {
+    text-align: center;
+    padding: 25px !important;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.task-summary-table-footer {
+    min-height: 58px;
+
+    padding: 10px 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+}
+
+.task-summary-pagination {
+    display: flex;
+    align-items: center;
+}
+
+.task-summary-pagination button {
+    height: 34px;
+
+    padding: 0 12px;
+
+    border: 1px solid var(--border-color);
+    border-right: none;
+
+    background: var(--card-bg);
+    color: var(--text-secondary);
+
+    cursor: pointer;
+}
+
+.task-summary-pagination button:last-child {
+    border-right: 1px solid var(--border-color);
+    border-radius: 0 5px 5px 0;
+}
+
+.task-summary-pagination button:first-child {
+    border-radius: 5px 0 0 5px;
+}
+
+.task-summary-pagination button.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.task-summary-pagination button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.task-summary-show {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.task-summary-show select {
+    height: 34px;
+
+    padding: 0 8px;
+
+    background: var(--input-bg);
+    color: var(--text-primary);
+
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+
+    outline: none;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1100px) {
+    .task-summary-tables {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .task-summary-chart-content {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .task-summary-table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .task-summary-search {
+        width: 100%;
+    }
+
+    .task-summary-export-buttons {
+        justify-content: flex-end;
+    }
+
+    .task-summary-table-footer {
+        flex-wrap: wrap;
+    }
+}

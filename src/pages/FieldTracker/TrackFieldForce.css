@@ -1,0 +1,249 @@
+.track-field-force-page {
+    width: 100%;
+}
+
+.track-content-card {
+    width: 100%;
+    min-height: calc(100vh - 125px);
+    padding: 20px 28px 28px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+}
+
+/* =========================
+   TOP TOOLBAR
+========================= */
+
+.track-toolbar {
+    min-height: 52px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.track-toolbar-line {
+    position: absolute;
+    left: 0;
+    right: 180px;
+    top: 50%;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.track-actions {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-left: 20px;
+    background: var(--card-bg);
+}
+
+.track-action-button {
+    width: 46px;
+    height: 46px;
+    border: none;
+    border-radius: 9px;
+    background: var(--primary);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.track-action-button:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+/* =========================
+   SUMMARY CARDS
+========================= */
+
+.track-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.track-summary-card {
+    min-height: 140px;
+    position: relative;
+    padding: 22px;
+    border-radius: 15px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    color: #ffffff;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.track-summary-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.track-summary-title {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.track-summary-value {
+    font-size: 30px;
+    line-height: 1;
+    font-weight: 500;
+}
+
+.track-summary-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.82);
+    color: #4b86dd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.track-summary-online {
+    background: #4caf50;
+}
+
+.track-summary-offline {
+    background: #ff2d32;
+}
+
+.track-summary-battery {
+    background: #ff9800;
+}
+
+.track-summary-not-checked {
+    background: #3f7edb;
+}
+
+/* =========================
+   MAP CONTAINER
+========================= */
+
+.tracking-map {
+    width: 100%;
+    height: 520px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: 2px;
+    background: #e8e6df;
+}
+
+.leaflet-map {
+    width: 100%;
+    height: 100%;
+}
+
+/* =========================
+   LEAFLET CONTROLS
+========================= */
+
+.tracking-map .leaflet-control-zoom {
+    margin-left: 8px;
+    margin-top: 8px;
+}
+
+.tracking-map .leaflet-control-zoom a {
+    width: 30px;
+    height: 30px;
+    line-height: 28px;
+    font-size: 18px;
+    color: #555555;
+    background: rgba(255, 255, 255, 0.95);
+    border-color: #d6d6d6;
+}
+
+.tracking-map .leaflet-control-zoom a:hover {
+    color: #222222;
+    background: #ffffff;
+}
+
+/* =========================
+   FIELD FORCE POPUP
+========================= */
+
+.field-force-popup {
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.field-force-popup strong {
+    color: #172033;
+    font-size: 13px;
+}
+
+.field-force-popup span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1100px) {
+    .track-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .tracking-map {
+        height: 480px;
+    }
+}
+
+@media (max-width: 700px) {
+    .track-content-card {
+        padding: 15px;
+    }
+
+    .track-toolbar {
+        min-height: 58px;
+    }
+
+    .track-toolbar-line {
+        right: 0;
+    }
+
+    .track-actions {
+        gap: 10px;
+    }
+
+    .track-action-button {
+        width: 42px;
+        height: 42px;
+    }
+
+    .track-summary {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .track-summary-card {
+        min-height: 125px;
+    }
+
+    .tracking-map {
+        height: 400px;
+    }
+}

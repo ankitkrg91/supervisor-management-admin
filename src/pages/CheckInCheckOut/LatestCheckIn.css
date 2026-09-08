@@ -1,0 +1,370 @@
+.latest-checkin-page {
+    width: 100%;
+    min-height: 100%;
+}
+
+.latest-checkin-card {
+    width: 100%;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 22px;
+    overflow: hidden;
+}
+
+/* =========================
+   FILTER SECTION
+========================= */
+
+.checkin-filter-section {
+    border-top: 1px solid var(--border-color);
+    padding-top: 26px;
+    padding-bottom: 18px;
+}
+
+.checkin-filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 24px;
+    align-items: center;
+}
+
+.date-filter-group,
+.role-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.date-filter-group label,
+.role-filter-group label {
+    min-width: 190px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.date-input-wrapper {
+    position: relative;
+    width: 290px;
+}
+
+.date-input-wrapper input {
+    width: 100%;
+    height: 44px;
+    padding: 0 48px 0 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--input-bg);
+    color: var(--text-secondary);
+    font-size: 14px;
+    outline: none;
+}
+
+.date-input-wrapper input:focus {
+    border-color: var(--primary);
+}
+
+.date-icon {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 40px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.filter-button {
+    width: 46px;
+    height: 46px;
+    border: none;
+    border-radius: 4px;
+    background: var(--primary);
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+}
+
+.filter-button:hover {
+    background: var(--primary-hover);
+}
+
+/* =========================
+   ROLE
+========================= */
+
+.role-filter-row {
+    margin-top: 22px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.role-filter-group select {
+    width: 290px;
+    height: 46px;
+    padding: 0 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+
+.role-filter-group select:focus {
+    border-color: var(--primary);
+}
+
+.search-button {
+    height: 46px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 9px;
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 7px 18px rgba(37, 99, 235, 0.2);
+}
+
+.search-button:hover {
+    background: var(--primary-hover);
+}
+
+/* =========================
+   TABLE CONTROLS
+========================= */
+
+.table-controls {
+    margin-top: 8px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.table-search {
+    width: 240px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background: var(--input-bg);
+    overflow: hidden;
+}
+
+.table-search input {
+    flex: 1;
+    height: 100%;
+    border: none;
+    outline: none;
+    padding: 0 12px;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.table-search input::placeholder {
+    color: var(--text-muted);
+}
+
+.table-search svg {
+    margin-right: 10px;
+    color: var(--text-secondary);
+}
+
+.export-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.export-button {
+    width: 48px;
+    height: 46px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+}
+
+.export-button:hover {
+    background: var(--card-bg-hover);
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.checkin-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.checkin-table {
+    width: 100%;
+    min-width: 1100px;
+    border-collapse: separate;
+    border-spacing: 0 1px;
+    color: var(--text-primary);
+}
+
+.checkin-table thead th {
+    height: 42px;
+    padding: 0 10px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.checkin-table thead th>span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkin-table thead th small {
+    margin-left: 4px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.checkin-table tbody tr {
+    background: var(--bg-tertiary);
+}
+
+.checkin-table tbody tr:nth-child(even) {
+    background: var(--card-bg);
+}
+
+.checkin-table tbody tr:hover {
+    background: var(--card-bg-hover);
+}
+
+.checkin-table tbody td {
+    min-height: 78px;
+    padding: 15px 10px;
+    color: var(--text-primary);
+    font-size: 14px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.checkin-table tbody td.name-cell {
+    width: 170px;
+    max-width: 170px;
+    white-space: normal;
+    line-height: 23px;
+    font-weight: 500;
+}
+
+.view-column {
+    width: 90px;
+}
+
+.view-button {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.view-button:hover {
+    color: var(--primary-hover);
+}
+
+.empty-state {
+    height: 120px;
+    text-align: center;
+    color: var(--text-muted) !important;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1200px) {
+    .checkin-filter-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .filter-button {
+        display: none;
+    }
+
+    .date-filter-group label,
+    .role-filter-group label {
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 800px) {
+    .latest-checkin-card {
+        padding: 15px;
+    }
+
+    .checkin-filter-row {
+        grid-template-columns: 1fr;
+    }
+
+    .date-filter-group,
+    .role-filter-group {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .date-filter-group label,
+    .role-filter-group label {
+        min-width: auto;
+    }
+
+    .date-input-wrapper,
+    .role-filter-group select {
+        width: 100%;
+    }
+
+    .role-filter-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-button {
+        width: fit-content;
+    }
+
+    .table-controls {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .export-buttons {
+        align-self: flex-end;
+    }
+}

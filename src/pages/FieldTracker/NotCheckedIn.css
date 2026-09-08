@@ -1,0 +1,439 @@
+.not-checked-in-page {
+    width: 100%;
+}
+
+/* =========================
+   SUMMARY CARDS
+========================= */
+
+.not-checked-in-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.not-checked-in-card-link {
+    display: block;
+    text-decoration: none;
+    border-radius: 15px;
+    outline: none;
+}
+
+.not-checked-in-summary-card {
+    min-height: 140px;
+    position: relative;
+    padding: 22px;
+    border-radius: 15px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    color: #ffffff;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.not-checked-in-card-link:hover .not-checked-in-summary-card {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.not-checked-in-card-link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.not-checked-in-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.not-checked-in-card-title {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.not-checked-in-card-value {
+    font-size: 30px;
+    line-height: 1;
+    font-weight: 500;
+}
+
+.not-checked-in-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.82);
+    color: #4b86dd;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Card colors */
+
+.not-checked-in-summary-online {
+    background: #4caf50;
+}
+
+.not-checked-in-summary-offline {
+    background: #ff2d32;
+}
+
+.not-checked-in-summary-battery {
+    background: #ff9800;
+}
+
+.not-checked-in-summary-not-checked {
+    background: #3f7edb;
+}
+
+/* Current page */
+
+.not-checked-in-card-link.card-current .not-checked-in-summary-card {
+    box-shadow:
+        0 0 0 2px var(--primary),
+        var(--shadow);
+}
+
+/* =========================
+   TABLE CARD
+========================= */
+
+.not-checked-in-table-card {
+    width: 100%;
+
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+
+    box-shadow: var(--shadow);
+
+    overflow: hidden;
+}
+
+/* =========================
+   TOOLBAR
+========================= */
+
+.not-checked-in-toolbar {
+    min-height: 82px;
+    padding: 16px 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+.not-checked-in-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.not-checked-in-search label {
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.not-checked-in-search input {
+    width: 240px;
+    height: 36px;
+
+    padding: 0 10px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+
+    outline: none;
+
+    background: var(--input-bg);
+    color: var(--text-primary);
+
+    font-size: 13px;
+
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.not-checked-in-search input:focus {
+    border-color: var(--primary);
+}
+
+/* =========================
+   EXPORT BUTTONS
+========================= */
+
+.not-checked-in-export-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.not-checked-in-export-actions button {
+    height: 46px;
+    padding: 0 17px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+
+    background: var(--card-bg-hover);
+    color: var(--text-primary);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.not-checked-in-export-actions button:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--primary);
+}
+
+.not-checked-in-export-actions button:active {
+    transform: translateY(1px);
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.not-checked-in-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.not-checked-in-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+}
+
+.not-checked-in-table th {
+    height: 50px;
+    padding: 0 12px;
+
+    border-bottom: 1px solid var(--border-color);
+
+    background: var(--card-bg);
+    color: var(--text-secondary);
+
+    text-align: left;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+.not-checked-in-table th span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.not-checked-in-table td {
+    min-height: 60px;
+    padding: 13px 12px;
+
+    border-bottom: 1px solid var(--border-color);
+
+    color: var(--text-primary);
+
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.not-checked-in-table tbody tr:nth-child(even) {
+    background: var(--bg-tertiary);
+}
+
+.not-checked-in-table tbody tr:hover {
+    background: var(--card-bg-hover);
+}
+
+/* =========================
+   MAP BUTTON
+========================= */
+
+.not-checked-in-map-button {
+    width: 28px;
+    height: 28px;
+
+    padding: 0;
+    border: none;
+
+    background: transparent;
+    color: var(--primary);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+}
+
+.not-checked-in-map-button:hover {
+    color: var(--primary-hover);
+}
+
+/* =========================
+   EMPTY STATE
+========================= */
+
+.not-checked-in-empty {
+    height: 100px;
+
+    text-align: center !important;
+
+    color: var(--text-muted) !important;
+
+    font-size: 13px !important;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.not-checked-in-table-footer {
+    min-height: 72px;
+    padding: 14px 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+.not-checked-in-table-footer>span {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.not-checked-in-pagination {
+    display: flex;
+    align-items: center;
+}
+
+.not-checked-in-pagination button {
+    height: 34px;
+    min-width: 44px;
+
+    padding: 0 12px;
+
+    border: 1px solid var(--border-color);
+
+    background: var(--card-bg-hover);
+    color: var(--text-secondary);
+
+    font-size: 13px;
+
+    cursor: pointer;
+}
+
+.not-checked-in-pagination button:first-child {
+    border-radius: 5px 0 0 5px;
+}
+
+.not-checked-in-pagination button:last-child {
+    border-radius: 0 5px 5px 0;
+}
+
+.not-checked-in-pagination button+button {
+    border-left: none;
+}
+
+.not-checked-in-pagination button:hover:not(:disabled) {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.not-checked-in-pagination button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.not-checked-in-pagination .not-checked-in-pagination-active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #ffffff;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1100px) {
+    .not-checked-in-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .not-checked-in-summary {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .not-checked-in-summary-card {
+        min-height: 125px;
+    }
+
+    .not-checked-in-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .not-checked-in-search {
+        width: 100%;
+    }
+
+    .not-checked-in-search input {
+        width: 100%;
+    }
+
+    .not-checked-in-export-actions {
+        width: 100%;
+    }
+
+    .not-checked-in-export-actions button {
+        flex: 1;
+    }
+
+    .not-checked-in-table-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .not-checked-in-pagination {
+        align-self: flex-end;
+    }
+}

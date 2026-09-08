@@ -1,0 +1,420 @@
+.latest-visits-page {
+    width: 100%;
+    min-height: 100%;
+}
+
+.latest-visits-card {
+    width: 100%;
+    padding: 22px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* =========================
+   FILTER SECTION
+========================= */
+
+.visits-filter-section {
+    padding-top: 15px;
+    padding-bottom: 18px;
+    border-top: 1px solid var(--border-color);
+}
+
+.visits-filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 28px;
+    align-items: center;
+}
+
+.visit-date-group {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.visit-date-group label {
+    min-width: 155px;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.visit-date-input {
+    position: relative;
+    width: 238px;
+}
+
+.visit-date-input input {
+    width: 100%;
+    height: 44px;
+    padding: 0 42px 0 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text-secondary);
+    font-size: 14px;
+    outline: none;
+}
+
+.visit-date-input input:focus {
+    border-color: var(--primary);
+}
+
+.visit-date-input span {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 38px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.visits-filter-button {
+    width: 46px;
+    height: 46px;
+    border: none;
+    border-radius: 4px;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+/* =========================
+   FILTER GRID
+========================= */
+
+.visits-filter-grid {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 28px;
+    row-gap: 18px;
+}
+
+.visit-field {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.visit-field label {
+    width: 155px;
+    flex-shrink: 0;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.visit-field select {
+    width: 238px;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+
+.visit-field select:focus {
+    border-color: var(--primary);
+}
+
+.reports-between-field {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.reports-between-field label {
+    width: 155px;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.reports-between-field input {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}
+
+.visits-search-button {
+    width: fit-content;
+    min-width: 96px;
+    height: 46px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 9px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 7px 18px rgba(37, 99, 235, 0.2);
+}
+
+.visits-search-button:hover,
+.visits-filter-button:hover {
+    background: var(--primary-hover);
+}
+
+/* =========================
+   TABLE CONTROLS
+========================= */
+
+.visits-table-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0;
+    margin-bottom: 18px;
+}
+
+.visits-table-search {
+    width: 241px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background: var(--input-bg);
+    overflow: hidden;
+}
+
+.visits-table-search input {
+    flex: 1;
+    height: 100%;
+    padding: 0 12px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.visits-table-search input::placeholder {
+    color: var(--text-muted);
+}
+
+.visits-table-search svg {
+    margin-right: 10px;
+    color: var(--text-secondary);
+}
+
+.visits-export-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.visits-export-button {
+    width: 48px;
+    height: 46px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+}
+
+.visits-export-button:hover {
+    background: var(--card-bg-hover);
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.visits-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.visits-table {
+    width: 100%;
+    min-width: 1250px;
+    border-collapse: separate;
+    border-spacing: 0 1px;
+}
+
+.visits-table th {
+    height: 43px;
+    padding: 0 9px;
+    color: var(--text-primary);
+    background: var(--card-bg);
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.visits-table th span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.visits-table th small {
+    color: var(--text-muted);
+    margin-left: 3px;
+}
+
+.visits-table tbody tr {
+    background: var(--bg-tertiary);
+}
+
+.visits-table tbody tr:nth-child(even) {
+    background: var(--card-bg);
+}
+
+.visits-table tbody tr:hover {
+    background: var(--card-bg-hover);
+}
+
+.visits-table td {
+    min-height: 78px;
+    padding: 14px 9px;
+    color: var(--text-primary);
+    font-size: 14px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.visit-name-cell {
+    width: 125px;
+    max-width: 125px;
+    white-space: normal !important;
+    line-height: 22px;
+    font-weight: 500;
+}
+
+.client-cell {
+    width: 125px;
+    max-width: 125px;
+    white-space: normal !important;
+    line-height: 21px;
+}
+
+/* =========================
+   PHOTO ACTIONS
+========================= */
+
+.photos-cell {
+    white-space: nowrap;
+}
+
+.photo-toggle-button {
+    width: 22px;
+    height: 22px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.photo-toggle-button:hover {
+    background: var(--primary-hover);
+}
+
+.photo-toggle-button.expanded {
+    background: var(--danger);
+}
+
+.photo-download-button {
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.photo-download-button:hover {
+    color: var(--primary-hover);
+}
+
+.view-report-button {
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.view-report-button:hover {
+    color: var(--primary-hover);
+}
+
+/* =========================
+   EXPANDED VISIT DETAILS
+========================= */
+
+.visit-main-row.expanded {
+    background: var(--bg-tertiary);
+}
+
+.visit-details-row {
+    background: var(--card-bg);
+}
+
+.visit-details-row>td {
+    padding: 0 12px 16px 12px !important;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.visit-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-left: 0;
+}
+
+.visit-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.visit-detail-item svg {
+    color: var(--text-primary);
+    flex-shrink: 0;
+}
+
+.visit-detail-item strong {
+    color: var(--text-primary);
+    font-weight: 700;
+    min-width: 70px;
+}
+
+.visit-detail-item span {
+    color: var(--text-secondary);
+}
