@@ -777,3 +777,25 @@
         flex-wrap: wrap;
     }
 }
+
+.reports-error {
+    margin-top: 15px;
+    padding: 11px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+/* Keep native date controls readable in dark theme. */
+.report-date-input input[type="date"] {
+    color-scheme: dark;
+}
+
+.generate-report-button:disabled,
+.excel-button:disabled,
+.pdf-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}

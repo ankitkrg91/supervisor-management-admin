@@ -704,3 +704,365 @@
         min-width: 100%;
     }
 }
+
+/* =================================
+   FILTER
+================================= */
+
+.settings-search-area {
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.settings-filter-select {
+    height: 46px;
+    min-width: 130px;
+    padding: 0 12px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+
+    outline: none;
+
+    background: var(--input-bg);
+    color: var(--text-primary);
+
+    font-size: 12px;
+}
+
+.settings-filter-select:focus {
+    border-color: var(--primary);
+}
+
+
+/* =================================
+   MESSAGES
+================================= */
+
+.settings-message {
+    min-height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 15px;
+    padding: 10px 13px;
+
+    border-radius: 6px;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.settings-message.error {
+    background: rgba(239, 68, 68, 0.10);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: var(--danger);
+}
+
+.settings-message.success {
+    background: rgba(34, 197, 94, 0.10);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    color: var(--success);
+}
+
+.settings-message button {
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+
+/* =================================
+   LOADING
+================================= */
+
+.settings-loading {
+    min-height: 180px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+
+/* =================================
+   MUTED TEXT
+================================= */
+
+.settings-muted {
+    color: var(--text-muted);
+}
+
+
+/* =================================
+   MODAL
+================================= */
+
+.settings-modal-backdrop {
+    position: fixed;
+    inset: 0;
+
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    backdrop-filter: blur(3px);
+}
+
+.settings-modal {
+    width: min(760px, 100%);
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background: var(--card-bg);
+
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.settings-modal-header {
+    min-height: 72px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid var(--border-color);
+}
+
+.settings-modal-header h3 {
+    margin: 0;
+
+    color: var(--text-primary);
+
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.settings-modal-header p {
+    margin: 5px 0 0;
+
+    color: var(--text-muted);
+
+    font-size: 11px;
+}
+
+.settings-modal-close {
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+
+    background: var(--card-bg-hover);
+    color: var(--text-secondary);
+
+    cursor: pointer;
+}
+
+.settings-modal-close:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+
+/* =================================
+   FORM
+================================= */
+
+.settings-modal form {
+    padding: 20px;
+}
+
+.settings-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.settings-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.settings-form-field.full {
+    grid-column: 1 / -1;
+}
+
+.settings-form-field label {
+    color: var(--text-secondary);
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.settings-form-field input,
+.settings-form-field select,
+.settings-form-field textarea {
+    width: 100%;
+
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+
+    outline: none;
+
+    background: var(--input-bg);
+    color: var(--text-primary);
+
+    font-size: 12px;
+
+    transition: border-color 0.2s ease;
+}
+
+.settings-form-field input,
+.settings-form-field select {
+    height: 42px;
+    padding: 0 12px;
+}
+
+.settings-form-field textarea {
+    padding: 10px 12px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.settings-form-field input:focus,
+.settings-form-field select:focus,
+.settings-form-field textarea:focus {
+    border-color: var(--primary);
+}
+
+
+/* =================================
+   MODAL FOOTER
+================================= */
+
+.settings-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 22px;
+    padding-top: 18px;
+
+    border-top: 1px solid var(--border-color);
+}
+
+.settings-primary-button,
+.settings-secondary-button {
+    height: 40px;
+
+    padding: 0 16px;
+
+    border-radius: 6px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.settings-primary-button {
+    border: none;
+
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.settings-primary-button:hover {
+    background: var(--primary-hover);
+}
+
+.settings-secondary-button {
+    border: 1px solid var(--border-color);
+
+    background: var(--card-bg-hover);
+    color: var(--text-secondary);
+}
+
+.settings-secondary-button:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.settings-primary-button:disabled,
+.settings-secondary-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+
+/* =================================
+   RESPONSIVE MODAL
+================================= */
+
+@media (max-width: 700px) {
+    .settings-search-area {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .settings-filter-select {
+        width: 100%;
+    }
+
+    .settings-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-form-field.full {
+        grid-column: auto;
+    }
+
+    .settings-modal {
+        max-height: 94vh;
+    }
+
+    .settings-modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .settings-primary-button,
+    .settings-secondary-button {
+        width: 100%;
+    }
+}
+
+
+/* =================================
+   PRINT
+================================= */
+
+@media print {
+    .settings-message,
+    .settings-filter-select,
+    .settings-modal-backdrop {
+        display: none !important;
+    }
+}

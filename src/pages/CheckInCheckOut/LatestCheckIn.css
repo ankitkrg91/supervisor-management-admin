@@ -56,9 +56,19 @@
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background: var(--input-bg);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     font-size: 14px;
     outline: none;
+}
+
+/* Native calendar icon inside date input */
+.date-input-wrapper input[type="date"] {
+    color-scheme: dark;
+}
+
+.date-input-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 1;
+    cursor: pointer;
 }
 
 .date-input-wrapper input:focus {
@@ -71,30 +81,61 @@
     top: 0;
     width: 40px;
     height: 44px;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     background: rgba(37, 99, 235, 0.12);
     color: var(--text-secondary);
+
     pointer-events: none;
 }
+
+/* =========================
+   FILTER BUTTON
+========================= */
 
 .filter-button {
     width: 46px;
     height: 46px;
-    border: none;
-    border-radius: 4px;
-    background: var(--primary);
-    color: #ffffff;
+
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+
     cursor: pointer;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     font-size: 15px;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .filter-button:hover {
+    background: var(--card-bg-hover);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.filter-button.active {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
+.filter-button.active:hover {
     background: var(--primary-hover);
+    color: #ffffff;
 }
 
 /* =========================
@@ -103,6 +144,7 @@
 
 .role-filter-row {
     margin-top: 22px;
+
     display: flex;
     align-items: center;
     gap: 24px;
@@ -111,11 +153,15 @@
 .role-filter-group select {
     width: 290px;
     height: 46px;
+
     padding: 0 16px;
+
     border: 1px solid var(--border-color);
     border-radius: 8px;
+
     background: var(--input-bg);
     color: var(--text-primary);
+
     font-size: 14px;
     outline: none;
     cursor: pointer;
@@ -128,14 +174,23 @@
 .search-button {
     height: 46px;
     padding: 0 20px;
+
     border: none;
     border-radius: 9px;
+
     background: var(--primary);
     color: #ffffff;
+
     font-size: 14px;
     font-weight: 700;
+
     cursor: pointer;
-    box-shadow: 0 7px 18px rgba(37, 99, 235, 0.2);
+
+    box-shadow:
+        0 7px 18px rgba(37,
+            99,
+            235,
+            0.2);
 }
 
 .search-button:hover {
@@ -149,31 +204,41 @@
 .table-controls {
     margin-top: 8px;
     margin-bottom: 18px;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 20px;
 }
 
 .table-search {
     width: 240px;
     height: 35px;
+
     display: flex;
     align-items: center;
+
     border: 1px solid var(--border-color);
     border-radius: 5px;
+
     background: var(--input-bg);
+
     overflow: hidden;
 }
 
 .table-search input {
     flex: 1;
     height: 100%;
+
     border: none;
     outline: none;
+
     padding: 0 12px;
+
     background: transparent;
     color: var(--text-primary);
+
     font-size: 14px;
 }
 
@@ -195,19 +260,31 @@
 .export-button {
     width: 48px;
     height: 46px;
+
     border: 1px solid var(--border-color);
     border-radius: 6px;
+
     background: var(--bg-tertiary);
     color: var(--text-primary);
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     cursor: pointer;
+
     box-shadow: var(--shadow);
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
 }
 
 .export-button:hover {
     background: var(--card-bg-hover);
+    color: var(--primary);
+    border-color: var(--primary);
 }
 
 /* =========================
@@ -222,18 +299,24 @@
 .checkin-table {
     width: 100%;
     min-width: 1100px;
+
     border-collapse: separate;
     border-spacing: 0 1px;
+
     color: var(--text-primary);
 }
 
 .checkin-table thead th {
     height: 42px;
+
     padding: 0 10px;
+
     background: var(--card-bg);
     color: var(--text-primary);
+
     font-size: 14px;
     font-weight: 700;
+
     text-align: left;
     white-space: nowrap;
 }
@@ -246,6 +329,7 @@
 
 .checkin-table thead th small {
     margin-left: 4px;
+
     color: var(--text-muted);
     font-size: 13px;
 }
@@ -264,9 +348,13 @@
 
 .checkin-table tbody td {
     min-height: 78px;
+
     padding: 15px 10px;
+
     color: var(--text-primary);
+
     font-size: 14px;
+
     vertical-align: middle;
     white-space: nowrap;
 }
@@ -274,8 +362,10 @@
 .checkin-table tbody td.name-cell {
     width: 170px;
     max-width: 170px;
+
     white-space: normal;
     line-height: 23px;
+
     font-weight: 500;
 }
 
@@ -286,12 +376,16 @@
 .view-button {
     width: 30px;
     height: 30px;
+
     border: none;
+
     background: transparent;
     color: var(--primary);
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     cursor: pointer;
 }
 
@@ -301,8 +395,91 @@
 
 .empty-state {
     height: 120px;
+
     text-align: center;
+
     color: var(--text-muted) !important;
+}
+
+/* =========================
+   PAGINATION
+========================= */
+
+.checkin-pagination-footer {
+    margin-top: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    color: var(--text-primary);
+
+    font-size: 14px;
+}
+
+.checkin-pagination {
+    display: flex;
+    align-items: center;
+
+    gap: 6px;
+}
+
+.checkin-pagination button {
+    min-width: 72px;
+    height: 36px;
+
+    padding: 0 12px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+
+    font-size: 13px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.checkin-pagination button:hover:not(:disabled) {
+    background: var(--card-bg-hover);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.checkin-pagination button:disabled {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+
+    border-color: var(--border-color);
+
+    opacity: 0.55;
+
+    cursor: not-allowed;
+}
+
+.checkin-pagination .checkin-pagination-active {
+    min-width: 38px;
+
+    background: var(--primary);
+    color: #ffffff;
+
+    border-color: var(--primary);
+
+    font-weight: 700;
+}
+
+.checkin-pagination .checkin-pagination-active:hover {
+    background: var(--primary-hover);
+    color: #ffffff;
 }
 
 /* =========================
@@ -315,7 +492,7 @@
     }
 
     .filter-button {
-        display: none;
+        justify-self: end;
     }
 
     .date-filter-group label,
@@ -350,6 +527,10 @@
         width: 100%;
     }
 
+    .filter-button {
+        justify-self: start;
+    }
+
     .role-filter-row {
         flex-direction: column;
         align-items: stretch;
@@ -367,4 +548,225 @@
     .export-buttons {
         align-self: flex-end;
     }
+
+    .checkin-pagination-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .checkin-pagination {
+        width: 100%;
+    }
+}
+
+/* =========================
+   LATEST CHECK-IN FILTER
+========================= */
+
+.checkin-filter-row-top {
+    min-height: 40px;
+
+    display: flex;
+    justify-content: flex-end;
+
+    border-bottom: 1px solid var(--border-color);
+}
+
+.checkin-filter-button {
+    width: 44px;
+    height: 44px;
+
+    margin-bottom: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 4px;
+
+    background: var(--primary);
+    color: #fff;
+
+    cursor: pointer;
+}
+
+.checkin-filter-button:hover,
+.checkin-filter-button.active {
+    background: var(--primary-hover);
+}
+
+/* =========================
+   FILTER PANEL
+========================= */
+
+.checkin-filter-panel {
+    display: flex;
+    align-items: flex-end;
+
+    flex-wrap: wrap;
+
+    gap: 16px;
+
+    margin-top: 15px;
+    padding: 16px;
+
+    background: var(--bg-tertiary);
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 6px;
+}
+
+.checkin-filter-field {
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+.checkin-filter-field label {
+    color: var(--text-secondary);
+
+    font-size: 12px;
+}
+
+.checkin-filter-field input,
+.checkin-filter-field select {
+    width: 190px;
+    height: 38px;
+
+    padding: 0 10px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 5px;
+
+    background: var(--input-bg);
+
+    color: var(--text-primary);
+
+    outline: none;
+
+    box-sizing: border-box;
+}
+
+.checkin-filter-field input:focus,
+.checkin-filter-field select:focus {
+    border-color: var(--primary);
+}
+
+/* =========================
+   APPLY / RESET
+========================= */
+
+.checkin-apply-button,
+.checkin-reset-button {
+    height: 38px;
+
+    padding: 0 18px;
+
+    border: none;
+    border-radius: 5px;
+
+    color: #fff;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.checkin-apply-button {
+    background: var(--primary);
+}
+
+.checkin-apply-button:hover {
+    background: var(--primary-hover);
+}
+
+.checkin-reset-button {
+    background: var(--text-secondary);
+}
+
+.checkin-reset-button:hover {
+    opacity: 0.9;
+}
+
+/* =========================
+   PAGINATION
+========================= */
+
+.checkin-pagination-footer {
+    min-height: 60px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+}
+
+.checkin-pagination {
+    display: flex;
+    align-items: center;
+}
+
+.checkin-pagination button {
+    height: 34px;
+    min-width: 42px;
+
+    padding: 0 12px;
+
+    border: 1px solid var(--border-color);
+
+    border-right: none;
+
+    background: var(--card-bg);
+
+    color: var(--text-secondary);
+
+    cursor: pointer;
+}
+
+.checkin-pagination button:first-child {
+    border-radius: 5px 0 0 5px;
+}
+
+.checkin-pagination button:last-child {
+    border-right: 1px solid var(--border-color);
+
+    border-radius: 0 5px 5px 0;
+}
+
+.checkin-pagination button.active {
+    background: var(--primary);
+
+    border-color: var(--primary);
+
+    color: #fff;
+}
+
+.checkin-pagination button:hover:not(:disabled) {
+    background: var(--card-bg-hover);
+
+    color: var(--text-primary);
+}
+
+.checkin-pagination button.active:hover {
+    background: var(--primary-hover);
+
+    color: #fff;
+}
+
+.checkin-pagination button:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
 }

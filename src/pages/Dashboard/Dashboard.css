@@ -76,14 +76,6 @@
     border-color: var(--primary);
 }
 
-.dashboard-date-input svg {
-    position: absolute;
-    right: 8px;
-    top: 7px;
-    color: var(--text-secondary);
-    pointer-events: none;
-}
-
 /* =========================
    MULTI SELECT
 ========================= */
@@ -749,4 +741,50 @@
     .dashboard-alert-card {
         padding: 15px;
     }
+}
+
+.dashboard-loading,
+.dashboard-error-message {
+    margin-top: 16px;
+    padding: 12px 15px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.dashboard-loading {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+}
+
+.dashboard-error-message {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: var(--danger);
+}
+
+/* =================================
+   CLICKABLE CARDS
+================================= */
+
+.dashboard-summary-card,
+.dashboard-management-card {
+    text-decoration: none;
+    color: inherit;
+}
+
+.dashboard-summary-card {
+    display: block;
+    cursor: pointer;
+}
+
+.dashboard-management-card {
+    display: flex;
+    cursor: pointer;
+}
+
+.dashboard-summary-card:focus-visible,
+.dashboard-management-card:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
 }

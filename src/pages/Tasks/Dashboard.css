@@ -335,3 +335,10 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Dark mode calendar icon */
+[data-theme="dark"] .task-date-input input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.9;
+    cursor: pointer;
+}

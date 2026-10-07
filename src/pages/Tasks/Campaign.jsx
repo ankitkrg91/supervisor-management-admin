@@ -1,73 +1,429 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     Eye,
     FileSpreadsheet,
     FileText,
     Filter,
+    Loader2,
     Printer,
     Search,
+    X,
 } from "lucide-react";
+import * as XLSX from "xlsx";
+
 import "./Campaign.css";
 
-const campaignData = [
-    {
-        id: 1,
-        campaignNumber: "CMP-2026-001",
-        campaignName: "August MSF Inspection",
-        remark: "Monthly MSF inspection campaign",
-        scheduledBy: "Admin",
-        scheduledOn: "24 Aug 2026",
-    },
-    {
-        id: 2,
-        campaignNumber: "CMP-2026-002",
-        campaignName: "Night Visit Campaign",
-        remark: "Night security verification",
-        scheduledBy: "Admin",
-        scheduledOn: "25 Aug 2026",
-    },
-    {
-        id: 3,
-        campaignNumber: "CMP-2026-003",
-        campaignName: "Site Audit Campaign",
-        remark: "Branch-wise site audit",
-        scheduledBy: "Admin",
-        scheduledOn: "26 Aug 2026",
-    },
-];
+const getCampaignNumber = (campaign) => {
+    if (campaign?.campaignNumber) {
+        return campaign.campaignNumber;
+    }
+
+    if (campaign?.id) {
+        return `CMP-${campaign.id.slice(0, 8).toUpperCase()}`;
+    }
+
+    return "N/A";
+};
+
+const formatDate = (value) => {
+    if (!value) {
+        return "N/A";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "N/A";
+    }
+
+    return date.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
+};
+
+const formatDateTime = (value) => {
+    if (!value) {
+        return "N/A";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "N/A";
+    }
+
+    return date.toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+};
+
+const getStatusLabel = (status) => {
+    if (!status) {
+        return "N/A";
+    }
+
+    return status
+        .toLowerCase()
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const escapeHtml = (value) => {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+};
 
 const Campaign = () => {
+    const [campaigns, setCampaigns] = useState([]);
     const [search, setSearch] = useState("");
+
     const [showFilters, setShowFilters] = useState(false);
+
+    const [draftStatus, setDraftStatus] = useState("");
+    const [appliedStatus, setAppliedStatus] = useState("");
+
     const [pageSize, setPageSize] = useState("10");
+    const [page, setPage] = useState(1);
 
-    const filteredCampaigns = useMemo(() => {
-        const query = search.toLowerCase().trim();
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 1,
+    });
 
-        if (!query) {
-            return campaignData;
+    const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+
+    const [selectedCampaign, setSelectedCampaign] = useState(null);
+
+    const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+
+    const fetchCampaigns = async () => {
+        setLoading(true);
+        setErrorMessage("");
+
+        try {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                window.location.href = "/login";
+                return;
+            }
+
+            const params = new URLSearchParams();
+
+            params.set("page", String(page));
+            params.set("limit", String(pageSize));
+
+            if (search.trim()) {
+                params.set("search", search.trim());
+            }
+
+            if (appliedStatus) {
+                params.set("status", appliedStatus);
+            }
+
+            const response = await fetch(
+                `${API_BASE_URL}/api/campaigns?${params.toString()}`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const result = await response.json();
+
+            if (response.status === 401) {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                window.location.href = "/login";
+                return;
+            }
+
+            if (!response.ok || result?.success === false) {
+                throw new Error(
+                    result?.message || "Failed to load campaigns"
+                );
+            }
+
+            const responseData = result?.data;
+
+            const campaignList = Array.isArray(responseData)
+                ? responseData
+                : Array.isArray(responseData?.campaigns)
+                    ? responseData.campaigns
+                    : [];
+
+            setCampaigns(campaignList);
+
+            setPagination({
+                page:
+                    result?.pagination?.page ??
+                    responseData?.pagination?.page ??
+                    page,
+                limit:
+                    result?.pagination?.limit ??
+                    responseData?.pagination?.limit ??
+                    Number(pageSize),
+                total:
+                    result?.pagination?.total ??
+                    responseData?.pagination?.total ??
+                    campaignList.length,
+                totalPages:
+                    result?.pagination?.totalPages ??
+                    responseData?.pagination?.totalPages ??
+                    Math.max(
+                        1,
+                        Math.ceil(
+                            (
+                                result?.pagination?.total ??
+                                responseData?.pagination?.total ??
+                                campaignList.length
+                            ) / Number(pageSize)
+                        )
+                    ),
+            });
+        } catch (error) {
+            console.error("Campaign fetch error:", error);
+
+            setCampaigns([]);
+            setPagination({
+                page: 1,
+                limit: Number(pageSize),
+                total: 0,
+                totalPages: 1,
+            });
+
+            setErrorMessage(
+                error?.message || "Unable to load campaigns"
+            );
+        } finally {
+            setLoading(false);
         }
+    };
 
-        return campaignData.filter((campaign) =>
-            [
-                campaign.campaignNumber,
-                campaign.campaignName,
-                campaign.remark,
-                campaign.scheduledBy,
-                campaign.scheduledOn,
-            ]
-                .join(" ")
-                .toLowerCase()
-                .includes(query)
-        );
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchCampaigns();
+        }, 350);
+
+        return () => clearTimeout(timer);
+    }, [page, pageSize, appliedStatus, search]);
+
+    useEffect(() => {
+        setPage(1);
     }, [search]);
 
+    const handleApplyFilters = () => {
+        setAppliedStatus(draftStatus);
+        setPage(1);
+    };
+
+    const handleResetFilters = () => {
+        setDraftStatus("");
+        setAppliedStatus("");
+        setPage(1);
+    };
+
+    const visibleCampaigns = useMemo(() => {
+        return campaigns;
+    }, [campaigns]);
+
     const handleExcel = () => {
-        console.log("Export Campaigns to Excel");
+        const rows = visibleCampaigns.map((campaign) => ({
+            "Campaign Number": getCampaignNumber(campaign),
+            "Campaign Name": campaign?.name || "",
+            Remark: campaign?.description || "",
+            "Scheduled By": "Super Admin",
+            "Scheduled On": formatDateTime(campaign?.createdAt),
+            "Start Date": formatDate(campaign?.startDate),
+            "End Date": formatDate(campaign?.endDate),
+            Status: getStatusLabel(campaign?.status),
+            "Total Tasks": campaign?._count?.tasks ?? 0,
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(
+            rows.length > 0
+                ? rows
+                : [
+                    {
+                        "Campaign Number": "",
+                        "Campaign Name": "",
+                        Remark: "",
+                        "Scheduled By": "",
+                        "Scheduled On": "",
+                        "Start Date": "",
+                        "End Date": "",
+                        Status: "",
+                        "Total Tasks": "",
+                    },
+                ]
+        );
+
+        worksheet["!cols"] = [
+            { wch: 20 },
+            { wch: 30 },
+            { wch: 40 },
+            { wch: 18 },
+            { wch: 24 },
+            { wch: 18 },
+            { wch: 18 },
+            { wch: 16 },
+            { wch: 14 },
+        ];
+
+        const workbook = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "Campaigns"
+        );
+
+        XLSX.writeFile(
+            workbook,
+            `campaigns-page-${page}.xlsx`
+        );
     };
 
     const handlePdf = () => {
-        console.log("Export Campaigns to PDF");
+        const rows = visibleCampaigns
+            .map(
+                (campaign) => `
+                    <tr>
+                        <td>${escapeHtml(
+                    getCampaignNumber(campaign)
+                )}</td>
+                        <td>${escapeHtml(
+                    campaign?.name || "N/A"
+                )}</td>
+                        <td>${escapeHtml(
+                    campaign?.description || "N/A"
+                )}</td>
+                        <td>Super Admin</td>
+                        <td>${escapeHtml(
+                    formatDateTime(campaign?.createdAt)
+                )}</td>
+                        <td>${escapeHtml(
+                    getStatusLabel(campaign?.status)
+                )}</td>
+                    </tr>
+                `
+            )
+            .join("");
+
+        const printWindow = window.open(
+            "",
+            "_blank",
+            "width=1200,height=800"
+        );
+
+        if (!printWindow) {
+            alert(
+                "Please allow pop-ups in your browser to export PDF."
+            );
+            return;
+        }
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>Campaigns</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 24px;
+                            color: #222;
+                        }
+
+                        h2 {
+                            margin-bottom: 6px;
+                        }
+
+                        p {
+                            margin-top: 0;
+                            color: #666;
+                        }
+
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 20px;
+                            font-size: 12px;
+                        }
+
+                        th,
+                        td {
+                            border: 1px solid #ccc;
+                            padding: 8px;
+                            text-align: left;
+                            vertical-align: top;
+                        }
+
+                        th {
+                            background: #f3f3f3;
+                        }
+                    </style>
+                </head>
+
+                <body>
+                    <h2>Campaign Report</h2>
+                    <p>
+                        Generated on ${escapeHtml(
+            formatDateTime(new Date())
+        )}
+                    </p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Campaign Number</th>
+                                <th>Campaign Name</th>
+                                <th>Remark</th>
+                                <th>Scheduled By</th>
+                                <th>Scheduled On</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            ${rows ||
+            `
+                                <tr>
+                                    <td colspan="6">
+                                        No campaigns found
+                                    </td>
+                                </tr>
+                            `
+            }
+                        </tbody>
+                    </table>
+                </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+
+        printWindow.focus();
+
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 300);
     };
 
     const handlePrint = () => {
@@ -75,8 +431,91 @@ const Campaign = () => {
     };
 
     const handleViewCampaign = (campaign) => {
-        console.log("View campaign:", campaign);
+        setSelectedCampaign(campaign);
     };
+
+    const closeModal = () => {
+        setSelectedCampaign(null);
+    };
+
+    const handlePrevious = () => {
+        if (pagination.page <= 1 || loading) {
+            return;
+        }
+
+        setPage((currentPage) => currentPage - 1);
+    };
+
+    const handleNext = () => {
+        if (
+            pagination.page >= pagination.totalPages ||
+            loading
+        ) {
+            return;
+        }
+
+        setPage((currentPage) => currentPage + 1);
+    };
+
+    const handlePageChange = (nextPage) => {
+        if (
+            nextPage < 1 ||
+            nextPage > pagination.totalPages ||
+            loading
+        ) {
+            return;
+        }
+
+        setPage(nextPage);
+    };
+
+    const paginationPages = useMemo(() => {
+        const totalPages = pagination.totalPages;
+
+        if (totalPages <= 5) {
+            return Array.from(
+                { length: totalPages },
+                (_, index) => index + 1
+            );
+        }
+
+        const currentPage = pagination.page;
+
+        if (currentPage <= 3) {
+            return [1, 2, 3, 4, 5];
+        }
+
+        if (currentPage >= totalPages - 2) {
+            return [
+                totalPages - 4,
+                totalPages - 3,
+                totalPages - 2,
+                totalPages - 1,
+                totalPages,
+            ];
+        }
+
+        return [
+            currentPage - 2,
+            currentPage - 1,
+            currentPage,
+            currentPage + 1,
+            currentPage + 2,
+        ];
+    }, [pagination.page, pagination.totalPages]);
+
+    const showingFrom =
+        pagination.total === 0
+            ? 0
+            : (pagination.page - 1) * pagination.limit + 1;
+
+    const showingTo =
+        pagination.total === 0
+            ? 0
+            : Math.min(
+                pagination.page * pagination.limit,
+                pagination.total
+            );
 
     return (
         <div className="campaign-page">
@@ -90,7 +529,7 @@ const Campaign = () => {
                         className={`campaign-filter-button ${showFilters ? "active" : ""
                             }`}
                         onClick={() =>
-                            setShowFilters(!showFilters)
+                            setShowFilters((current) => !current)
                         }
                         title="Filter"
                     >
@@ -101,29 +540,48 @@ const Campaign = () => {
                 {showFilters && (
                     <div className="campaign-filter-panel">
                         <div className="campaign-filter-field">
-                            <label>Scheduled By</label>
-
-                            <select defaultValue="">
-                                <option value="">All Users</option>
-                                <option value="Admin">Admin</option>
-                            </select>
-                        </div>
-
-                        <div className="campaign-filter-field">
                             <label>Campaign Status</label>
 
-                            <select defaultValue="">
-                                <option value="">All Campaigns</option>
-                                <option value="Active">Active</option>
-                                <option value="Completed">Completed</option>
+                            <select
+                                value={draftStatus}
+                                onChange={(event) =>
+                                    setDraftStatus(
+                                        event.target.value
+                                    )
+                                }
+                            >
+                                <option value="">
+                                    All Campaigns
+                                </option>
+
+                                <option value="ACTIVE">
+                                    Active
+                                </option>
+
+                                <option value="INACTIVE">
+                                    Inactive
+                                </option>
+
+                                <option value="COMPLETED">
+                                    Completed
+                                </option>
                             </select>
                         </div>
 
                         <button
                             type="button"
                             className="campaign-filter-apply"
+                            onClick={handleApplyFilters}
                         >
                             APPLY
+                        </button>
+
+                        <button
+                            type="button"
+                            className="campaign-filter-reset"
+                            onClick={handleResetFilters}
+                        >
+                            RESET
                         </button>
                     </div>
                 )}
@@ -131,7 +589,6 @@ const Campaign = () => {
                 {/* TOOLBAR */}
 
                 <div className="campaign-toolbar">
-
                     <div className="campaign-search">
                         <input
                             type="text"
@@ -150,6 +607,7 @@ const Campaign = () => {
                             type="button"
                             title="Excel"
                             onClick={handleExcel}
+                            disabled={loading}
                         >
                             <FileSpreadsheet size={17} />
                         </button>
@@ -158,6 +616,7 @@ const Campaign = () => {
                             type="button"
                             title="PDF"
                             onClick={handlePdf}
+                            disabled={loading}
                         >
                             <FileText size={17} />
                         </button>
@@ -171,6 +630,14 @@ const Campaign = () => {
                         </button>
                     </div>
                 </div>
+
+                {/* ERROR */}
+
+                {errorMessage && (
+                    <div className="campaign-error">
+                        {errorMessage}
+                    </div>
+                )}
 
                 {/* TABLE */}
 
@@ -198,46 +665,70 @@ const Campaign = () => {
                         </thead>
 
                         <tbody>
-                            {filteredCampaigns.map((campaign) => (
-                                <tr key={campaign.id}>
-
-                                    <td>
-                                        <button
-                                            type="button"
-                                            className="campaign-view-button"
-                                            onClick={() =>
-                                                handleViewCampaign(campaign)
-                                            }
-                                            title="View Campaign"
-                                        >
-                                            <Eye size={16} />
-                                        </button>
+                            {loading ? (
+                                <tr>
+                                    <td
+                                        colSpan="6"
+                                        className="campaign-loading"
+                                    >
+                                        <Loader2
+                                            size={20}
+                                            className="campaign-spinner"
+                                        />
+                                        Loading campaigns...
                                     </td>
-
-                                    <td>
-                                        {campaign.campaignNumber}
-                                    </td>
-
-                                    <td>
-                                        {campaign.campaignName}
-                                    </td>
-
-                                    <td>
-                                        {campaign.remark}
-                                    </td>
-
-                                    <td>
-                                        {campaign.scheduledBy}
-                                    </td>
-
-                                    <td>
-                                        {campaign.scheduledOn}
-                                    </td>
-
                                 </tr>
-                            ))}
+                            ) : visibleCampaigns.length > 0 ? (
+                                visibleCampaigns.map(
+                                    (campaign) => (
+                                        <tr key={campaign.id}>
+                                            <td>
+                                                <button
+                                                    type="button"
+                                                    className="campaign-view-button"
+                                                    onClick={() =>
+                                                        handleViewCampaign(
+                                                            campaign
+                                                        )
+                                                    }
+                                                    title="View Campaign"
+                                                >
+                                                    <Eye
+                                                        size={16}
+                                                    />
+                                                </button>
+                                            </td>
 
-                            {filteredCampaigns.length === 0 && (
+                                            <td>
+                                                {getCampaignNumber(
+                                                    campaign
+                                                )}
+                                            </td>
+
+                                            <td>
+                                                {campaign?.name ||
+                                                    "N/A"}
+                                            </td>
+
+                                            <td>
+                                                {campaign
+                                                    ?.description ||
+                                                    "N/A"}
+                                            </td>
+
+                                            <td>
+                                                Super Admin
+                                            </td>
+
+                                            <td>
+                                                {formatDateTime(
+                                                    campaign?.createdAt
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )
+                                )
+                            ) : (
                                 <tr>
                                     <td
                                         colSpan="6"
@@ -254,14 +745,9 @@ const Campaign = () => {
                 {/* FOOTER */}
 
                 <div className="campaign-footer">
-
                     <span>
-                        Showing{" "}
-                        {filteredCampaigns.length === 0
-                            ? 0
-                            : 1}{" "}
-                        to {filteredCampaigns.length} of{" "}
-                        {filteredCampaigns.length} entries
+                        Showing {showingFrom} to {showingTo} of{" "}
+                        {pagination.total} entries
                     </span>
 
                     <div className="campaign-show">
@@ -269,9 +755,10 @@ const Campaign = () => {
 
                         <select
                             value={pageSize}
-                            onChange={(event) =>
-                                setPageSize(event.target.value)
-                            }
+                            onChange={(event) => {
+                                setPageSize(event.target.value);
+                                setPage(1);
+                            }}
                         >
                             <option value="10">10</option>
                             <option value="25">25</option>
@@ -282,21 +769,166 @@ const Campaign = () => {
                     </div>
 
                     <div className="campaign-pagination">
-                        <button disabled>
+                        <button
+                            onClick={handlePrevious}
+                            disabled={
+                                loading ||
+                                pagination.page <= 1
+                            }
+                        >
                             Previous
                         </button>
 
-                        <button className="active">
-                            1
-                        </button>
+                        {paginationPages.map(
+                            (pageNumber) => (
+                                <button
+                                    key={pageNumber}
+                                    className={
+                                        pageNumber ===
+                                            pagination.page
+                                            ? "active"
+                                            : ""
+                                    }
+                                    onClick={() =>
+                                        handlePageChange(
+                                            pageNumber
+                                        )
+                                    }
+                                    disabled={loading}
+                                >
+                                    {pageNumber}
+                                </button>
+                            )
+                        )}
 
-                        <button disabled>
+                        <button
+                            onClick={handleNext}
+                            disabled={
+                                loading ||
+                                pagination.page >=
+                                pagination.totalPages
+                            }
+                        >
                             Next
                         </button>
                     </div>
-
                 </div>
             </section>
+
+            {/* VIEW CAMPAIGN MODAL */}
+
+            {selectedCampaign && (
+                <div
+                    className="campaign-modal-overlay"
+                    onClick={closeModal}
+                >
+                    <div
+                        className="campaign-modal"
+                        onClick={(event) =>
+                            event.stopPropagation()
+                        }
+                    >
+                        <div className="campaign-modal-header">
+                            <div>
+                                <h3>Campaign Details</h3>
+
+                                <span>
+                                    {getCampaignNumber(
+                                        selectedCampaign
+                                    )}
+                                </span>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="campaign-modal-close"
+                                onClick={closeModal}
+                                title="Close"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="campaign-modal-body">
+                            <div className="campaign-detail-item">
+                                <label>Campaign Name</label>
+                                <p>
+                                    {selectedCampaign.name ||
+                                        "N/A"}
+                                </p>
+                            </div>
+
+                            <div className="campaign-detail-item">
+                                <label>Description / Remark</label>
+                                <p>
+                                    {selectedCampaign
+                                        .description || "N/A"}
+                                </p>
+                            </div>
+
+                            <div className="campaign-detail-grid">
+                                <div className="campaign-detail-item">
+                                    <label>Scheduled By</label>
+                                    <p>Super Admin</p>
+                                </div>
+
+                                <div className="campaign-detail-item">
+                                    <label>Status</label>
+                                    <p>
+                                        {getStatusLabel(
+                                            selectedCampaign.status
+                                        )}
+                                    </p>
+                                </div>
+
+                                <div className="campaign-detail-item">
+                                    <label>Start Date</label>
+                                    <p>
+                                        {formatDate(
+                                            selectedCampaign.startDate
+                                        )}
+                                    </p>
+                                </div>
+
+                                <div className="campaign-detail-item">
+                                    <label>End Date</label>
+                                    <p>
+                                        {formatDate(
+                                            selectedCampaign.endDate
+                                        )}
+                                    </p>
+                                </div>
+
+                                <div className="campaign-detail-item">
+                                    <label>Created On</label>
+                                    <p>
+                                        {formatDateTime(
+                                            selectedCampaign.createdAt
+                                        )}
+                                    </p>
+                                </div>
+
+                                <div className="campaign-detail-item">
+                                    <label>Total Tasks</label>
+                                    <p>
+                                        {selectedCampaign
+                                            ?._count?.tasks ?? 0}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="campaign-modal-footer">
+                            <button
+                                type="button"
+                                onClick={closeModal}
+                            >
+                                CLOSE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

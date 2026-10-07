@@ -3,6 +3,7 @@ import {
     MapPin,
     LogIn,
     ClipboardList,
+    ClipboardCheck,
     Map,
     FileText,
     Settings,
@@ -138,6 +139,12 @@ const menuItems = [
         label: "Reports",
         icon: FileText,
         path: "/reports",
+    },
+
+    {
+        label: "Audit Management",
+        icon: ClipboardCheck,
+        path: "/audit-management",
     },
 
     {

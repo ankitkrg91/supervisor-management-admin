@@ -1,6 +1,9 @@
 import { useState } from "react";
+
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+
 import { useNavigate } from "react-router-dom";
+
 import "./Login.css";
 
 const Login = () => {
@@ -10,9 +13,11 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
         setError("");
 
         if (!email.trim() || !password.trim()) {
@@ -20,20 +25,72 @@ const Login = () => {
             return;
         }
 
-        // Temporary frontend login.
-        // Backend JWT authentication will replace this later.
-        localStorage.setItem("token", "demo-access-token");
+        try {
+            setLoading(true);
 
-        localStorage.setItem(
-            "user",
-            JSON.stringify({
-                name: "Super Admin",
-                email: email,
-                role: "SUPER_ADMIN",
-            })
-        );
+            const response = await fetch(
+                "http://localhost:5000/api/auth/login",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        email: email.trim(),
+                        password,
+                    }),
+                }
+            );
 
-        navigate("/dashboard", { replace: true });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message || "Login failed"
+                );
+            }
+
+            // Backend allows only SUPER_ADMIN
+            if (
+                data?.data?.user?.role !==
+                "SUPER_ADMIN"
+            ) {
+                throw new Error(
+                    "Only Super Admin can access this portal."
+                );
+            }
+
+            // Store access token
+            localStorage.setItem(
+                "token",
+                data.data.accessToken
+            );
+
+            // Store refresh token
+            localStorage.setItem(
+                "refreshToken",
+                data.data.refreshToken
+            );
+
+            // Store logged-in user
+            localStorage.setItem(
+                "user",
+                JSON.stringify(data.data.user)
+            );
+
+            navigate("/dashboard", {
+                replace: true,
+            });
+        } catch (error) {
+            console.error("Login error:", error);
+
+            setError(
+                error.message ||
+                "Unable to login. Please try again."
+            );
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -57,7 +114,9 @@ const Login = () => {
 
                 {/* Heading */}
                 <div className="login-heading">
-                    <h2>Welcome Back</h2>
+                    <h2>
+                        Welcome Back
+                    </h2>
 
                     <p>
                         Sign in to continue to your admin dashboard.
@@ -69,6 +128,7 @@ const Login = () => {
                     className="login-form"
                     onSubmit={handleSubmit}
                 >
+
                     {/* Email */}
                     <div className="login-field">
                         <label htmlFor="email">
@@ -84,7 +144,9 @@ const Login = () => {
                                 placeholder="Enter your email"
                                 value={email}
                                 onChange={(e) =>
-                                    setEmail(e.target.value)
+                                    setEmail(
+                                        e.target.value
+                                    )
                                 }
                                 autoComplete="email"
                             />
@@ -110,7 +172,9 @@ const Login = () => {
                                 placeholder="Enter your password"
                                 value={password}
                                 onChange={(e) =>
-                                    setPassword(e.target.value)
+                                    setPassword(
+                                        e.target.value
+                                    )
                                 }
                                 autoComplete="current-password"
                             />
@@ -120,7 +184,8 @@ const Login = () => {
                                 className="password-toggle"
                                 onClick={() =>
                                     setShowPassword(
-                                        (current) => !current
+                                        (current) =>
+                                            !current
                                     )
                                 }
                                 aria-label={
@@ -149,8 +214,11 @@ const Login = () => {
                     <button
                         type="submit"
                         className="login-button"
+                        disabled={loading}
                     >
-                        Sign In
+                        {loading
+                            ? "Signing In..."
+                            : "Sign In"}
                     </button>
                 </form>
 

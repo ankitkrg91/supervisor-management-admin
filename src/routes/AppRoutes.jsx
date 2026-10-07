@@ -1,6 +1,13 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import {
+    Routes,
+    Route,
+    Navigate,
+} from "react-router-dom";
 
 import AdminLayout from "../components/layout/AdminLayout";
+
+import AuditManagement from "../pages/AuditManagement/AuditManagement";
+
 import Login from "../pages/Login/Login";
 
 import Online from "../pages/FieldTracker/Online";
@@ -28,29 +35,47 @@ import Campaign from "../pages/Tasks/Campaign";
 
 import DistanceReport from "../pages/DistanceReport/DistanceReport";
 import Reports from "../pages/Reports/Reports";
+
 import Settings from "../pages/Settings/Settings";
 import ChangePassword from "../pages/ChangePassword/ChangePassword";
 import TakeTour from "../pages/TakeTour/TakeTour";
 
 
+// ============================================================
+// PROTECTED ROUTES
+// ============================================================
+
 const ProtectedRoutes = () => {
     const token = localStorage.getItem("token");
 
+    // No token = not logged in
     if (!token) {
-        return <Navigate to="/login" replace />;
+        return (
+            <Navigate
+                to="/login"
+                replace
+            />
+        );
     }
 
     return (
         <AdminLayout>
             <Routes>
 
-                {/* Dashboard */}
+                {/* =================================================
+                    DASHBOARD
+                ================================================= */}
+
                 <Route
                     path="/dashboard"
                     element={<Dashboard />}
                 />
 
-                {/* Field Tracker */}
+
+                {/* =================================================
+                    FIELD TRACKER
+                ================================================= */}
+
                 <Route
                     path="/field-tracker/online"
                     element={<Online />}
@@ -76,13 +101,21 @@ const ProtectedRoutes = () => {
                     element={<NotCheckedIn />}
                 />
 
-                {/* Check In & Check Out */}
+
+                {/* =================================================
+                    CHECK IN / CHECK OUT
+                ================================================= */}
+
                 <Route
                     path="/check-in/latest"
                     element={<LatestCheckIn />}
                 />
 
-                {/* Visits */}
+
+                {/* =================================================
+                    VISITS
+                ================================================= */}
+
                 <Route
                     path="/visits/latest"
                     element={<LatestVisits />}
@@ -93,7 +126,11 @@ const ProtectedRoutes = () => {
                     element={<VerifiedUnverifiedVisit />}
                 />
 
-                {/* Tasks */}
+
+                {/* =================================================
+                    TASKS
+                ================================================= */}
+
                 <Route
                     path="/tasks/dashboard"
                     element={<TaskDashboard />}
@@ -139,7 +176,11 @@ const ProtectedRoutes = () => {
                     element={<Campaign />}
                 />
 
-                {/* Other pages */}
+
+                {/* =================================================
+                    OTHER PAGES
+                ================================================= */}
+
                 <Route
                     path="/distance-report"
                     element={<DistanceReport />}
@@ -148,6 +189,11 @@ const ProtectedRoutes = () => {
                 <Route
                     path="/reports"
                     element={<Reports />}
+                />
+
+                <Route
+                    path="/audit-management"
+                    element={<AuditManagement />}
                 />
 
                 <Route
@@ -165,15 +211,29 @@ const ProtectedRoutes = () => {
                     element={<TakeTour />}
                 />
 
-                {/* Default */}
+
+                {/* =================================================
+                    DEFAULT PROTECTED ROUTE
+                ================================================= */}
+
                 <Route
                     path="/"
-                    element={<Navigate to="/dashboard" replace />}
+                    element={
+                        <Navigate
+                            to="/dashboard"
+                            replace
+                        />
+                    }
                 />
 
                 <Route
                     path="*"
-                    element={<Navigate to="/dashboard" replace />}
+                    element={
+                        <Navigate
+                            to="/dashboard"
+                            replace
+                        />
+                    }
                 />
 
             </Routes>
@@ -182,17 +242,39 @@ const ProtectedRoutes = () => {
 };
 
 
+// ============================================================
+// APP ROUTES
+// ============================================================
+
 const AppRoutes = () => {
+    const token = localStorage.getItem("token");
+
     return (
         <Routes>
 
-            {/* Public route */}
+            {/* =================================================
+                LOGIN
+            ================================================= */}
+
             <Route
                 path="/login"
-                element={<Login />}
+                element={
+                    token ? (
+                        <Navigate
+                            to="/dashboard"
+                            replace
+                        />
+                    ) : (
+                        <Login />
+                    )
+                }
             />
 
-            {/* Protected application */}
+
+            {/* =================================================
+                EVERYTHING ELSE = PROTECTED
+            ================================================= */}
+
             <Route
                 path="/*"
                 element={<ProtectedRoutes />}
@@ -201,6 +283,5 @@ const AppRoutes = () => {
         </Routes>
     );
 };
-
 
 export default AppRoutes;

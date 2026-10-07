@@ -1,313 +1,251 @@
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { CalendarDays } from "lucide-react";
+
+import { apiFetch } from "../../utils/api";
 import "./CreateCampaign.css";
 
-const taskTypes = {
-    MSF: [
-        "Daily Inspection",
-        "Security Audit",
-        "Site Verification",
-    ],
-    MFM: [
-        "Monthly Inspection",
-        "Management Audit",
-        "Site Review",
-    ],
-    "OTHER VISIT": [
-        "Other Visit",
-        "Client Visit",
-        "Site Visit",
-    ],
-    "NIGHT VISIT": [
-        "Night Inspection",
-        "Night Security Visit",
-    ],
-};
-
-const tasks = {
-    "Daily Inspection": [
-        "Routine Site Inspection",
-        "Guard Verification",
-    ],
-    "Security Audit": [
-        "Security Compliance Audit",
-        "Guard Audit",
-    ],
-    "Site Verification": [
-        "Site Verification",
-    ],
-    "Monthly Inspection": [
-        "Monthly Site Inspection",
-    ],
-    "Management Audit": [
-        "Management Site Audit",
-    ],
-    "Site Review": [
-        "Site Review",
-    ],
-    "Other Visit": [
-        "Other Site Visit",
-    ],
-    "Client Visit": [
-        "Client Visit",
-    ],
-    "Site Visit": [
-        "Site Visit",
-    ],
-    "Night Inspection": [
-        "Night Site Inspection",
-    ],
-    "Night Security Visit": [
-        "Night Security Check",
-    ],
-};
-
 const CreateCampaign = () => {
-    const [taskCategory, setTaskCategory] = useState("");
-    const [taskType, setTaskType] = useState("");
-    const [task, setTask] = useState("");
-    const [assignedTo, setAssignedTo] = useState("");
-    const [remark, setRemark] = useState("");
+    const [name, setName] = useState("");
+    const [description, setDescription] =
+        useState("");
+    const [startDate, setStartDate] =
+        useState("");
+    const [endDate, setEndDate] =
+        useState("");
 
-    const handleCategoryChange = (event) => {
-        setTaskCategory(event.target.value);
+    const [loading, setLoading] =
+        useState(false);
 
-        // Reset dependent fields
-        setTaskType("");
-        setTask("");
-    };
+    const [message, setMessage] =
+        useState("");
+    const [messageType, setMessageType] =
+        useState("");
 
-    const handleTaskTypeChange = (event) => {
-        setTaskType(event.target.value);
-
-        // Reset task when task type changes
-        setTask("");
-    };
-
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
-        if (!taskCategory) {
-            alert("Please select a task category.");
+        setMessage("");
+        setMessageType("");
+
+        if (!name.trim()) {
+            setMessage(
+                "Please enter a campaign name."
+            );
+            setMessageType("error");
             return;
         }
 
-        if (!taskType) {
-            alert("Please select a task type.");
+        if (
+            startDate &&
+            endDate &&
+            new Date(endDate) <
+            new Date(startDate)
+        ) {
+            setMessage(
+                "End date cannot be before start date."
+            );
+            setMessageType("error");
             return;
         }
 
-        if (!task) {
-            alert("Please select a task.");
-            return;
+        try {
+            setLoading(true);
+
+            const payload = {
+                name: name.trim(),
+                description:
+                    description.trim() || null,
+                startDate: startDate
+                    ? `${startDate}T00:00:00.000Z`
+                    : null,
+                endDate: endDate
+                    ? `${endDate}T23:59:59.999Z`
+                    : null,
+            };
+
+            const response = await apiFetch(
+                "/api/campaigns",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                    },
+                    body: JSON.stringify(
+                        payload
+                    ),
+                }
+            );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data?.message ||
+                    "Failed to create campaign"
+                );
+            }
+
+            setMessage(
+                "Campaign created successfully."
+            );
+            setMessageType("success");
+
+            setName("");
+            setDescription("");
+            setStartDate("");
+            setEndDate("");
+
+            window.dispatchEvent(
+                new CustomEvent(
+                    "campaigns-updated"
+                )
+            );
+        } catch (error) {
+            console.error(
+                "Create campaign error:",
+                error
+            );
+
+            setMessage(
+                error?.message ||
+                "Failed to create campaign"
+            );
+            setMessageType("error");
+        } finally {
+            setLoading(false);
         }
-
-        if (!assignedTo) {
-            alert("Please select a user.");
-            return;
-        }
-
-        const campaignData = {
-            taskCategory,
-            taskType,
-            task,
-            assignedTo,
-            remark,
-        };
-
-        console.log("Create Campaign:", campaignData);
-
-        alert("Task scheduled successfully (demo).");
     };
-
-    const availableTaskTypes =
-        taskTypes[taskCategory] || [];
-
-    const availableTasks =
-        tasks[taskType] || [];
 
     return (
         <div className="create-campaign-page">
             <section className="create-campaign-card">
+
+                <div className="create-campaign-header">
+                    <div>
+                        <h1>
+                            Create Campaign
+                        </h1>
+
+                        <p>
+                            Create a campaign that
+                            can be linked to tasks.
+                        </p>
+                    </div>
+
+                    <div className="create-campaign-icon">
+                        <CalendarDays
+                            size={25}
+                        />
+                    </div>
+                </div>
+
+                <div className="create-campaign-divider" />
 
                 <form
                     className="create-campaign-form"
                     onSubmit={handleSubmit}
                 >
 
-                    {/* TASK CATEGORY */}
-
-                    <div className="campaign-field">
-                        <label>
-                            Task Category :
-                        </label>
-
-                        <div className="campaign-select-wrapper">
-                            <select
-                                value={taskCategory}
-                                onChange={handleCategoryChange}
-                            >
-                                <option value="">
-                                    SELECT
-                                </option>
-
-                                <option value="MSF">
-                                    MSF
-                                </option>
-
-                                <option value="MFM">
-                                    MFM
-                                </option>
-
-                                <option value="OTHER VISIT">
-                                    OTHER VISIT
-                                </option>
-
-                                <option value="NIGHT VISIT">
-                                    NIGHT VISIT
-                                </option>
-                            </select>
-
-                            <ChevronDown size={16} />
+                    {message && (
+                        <div
+                            className={`create-campaign-message ${messageType}`}
+                        >
+                            {message}
                         </div>
-                    </div>
+                    )}
 
-                    {/* TASK TYPE */}
-
-                    <div className="campaign-field">
-                        <label>
-                            Task Type :
-                        </label>
-
-                        <div className="campaign-select-wrapper">
-                            <select
-                                value={taskType}
-                                onChange={handleTaskTypeChange}
-                                disabled={!taskCategory}
-                            >
-                                <option value="">
-                                    Select
-                                </option>
-
-                                {availableTaskTypes.map(
-                                    (type) => (
-                                        <option
-                                            value={type}
-                                            key={type}
-                                        >
-                                            {type}
-                                        </option>
-                                    )
-                                )}
-                            </select>
-
-                            <ChevronDown size={16} />
-                        </div>
-                    </div>
-
-                    {/* TASK */}
+                    {/* CAMPAIGN NAME */}
 
                     <div className="campaign-field">
                         <label>
-                            Task :
-                        </label>
-
-                        <div className="campaign-select-wrapper">
-                            <select
-                                value={task}
-                                onChange={(event) =>
-                                    setTask(event.target.value)
-                                }
-                                disabled={!taskType}
-                            >
-                                <option value="">
-                                    Select
-                                </option>
-
-                                {availableTasks.map(
-                                    (item) => (
-                                        <option
-                                            value={item}
-                                            key={item}
-                                        >
-                                            {item}
-                                        </option>
-                                    )
-                                )}
-                            </select>
-
-                            <ChevronDown size={16} />
-                        </div>
-                    </div>
-
-                    {/* ASSIGNED TO */}
-
-                    <div className="campaign-field">
-                        <label>
-                            Assigned To :
-                        </label>
-
-                        <div className="campaign-select-wrapper">
-                            <select
-                                value={assignedTo}
-                                onChange={(event) =>
-                                    setAssignedTo(event.target.value)
-                                }
-                            >
-                                <option value="">
-                                    Select
-                                </option>
-
-                                <option value="AMIT SAINI">
-                                    AMIT SAINI
-                                </option>
-
-                                <option value="GURMEET SINGH">
-                                    GURMEET SINGH
-                                </option>
-
-                                <option value="GURVINDER SINGH">
-                                    GURVINDER SINGH
-                                </option>
-
-                                <option value="SANJIV KUMAR">
-                                    SANJIV KUMAR
-                                </option>
-
-                                <option value="VIKRAM NISCHAL">
-                                    VIKRAM NISCHAL
-                                </option>
-                            </select>
-
-                            <ChevronDown size={16} />
-                        </div>
-                    </div>
-
-                    {/* REMARK */}
-
-                    <div className="campaign-field">
-                        <label>
-                            Remark :
+                            Campaign Name :
                         </label>
 
                         <input
                             type="text"
-                            value={remark}
+                            value={name}
                             onChange={(event) =>
-                                setRemark(event.target.value)
+                                setName(
+                                    event.target.value
+                                )
                             }
+                            placeholder="Enter campaign name"
+                            maxLength={150}
+                            disabled={loading}
                         />
                     </div>
 
-                    {/* SUBMIT */}
+                    {/* DESCRIPTION */}
+
+                    <div className="campaign-field">
+                        <label>
+                            Description :
+                        </label>
+
+                        <textarea
+                            value={description}
+                            onChange={(event) =>
+                                setDescription(
+                                    event.target.value
+                                )
+                            }
+                            placeholder="Enter campaign description"
+                            rows={4}
+                            maxLength={1000}
+                            disabled={loading}
+                        />
+                    </div>
+
+                    {/* START DATE */}
+
+                    <div className="campaign-field">
+                        <label>
+                            Start Date :
+                        </label>
+
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(event) =>
+                                setStartDate(
+                                    event.target.value
+                                )
+                            }
+                            disabled={loading}
+                        />
+                    </div>
+
+                    {/* END DATE */}
+
+                    <div className="campaign-field">
+                        <label>
+                            End Date :
+                        </label>
+
+                        <input
+                            type="date"
+                            value={endDate}
+                            min={startDate || undefined}
+                            onChange={(event) =>
+                                setEndDate(
+                                    event.target.value
+                                )
+                            }
+                            disabled={loading}
+                        />
+                    </div>
 
                     <button
                         type="submit"
                         className="campaign-submit-button"
+                        disabled={loading}
                     >
-                        SCHEDULE TASK
+                        {loading
+                            ? "CREATING..."
+                            : "CREATE CAMPAIGN"}
                     </button>
-
                 </form>
             </section>
         </div>
