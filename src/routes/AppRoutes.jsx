@@ -2,6 +2,7 @@ import {
     Routes,
     Route,
     Navigate,
+    useLocation,
 } from "react-router-dom";
 
 import AdminLayout from "../components/layout/AdminLayout";
@@ -253,6 +254,7 @@ const ProtectedRoutes = () => {
 // ============================================================
 
 const AppRoutes = () => {
+    useLocation();
     const token = localStorage.getItem("token");
 
     return (
