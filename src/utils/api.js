@@ -200,6 +200,7 @@ const apiFetch = async (
 ========================================================= */
 
 export {
+    API_BASE_URL,
     apiFetch,
     refreshAccessToken,
 };
