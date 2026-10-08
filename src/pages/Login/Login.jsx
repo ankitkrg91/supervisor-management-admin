@@ -1,56 +1,89 @@
 import { useState } from "react";
 
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import {
+    Eye,
+    EyeOff,
+    Lock,
+    Mail,
+} from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
+
+import { apiFetch } from "../../utils/api";
 
 import "./Login.css";
 
 const Login = () => {
     const navigate = useNavigate();
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [email, setEmail] =
+        useState("");
+
+    const [password, setPassword] =
+        useState("");
+
+    const [showPassword, setShowPassword] =
+        useState(false);
+
+    const [error, setError] =
+        useState("");
+
+    const [loading, setLoading] =
+        useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         setError("");
 
-        if (!email.trim() || !password.trim()) {
-            setError("Please enter email and password.");
+        if (
+            !email.trim() ||
+            !password.trim()
+        ) {
+            setError(
+                "Please enter email and password."
+            );
+
             return;
         }
 
         try {
             setLoading(true);
 
-            const response = await fetch(
-                "http://localhost:5000/api/auth/login",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        email: email.trim(),
-                        password,
-                    }),
-                }
-            );
+            const response =
+                await apiFetch(
+                    "/api/auth/login",
+                    {
+                        method: "POST",
 
-            const data = await response.json();
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+                        },
+
+                        body:
+                            JSON.stringify({
+                                email:
+                                    email.trim(),
+                                password,
+                            }),
+                    }
+                );
+
+            const data =
+                await response.json();
 
             if (!response.ok) {
                 throw new Error(
-                    data.message || "Login failed"
+                    data?.message ||
+                    "Login failed"
                 );
             }
 
-            // Backend allows only SUPER_ADMIN
+            /* =================================================
+               BACKEND ALLOWS ONLY SUPER_ADMIN
+            ================================================= */
+
             if (
                 data?.data?.user?.role !==
                 "SUPER_ADMIN"
@@ -60,32 +93,53 @@ const Login = () => {
                 );
             }
 
-            // Store access token
+            /* =================================================
+               STORE ACCESS TOKEN
+            ================================================= */
+
             localStorage.setItem(
                 "token",
                 data.data.accessToken
             );
 
-            // Store refresh token
+            /* =================================================
+               STORE REFRESH TOKEN
+            ================================================= */
+
             localStorage.setItem(
                 "refreshToken",
                 data.data.refreshToken
             );
 
-            // Store logged-in user
+            /* =================================================
+               STORE LOGGED-IN USER
+            ================================================= */
+
             localStorage.setItem(
                 "user",
-                JSON.stringify(data.data.user)
+                JSON.stringify(
+                    data.data.user
+                )
             );
 
-            navigate("/dashboard", {
-                replace: true,
-            });
+            /* =================================================
+               GO TO DASHBOARD
+            ================================================= */
+
+            navigate(
+                "/dashboard",
+                {
+                    replace: true,
+                }
+            );
         } catch (error) {
-            console.error("Login error:", error);
+            console.error(
+                "Login error:",
+                error
+            );
 
             setError(
-                error.message ||
+                error?.message ||
                 "Unable to login. Please try again."
             );
         } finally {
@@ -220,6 +274,7 @@ const Login = () => {
                             ? "Signing In..."
                             : "Sign In"}
                     </button>
+
                 </form>
 
                 {/* Footer */}

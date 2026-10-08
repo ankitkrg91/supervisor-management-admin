@@ -2,7 +2,10 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 
-import { refreshAccessToken } from "../../utils/api";
+import {
+    API_BASE_URL,
+    refreshAccessToken,
+} from "../../utils/api";
 
 const AppSocketListener = () => {
     const location = useLocation();
@@ -39,31 +42,47 @@ const AppSocketListener = () => {
         let refreshing = false;
 
         const connectSocket = () => {
-            const token = localStorage.getItem("token");
+            const token =
+                localStorage.getItem("token");
 
             if (!token) {
                 return;
             }
 
-            socket = io("http://localhost:5000", {
-                auth: {
-                    token,
-                },
-                transports: ["polling"],
-                reconnection: true,
-                reconnectionAttempts: Infinity,
-                reconnectionDelay: 1000,
-            });
+            socket = io(
+                API_BASE_URL,
+                {
+                    auth: {
+                        token,
+                    },
 
-            socket.on("connect", () => {
-                console.log(
-                    "✅ SUPER_ADMIN SOCKET CONNECTED"
-                );
-                console.log(
-                    "🆔 Socket ID:",
-                    socket.id
-                );
-            });
+                    transports: [
+                        "polling",
+                    ],
+
+                    reconnection: true,
+
+                    reconnectionAttempts:
+                        Infinity,
+
+                    reconnectionDelay:
+                        1000,
+                }
+            );
+
+            socket.on(
+                "connect",
+                () => {
+                    console.log(
+                        "✅ SUPER_ADMIN SOCKET CONNECTED"
+                    );
+
+                    console.log(
+                        "🆔 Socket ID:",
+                        socket.id
+                    );
+                }
+            );
 
             socket.on(
                 "field-location-updated",
@@ -109,13 +128,16 @@ const AppSocketListener = () => {
 
                             // Update socket authentication
                             socket.auth = {
-                                token: newToken,
+                                token:
+                                    newToken,
                             };
 
                             // Reconnect using fresh token
                             socket.disconnect();
                             socket.connect();
-                        } catch (refreshError) {
+                        } catch (
+                        refreshError
+                        ) {
                             console.error(
                                 "❌ Socket token refresh failed:",
                                 refreshError.message
@@ -124,9 +146,11 @@ const AppSocketListener = () => {
                             localStorage.removeItem(
                                 "token"
                             );
+
                             localStorage.removeItem(
                                 "refreshToken"
                             );
+
                             localStorage.removeItem(
                                 "user"
                             );
@@ -140,12 +164,15 @@ const AppSocketListener = () => {
                 }
             );
 
-            socket.on("disconnect", (reason) => {
-                console.warn(
-                    "🔌 SUPER_ADMIN SOCKET DISCONNECTED:",
-                    reason
-                );
-            });
+            socket.on(
+                "disconnect",
+                (reason) => {
+                    console.warn(
+                        "🔌 SUPER_ADMIN SOCKET DISCONNECTED:",
+                        reason
+                    );
+                }
+            );
         };
 
         connectSocket();
@@ -155,33 +182,37 @@ const AppSocketListener = () => {
          * This keeps the Socket.IO connection authenticated
          * before the 15-minute access token expires.
          */
-        const refreshInterval = setInterval(
-            async () => {
-                try {
-                    const newToken =
-                        await refreshAccessToken();
+        const refreshInterval =
+            setInterval(
+                async () => {
+                    try {
+                        const newToken =
+                            await refreshAccessToken();
 
-                    if (socket) {
-                        socket.auth = {
-                            token: newToken,
-                        };
+                        if (socket) {
+                            socket.auth = {
+                                token:
+                                    newToken,
+                            };
 
-                        // Reconnect with the fresh token
-                        socket.disconnect();
-                        socket.connect();
+                            // Reconnect with the fresh token
+                            socket.disconnect();
+                            socket.connect();
+                        }
+                    } catch (error) {
+                        console.error(
+                            "❌ Background token refresh failed:",
+                            error.message
+                        );
                     }
-                } catch (error) {
-                    console.error(
-                        "❌ Background token refresh failed:",
-                        error.message
-                    );
-                }
-            },
-            10 * 60 * 1000
-        );
+                },
+                10 * 60 * 1000
+            );
 
         return () => {
-            clearInterval(refreshInterval);
+            clearInterval(
+                refreshInterval
+            );
 
             if (socket) {
                 socket.disconnect();
