@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+
 import {
     Upload,
     FileSpreadsheet,
@@ -8,20 +9,54 @@ import {
     AlertTriangle,
     CheckCircle,
 } from "lucide-react";
+
 import * as XLSX from "xlsx";
 
 import { apiFetch } from "../../utils/api";
+
 import "./ReassignBulkTask.css";
 
-const REQUIRED_COLUMN = "taskId";
-
-const COLUMN_ALIASES = [
-    "taskid",
-    "task id",
-    "id",
-    "task identifier",
-    "task uuid",
+const REQUIRED_COLUMNS = [
+    "title",
+    "scheduledAt",
+    "supervisorEmail",
+    "siteCode",
 ];
+
+const COLUMN_ALIASES = {
+    title: [
+        "title",
+        "task title",
+    ],
+
+    scheduledAt: [
+        "scheduledat",
+        "scheduled at",
+        "scheduled date",
+        "schedule date",
+        "scheduled time",
+    ],
+
+    supervisorEmail: [
+        "supervisoremail",
+        "supervisor email",
+        "assigned supervisor email",
+        "supervisor",
+    ],
+
+    siteCode: [
+        "sitecode",
+        "site code",
+        "site",
+        "site name",
+    ],
+
+    clientEmail: [
+        "clientemail",
+        "client email",
+        "customer email",
+    ],
+};
 
 const normalizeHeader = (value) => {
     return String(value ?? "")
@@ -30,47 +65,109 @@ const normalizeHeader = (value) => {
         .replace(/\s+/g, " ");
 };
 
-const findTaskIdColumn = (headers) => {
+const findColumnKey = (headers, aliases) => {
     return headers.find((header) => {
-        const normalized = normalizeHeader(header);
+        const normalizedHeader =
+            normalizeHeader(header);
+
+        const compactHeader =
+            normalizedHeader.replace(/\s+/g, "");
 
         return (
-            COLUMN_ALIASES.includes(normalized) ||
-            COLUMN_ALIASES.includes(
-                normalized.replace(/\s+/g, "")
-            )
+            aliases.includes(normalizedHeader) ||
+            aliases.includes(compactHeader)
         );
     });
 };
 
+const getExcelDateAsISO = (value) => {
+    if (
+        value instanceof Date &&
+        !Number.isNaN(value.getTime())
+    ) {
+        return value.toISOString();
+    }
+
+    if (typeof value === "number") {
+        const parsed =
+            XLSX.SSF.parse_date_code(value);
+
+        if (!parsed) {
+            return "";
+        }
+
+        const date = new Date(
+            Date.UTC(
+                parsed.y,
+                parsed.m - 1,
+                parsed.d,
+                parsed.H || 0,
+                parsed.M || 0,
+                parsed.S || 0
+            )
+        );
+
+        return Number.isNaN(date.getTime())
+            ? ""
+            : date.toISOString();
+    }
+
+    const text =
+        String(value ?? "").trim();
+
+    if (!text) {
+        return "";
+    }
+
+    const parsedDate =
+        new Date(text);
+
+    if (
+        Number.isNaN(
+            parsedDate.getTime()
+        )
+    ) {
+        return "";
+    }
+
+    return parsedDate.toISOString();
+};
+
 const ReassignBulkTask = () => {
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [assignedTo, setAssignedTo] = useState("");
-    const [supervisors, setSupervisors] = useState([]);
+    const [selectedFile, setSelectedFile] =
+        useState(null);
+
+    const [assignedTo, setAssignedTo] =
+        useState("");
+
+    const [supervisors, setSupervisors] =
+        useState([]);
 
     const [loadingSupervisors, setLoadingSupervisors] =
         useState(false);
 
-    const [loading, setLoading] = useState(false);
-    const [status, setStatus] = useState("");
-    const [result, setResult] = useState(null);
+    const [loading, setLoading] =
+        useState(false);
 
-    const fileInputRef = useRef(null);
+    const [status, setStatus] =
+        useState("");
 
-    // =========================================================
-    // LOAD ACTIVE SUPERVISORS
-    // =========================================================
+    const [result, setResult] =
+        useState(null);
+
+    const fileInputRef =
+        useRef(null);
 
     const fetchSupervisors = async () => {
         try {
             setLoadingSupervisors(true);
             setStatus("");
 
-            const response = await apiFetch(
-                "/api/users"
-            );
+            const response =
+                await apiFetch("/api/users");
 
-            const data = await response.json();
+            const data =
+                await response.json();
 
             if (!response.ok) {
                 throw new Error(
@@ -84,13 +181,18 @@ const ReassignBulkTask = () => {
                 data?.users ||
                 [];
 
-            const activeSupervisors = users.filter(
-                (user) =>
-                    user?.role === "SUPERVISOR" &&
-                    user?.status === "ACTIVE"
-            );
+            const activeSupervisors =
+                users.filter(
+                    (user) =>
+                        user?.role ===
+                        "SUPERVISOR" &&
+                        user?.status ===
+                        "ACTIVE"
+                );
 
-            setSupervisors(activeSupervisors);
+            setSupervisors(
+                activeSupervisors
+            );
         } catch (error) {
             console.error(
                 "Failed to load supervisors:",
@@ -110,12 +212,9 @@ const ReassignBulkTask = () => {
         fetchSupervisors();
     }, []);
 
-    // =========================================================
-    // SELECT EXCEL FILE
-    // =========================================================
-
     const handleFileChange = (event) => {
-        const file = event.target.files?.[0];
+        const file =
+            event.target.files?.[0];
 
         setStatus("");
         setResult(null);
@@ -125,12 +224,17 @@ const ReassignBulkTask = () => {
             return;
         }
 
-        const extension = file.name
-            .split(".")
-            .pop()
-            ?.toLowerCase();
+        const extension =
+            file.name
+                .split(".")
+                .pop()
+                ?.toLowerCase();
 
-        if (!["xlsx", "xls"].includes(extension)) {
+        if (
+            !["xlsx", "xls"].includes(
+                extension
+            )
+        ) {
             setSelectedFile(null);
 
             setStatus(
@@ -143,21 +247,15 @@ const ReassignBulkTask = () => {
         setSelectedFile(file);
     };
 
-    // =========================================================
-    // PARSE EXCEL
-    // =========================================================
-
     const parseExcelFile = async (file) => {
         const arrayBuffer =
             await file.arrayBuffer();
 
-        const workbook = XLSX.read(
-            arrayBuffer,
-            {
+        const workbook =
+            XLSX.read(arrayBuffer, {
                 type: "array",
                 cellDates: true,
-            }
-        );
+            });
 
         const firstSheetName =
             workbook.SheetNames[0];
@@ -169,7 +267,9 @@ const ReassignBulkTask = () => {
         }
 
         const worksheet =
-            workbook.Sheets[firstSheetName];
+            workbook.Sheets[
+            firstSheetName
+            ];
 
         const rows =
             XLSX.utils.sheet_to_json(
@@ -189,63 +289,192 @@ const ReassignBulkTask = () => {
         const headers =
             Object.keys(rows[0]);
 
-        const taskIdColumn =
-            findTaskIdColumn(headers);
+        const columnMap = {};
 
-        if (!taskIdColumn) {
+        for (
+            const field of Object.keys(
+                COLUMN_ALIASES
+            )
+        ) {
+            const matchedColumn =
+                findColumnKey(
+                    headers,
+                    COLUMN_ALIASES[field]
+                );
+
+            if (matchedColumn) {
+                columnMap[field] =
+                    matchedColumn;
+            }
+        }
+
+        const missingColumns =
+            REQUIRED_COLUMNS.filter(
+                (column) =>
+                    !columnMap[column]
+            );
+
+        if (missingColumns.length) {
             throw new Error(
-                `Missing required Excel column: ${REQUIRED_COLUMN}`
+                `Missing required Excel columns: ${missingColumns.join(
+                    ", "
+                )}. Required format: title, scheduledAt, supervisorEmail, siteCode.`
             );
         }
 
-        const taskIds = [];
+        const tasks = [];
         const frontendFailedRows = [];
 
         rows.forEach((row, index) => {
-            const excelRowNumber = index + 2;
+            const excelRowNumber =
+                index + 2;
 
-            const taskId = String(
-                row[taskIdColumn] ?? ""
-            ).trim();
+            const title =
+                String(
+                    row[
+                    columnMap.title
+                    ] ?? ""
+                ).trim();
 
-            // Ignore completely empty rows
-            if (!taskId) {
+            const scheduledAt =
+                getExcelDateAsISO(
+                    row[
+                    columnMap
+                        .scheduledAt
+                    ]
+                );
+
+            const supervisorEmail =
+                String(
+                    row[
+                    columnMap
+                        .supervisorEmail
+                    ] ?? ""
+                )
+                    .trim()
+                    .toLowerCase();
+
+            const siteCode =
+                String(
+                    row[
+                    columnMap.siteCode
+                    ] ?? ""
+                ).trim();
+
+            const clientEmail =
+                columnMap.clientEmail
+                    ? String(
+                        row[
+                        columnMap
+                            .clientEmail
+                        ] ?? ""
+                    )
+                        .trim()
+                        .toLowerCase()
+                    : "";
+
+            const isBlankRow =
+                !title &&
+                !scheduledAt &&
+                !supervisorEmail &&
+                !siteCode;
+
+            if (isBlankRow) {
+                return;
+            }
+
+            if (!title) {
                 frontendFailedRows.push({
                     row: excelRowNumber,
-                    taskId: null,
-                    error: "Task ID is required",
+                    title: "",
+                    error:
+                        "Title is required",
                 });
 
                 return;
             }
 
-            taskIds.push({
-                taskId,
+            if (!scheduledAt) {
+                frontendFailedRows.push({
+                    row: excelRowNumber,
+                    title,
+                    error:
+                        "Invalid or missing scheduled date",
+                });
+
+                return;
+            }
+
+            if (!supervisorEmail) {
+                frontendFailedRows.push({
+                    row: excelRowNumber,
+                    title,
+                    error:
+                        "Supervisor Email is required",
+                });
+
+                return;
+            }
+
+            if (!siteCode) {
+                frontendFailedRows.push({
+                    row: excelRowNumber,
+                    title,
+                    error:
+                        "Site Code is required",
+                });
+
+                return;
+            }
+
+            if (clientEmail) {
+                const emailRegex =
+                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (
+                    !emailRegex.test(
+                        clientEmail
+                    )
+                ) {
+                    frontendFailedRows.push({
+                        row: excelRowNumber,
+                        title,
+                        error:
+                            "Invalid client email",
+                    });
+
+                    return;
+                }
+            }
+
+            tasks.push({
+                title,
+                scheduledAt,
+                supervisorEmail,
+                siteCode,
+                clientEmail:
+                    clientEmail || null,
                 row: excelRowNumber,
             });
         });
 
-        if (!taskIds.length) {
+        if (!tasks.length) {
             throw new Error(
-                "No valid task IDs were found in the Excel file."
+                "No valid task rows were found in the Excel file."
             );
         }
 
-        if (taskIds.length > 500) {
+        if (tasks.length > 500) {
             throw new Error(
                 "Maximum 500 tasks can be reassigned at once."
             );
         }
 
         return {
-            taskIds,
+            tasks,
             frontendFailedRows,
         };
     };
-
-    // =========================================================
-    // REASSIGN
-    // =========================================================
 
     const handleReassign = async () => {
         if (!selectedFile) {
@@ -268,31 +497,37 @@ const ReassignBulkTask = () => {
             setResult(null);
 
             const {
-                taskIds,
+                tasks,
                 frontendFailedRows,
-            } = await parseExcelFile(
-                selectedFile
-            );
+            } =
+                await parseExcelFile(
+                    selectedFile
+                );
 
-            const response = await apiFetch(
-                "/api/tasks/bulk-reassign",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type":
-                            "application/json",
-                    },
-                    body: JSON.stringify({
-                        tasks: taskIds,
-                        assignedToId: assignedTo,
-                    }),
-                }
-            );
+            const response =
+                await apiFetch(
+                    "/api/tasks/bulk-reassign",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+                        },
+
+                        body: JSON.stringify({
+                            tasks,
+                            assignedToId:
+                                assignedTo,
+                        }),
+                    }
+                );
 
             let data;
 
             try {
-                data = await response.json();
+                data =
+                    await response.json();
             } catch {
                 throw new Error(
                     "Invalid response received from the server."
@@ -338,7 +573,8 @@ const ReassignBulkTask = () => {
             setSelectedFile(null);
 
             if (fileInputRef.current) {
-                fileInputRef.current.value = "";
+                fileInputRef.current.value =
+                    "";
             }
 
             setAssignedTo("");
@@ -367,14 +603,23 @@ const ReassignBulkTask = () => {
         }
     };
 
-    // =========================================================
-    // DOWNLOAD FORMAT
-    // =========================================================
-
     const handleDownloadFormat = () => {
         const worksheetData = [
-            ["taskId"],
-            ["PASTE-TASK-UUID-HERE"],
+            [
+                "title",
+                "scheduledAt",
+                "supervisorEmail",
+                "siteCode",
+                "clientEmail",
+            ],
+
+            [
+                "Morning Site Inspection",
+                "2026-09-20T09:00:00.000Z",
+                "supervisor@example.com",
+                "SITE-001",
+                "client@example.com",
+            ],
         ];
 
         const worksheet =
@@ -383,39 +628,89 @@ const ReassignBulkTask = () => {
             );
 
         worksheet["!cols"] = [
-            { wch: 42 },
+            { wch: 32 },
+            { wch: 30 },
+            { wch: 38 },
+            { wch: 20 },
+            { wch: 34 },
         ];
 
         const instructionsData = [
-            ["Reassign Bulk Task Instructions"],
-            [""],
-            ["Required column"],
             [
-                "taskId",
-                "UUID of the existing task to reassign",
+                "Reassign Bulk Task Instructions",
             ],
+
             [""],
+
+            ["Required columns"],
+
+            [
+                "title",
+                "Exact task title",
+            ],
+
+            [
+                "scheduledAt",
+                "Exact scheduled date/time",
+            ],
+
+            [
+                "supervisorEmail",
+                "Current assigned Supervisor email",
+            ],
+
+            [
+                "siteCode",
+                "Site Code of the task",
+            ],
+
+            [""],
+
+            ["Optional column"],
+
+            [
+                "clientEmail",
+                "Use this when multiple identical tasks exist",
+            ],
+
+            [""],
+
             ["Rules"],
+
             [
-                "Only existing tasks can be reassigned",
+                "No Task UUID is required.",
             ],
+
             [
-                "Completed tasks cannot be reassigned",
+                "Supervisor Email and Site Code are resolved automatically.",
             ],
+
             [
-                "Cancelled tasks cannot be reassigned",
+                "Completed tasks cannot be reassigned.",
             ],
+
             [
-                "The selected supervisor must be active",
+                "Cancelled tasks cannot be reassigned.",
             ],
+
             [
-                "The selected supervisor must belong to the task site",
+                "The selected target Supervisor must be active.",
             ],
+
             [
-                "Only Super Admin can perform bulk reassignment",
+                "If multiple matching tasks exist, add clientEmail to identify the correct task.",
             ],
+
+            [
+                "Only Super Admin can perform bulk reassignment.",
+            ],
+
             [""],
-            ["Maximum rows", "500 tasks per upload"],
+
+            [
+                "Maximum rows",
+                "500 tasks per upload",
+            ],
         ];
 
         const instructionsSheet =
@@ -425,7 +720,7 @@ const ReassignBulkTask = () => {
 
         instructionsSheet["!cols"] = [
             { wch: 38 },
-            { wch: 72 },
+            { wch: 90 },
         ];
 
         const workbook =
@@ -449,10 +744,6 @@ const ReassignBulkTask = () => {
         );
     };
 
-    // =========================================================
-    // CLEAR
-    // =========================================================
-
     const handleClear = () => {
         setSelectedFile(null);
         setAssignedTo("");
@@ -460,12 +751,15 @@ const ReassignBulkTask = () => {
         setResult(null);
 
         if (fileInputRef.current) {
-            fileInputRef.current.value = "";
+            fileInputRef.current.value =
+                "";
         }
     };
 
     const combinedFailedRows = [
-        ...(result?.frontendFailedRows || []),
+        ...(result?.frontendFailedRows ||
+            []),
+
         ...(result?.failedTasks || []),
     ];
 
@@ -473,7 +767,6 @@ const ReassignBulkTask = () => {
         <div className="reassign-bulk-task-page">
             <section className="reassign-bulk-task-card">
 
-                {/* HEADER */}
                 <div className="reassign-bulk-header">
                     <div>
                         <h1>
@@ -495,7 +788,6 @@ const ReassignBulkTask = () => {
 
                 <div className="reassign-bulk-divider" />
 
-                {/* EXCEL FORMAT */}
                 <div className="reassign-bulk-format-row">
                     <div>
                         <h3>
@@ -504,8 +796,8 @@ const ReassignBulkTask = () => {
 
                         <p>
                             Download the template and
-                            enter the task IDs that need
-                            to be reassigned.
+                            enter task details. No UUID
+                            is required.
                         </p>
                     </div>
 
@@ -517,12 +809,14 @@ const ReassignBulkTask = () => {
                         }
                         disabled={loading}
                     >
-                        <Download size={17} />
+                        <Download
+                            size={17}
+                        />
+
                         DOWNLOAD FORMAT
                     </button>
                 </div>
 
-                {/* UPLOAD */}
                 <div className="reassign-upload-box">
                     <div className="reassign-upload-content">
 
@@ -569,11 +863,11 @@ const ReassignBulkTask = () => {
                     </div>
                 </div>
 
-                {/* REASSIGN TO */}
                 <div className="reassign-user-section">
-
                     <div className="reassign-user-title">
-                        <UserRound size={19} />
+                        <UserRound
+                            size={19}
+                        />
 
                         <div>
                             <h3>
@@ -616,7 +910,10 @@ const ReassignBulkTask = () => {
                                         supervisor.id
                                     }
                                 >
-                                    {supervisor.name}
+                                    {
+                                        supervisor.name
+                                    }
+
                                     {supervisor.email
                                         ? ` - ${supervisor.email}`
                                         : ""}
@@ -626,7 +923,6 @@ const ReassignBulkTask = () => {
                     </select>
                 </div>
 
-                {/* WARNING */}
                 <div className="reassign-warning">
                     <AlertTriangle
                         size={19}
@@ -640,20 +936,16 @@ const ReassignBulkTask = () => {
                         <p>
                             Completed and cancelled
                             tasks cannot be reassigned.
-                            The selected supervisor must
-                            belong to the task site.
                         </p>
                     </div>
                 </div>
 
-                {/* STATUS */}
                 {status && (
                     <div className="reassign-status">
                         {status}
                     </div>
                 )}
 
-                {/* RESULT */}
                 {result && (
                     <section className="reassign-result">
 
@@ -685,7 +977,9 @@ const ReassignBulkTask = () => {
                                 </strong>
 
                                 <div>
-                                    {result.successful}
+                                    {
+                                        result.successful
+                                    }
                                 </div>
                             </div>
 
@@ -695,7 +989,9 @@ const ReassignBulkTask = () => {
                                 </strong>
 
                                 <div>
-                                    {result.failed}
+                                    {
+                                        result.failed
+                                    }
                                 </div>
                             </div>
 
@@ -717,7 +1013,7 @@ const ReassignBulkTask = () => {
                                                 </th>
 
                                                 <th>
-                                                    Task ID
+                                                    Title
                                                 </th>
 
                                                 <th>
@@ -742,8 +1038,10 @@ const ReassignBulkTask = () => {
                                                         </td>
 
                                                         <td>
-                                                            {item.taskId ||
-                                                                "—"}
+                                                            {
+                                                                item.title ||
+                                                                "—"
+                                                            }
                                                         </td>
 
                                                         <td>
@@ -770,17 +1068,17 @@ const ReassignBulkTask = () => {
                                 </span>
                             </div>
                         )}
-
                     </section>
                 )}
 
-                {/* ACTIONS */}
                 <div className="reassign-actions">
 
                     <button
                         type="button"
                         className="reassign-clear-button"
-                        onClick={handleClear}
+                        onClick={
+                            handleClear
+                        }
                         disabled={loading}
                     >
                         CLEAR
@@ -789,7 +1087,9 @@ const ReassignBulkTask = () => {
                     <button
                         type="button"
                         className="reassign-submit-button"
-                        onClick={handleReassign}
+                        onClick={
+                            handleReassign
+                        }
                         disabled={
                             loading ||
                             !selectedFile ||
@@ -806,6 +1106,7 @@ const ReassignBulkTask = () => {
                     </button>
 
                 </div>
+
             </section>
         </div>
     );

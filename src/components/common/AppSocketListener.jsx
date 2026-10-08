@@ -45,7 +45,7 @@ const AppSocketListener = () => {
                 return;
             }
 
-            socket = io("https://supervisor-management-backend.onrender.com", {
+            socket = io("http://localhost:5000", {
                 auth: {
                     token,
                 },

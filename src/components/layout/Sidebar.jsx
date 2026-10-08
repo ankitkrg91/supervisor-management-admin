@@ -111,6 +111,10 @@ const menuItems = [
                 path: "/tasks/cancel-bulk",
             },
             {
+                label: "Reassign Task",
+                path: "/tasks/reassign",
+            },
+            {
                 label: "Reassign Bulk Task",
                 path: "/tasks/reassign-bulk",
             },

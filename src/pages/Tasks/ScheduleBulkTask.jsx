@@ -5,7 +5,6 @@ import {
     Upload,
     CheckCircle,
     AlertCircle,
-    Download,
 } from "lucide-react";
 
 import * as XLSX from "xlsx";
@@ -17,8 +16,8 @@ import "./ScheduleBulkTask.css";
 const REQUIRED_COLUMNS = [
     "title",
     "scheduledAt",
-    "assignedToId",
-    "siteId",
+    "supervisorEmail",
+    "siteCode",
 ];
 
 const COLUMN_ALIASES = {
@@ -30,6 +29,12 @@ const COLUMN_ALIASES = {
     description: [
         "description",
         "task description",
+    ],
+
+    clientEmail: [
+        "clientemail",
+        "client email",
+        "customer email",
     ],
 
     priority: [
@@ -44,21 +49,18 @@ const COLUMN_ALIASES = {
         "scheduled time",
     ],
 
-    assignedToId: [
-        "assignedtoid",
-        "assigned to id",
-        "assigned user id",
-        "assigned userid",
+    supervisorEmail: [
+        "supervisoremail",
+        "supervisor email",
+        "assigned supervisor email",
+        "supervisor",
     ],
 
-    siteId: [
-        "siteid",
-        "site id",
-    ],
-
-    campaignId: [
-        "campaignid",
-        "campaign id",
+    siteCode: [
+        "sitecode",
+        "site code",
+        "site",
+        "site name",
     ],
 };
 
@@ -73,19 +75,27 @@ const findColumnKey = (headers, aliases) => {
     return headers.find((header) => {
         const normalizedHeader = normalizeHeader(header);
 
-        return aliases.includes(
-            normalizedHeader.replace(/\s+/g, "")
-        ) || aliases.includes(normalizedHeader);
+        const compactHeader =
+            normalizedHeader.replace(/\s+/g, "");
+
+        return (
+            aliases.includes(compactHeader) ||
+            aliases.includes(normalizedHeader)
+        );
     });
 };
 
 const getExcelDateAsISO = (value) => {
-    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    if (
+        value instanceof Date &&
+        !Number.isNaN(value.getTime())
+    ) {
         return value.toISOString();
     }
 
     if (typeof value === "number") {
-        const parsed = XLSX.SSF.parse_date_code(value);
+        const parsed =
+            XLSX.SSF.parse_date_code(value);
 
         if (!parsed) {
             return "";
@@ -102,18 +112,26 @@ const getExcelDateAsISO = (value) => {
             )
         );
 
-        return date.toISOString();
+        return Number.isNaN(date.getTime())
+            ? ""
+            : date.toISOString();
     }
 
-    const text = String(value ?? "").trim();
+    const text =
+        String(value ?? "").trim();
 
     if (!text) {
         return "";
     }
 
-    const parsedDate = new Date(text);
+    const parsedDate =
+        new Date(text);
 
-    if (Number.isNaN(parsedDate.getTime())) {
+    if (
+        Number.isNaN(
+            parsedDate.getTime()
+        )
+    ) {
         return "";
     }
 
@@ -121,16 +139,24 @@ const getExcelDateAsISO = (value) => {
 };
 
 const ScheduleBulkTask = () => {
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [selectedFile, setSelectedFile] =
+        useState(null);
 
-    const [result, setResult] = useState(null);
-    const [error, setError] = useState("");
+    const [loading, setLoading] =
+        useState(false);
 
-    const fileInputRef = useRef(null);
+    const [result, setResult] =
+        useState(null);
+
+    const [error, setError] =
+        useState("");
+
+    const fileInputRef =
+        useRef(null);
 
     const handleFileChange = (event) => {
-        const file = event.target.files?.[0];
+        const file =
+            event.target.files?.[0];
 
         setError("");
         setResult(null);
@@ -140,31 +166,45 @@ const ScheduleBulkTask = () => {
             return;
         }
 
-        const extension = file.name
-            .split(".")
-            .pop()
-            ?.toLowerCase();
+        const extension =
+            file.name
+                .split(".")
+                .pop()
+                ?.toLowerCase();
 
-        if (!["xlsx", "xls"].includes(extension)) {
+        if (
+            !["xlsx", "xls"].includes(
+                extension
+            )
+        ) {
             setSelectedFile(null);
+
             setError(
                 "Please select a valid Excel file (.xlsx or .xls)."
             );
+
             return;
         }
 
         setSelectedFile(file);
     };
 
-    const parseExcelFile = async (file) => {
-        const arrayBuffer = await file.arrayBuffer();
+    const parseExcelFile = async (
+        file
+    ) => {
+        const arrayBuffer =
+            await file.arrayBuffer();
 
-        const workbook = XLSX.read(arrayBuffer, {
-            type: "array",
-            cellDates: true,
-        });
+        const workbook = XLSX.read(
+            arrayBuffer,
+            {
+                type: "array",
+                cellDates: true,
+            }
+        );
 
-        const firstSheetName = workbook.SheetNames[0];
+        const firstSheetName =
+            workbook.SheetNames[0];
 
         if (!firstSheetName) {
             throw new Error(
@@ -173,15 +213,18 @@ const ScheduleBulkTask = () => {
         }
 
         const worksheet =
-            workbook.Sheets[firstSheetName];
+            workbook.Sheets[
+            firstSheetName
+            ];
 
-        const rows = XLSX.utils.sheet_to_json(
-            worksheet,
-            {
-                defval: "",
-                raw: true,
-            }
-        );
+        const rows =
+            XLSX.utils.sheet_to_json(
+                worksheet,
+                {
+                    defval: "",
+                    raw: true,
+                }
+            );
 
         if (!rows.length) {
             throw new Error(
@@ -189,18 +232,27 @@ const ScheduleBulkTask = () => {
             );
         }
 
-        const originalHeaders = Object.keys(rows[0]);
+        const originalHeaders =
+            Object.keys(rows[0]);
 
         const columnMap = {};
 
-        for (const field of Object.keys(COLUMN_ALIASES)) {
-            const matchedColumn = findColumnKey(
-                originalHeaders,
-                COLUMN_ALIASES[field]
-            );
+        for (
+            const field of Object.keys(
+                COLUMN_ALIASES
+            )
+        ) {
+            const matchedColumn =
+                findColumnKey(
+                    originalHeaders,
+                    COLUMN_ALIASES[
+                    field
+                    ]
+                );
 
             if (matchedColumn) {
-                columnMap[field] = matchedColumn;
+                columnMap[field] =
+                    matchedColumn;
             }
         }
 
@@ -214,7 +266,7 @@ const ScheduleBulkTask = () => {
             throw new Error(
                 `Missing required Excel columns: ${missingColumns.join(
                     ", "
-                )}`
+                )}. Required format: title, scheduledAt, supervisorEmail, siteCode.`
             );
         }
 
@@ -222,49 +274,73 @@ const ScheduleBulkTask = () => {
         const frontendFailedRows = [];
 
         rows.forEach((row, index) => {
-            const excelRowNumber = index + 2;
+            const excelRowNumber =
+                index + 2;
 
-            const title = String(
-                row[columnMap.title] ?? ""
-            ).trim();
+            const title =
+                String(
+                    row[
+                    columnMap.title
+                    ] ?? ""
+                ).trim();
 
-            const description = String(
-                row[columnMap.description] ?? ""
-            ).trim();
+            const description =
+                String(
+                    row[
+                    columnMap.description
+                    ] ?? ""
+                ).trim();
+
+            const clientEmail =
+                columnMap.clientEmail
+                    ? String(
+                        row[
+                        columnMap
+                            .clientEmail
+                        ] ?? ""
+                    ).trim()
+                    : "";
 
             const priorityText =
                 String(
-                    row[columnMap.priority] ??
-                    "MEDIUM"
+                    row[
+                    columnMap.priority
+                    ] ?? "MEDIUM"
                 )
                     .trim()
-                    .toUpperCase();
+                    .toUpperCase() ||
+                "MEDIUM";
 
             const scheduledAt =
                 getExcelDateAsISO(
-                    row[columnMap.scheduledAt]
+                    row[
+                    columnMap
+                        .scheduledAt
+                    ]
                 );
 
-            const assignedToId = String(
-                row[columnMap.assignedToId] ?? ""
-            ).trim();
+            const supervisorEmail =
+                String(
+                    row[
+                    columnMap
+                        .supervisorEmail
+                    ] ?? ""
+                ).trim();
 
-            const siteId = String(
-                row[columnMap.siteId] ?? ""
-            ).trim();
+            const siteCode =
+                String(
+                    row[
+                    columnMap.siteCode
+                    ] ?? ""
+                ).trim();
 
-            const campaignId = columnMap.campaignId
-                ? String(
-                    row[columnMap.campaignId] ?? ""
-                ).trim()
-                : "";
-
-            if (
+            const isBlankRow =
                 !title &&
                 !scheduledAt &&
-                !assignedToId &&
-                !siteId
-            ) {
+                !supervisorEmail &&
+                !siteCode;
+
+            if (isBlankRow) {
                 return;
             }
 
@@ -282,36 +358,41 @@ const ScheduleBulkTask = () => {
                 frontendFailedRows.push({
                     row: excelRowNumber,
                     title,
-                    error: "Invalid or missing scheduled date",
+                    error:
+                        "Invalid or missing scheduled date",
                 });
 
                 return;
             }
 
-            if (!assignedToId) {
+            if (!supervisorEmail) {
                 frontendFailedRows.push({
                     row: excelRowNumber,
                     title,
-                    error: "Assigned To ID is required",
+                    error:
+                        "Supervisor Email is required",
                 });
 
                 return;
             }
 
-            if (!siteId) {
+            if (!siteCode) {
                 frontendFailedRows.push({
                     row: excelRowNumber,
                     title,
-                    error: "Site ID is required",
+                    error:
+                        "Site Code is required",
                 });
 
                 return;
             }
 
             if (
-                !["LOW", "MEDIUM", "HIGH"].includes(
-                    priorityText
-                )
+                ![
+                    "LOW",
+                    "MEDIUM",
+                    "HIGH",
+                ].includes(priorityText)
             ) {
                 frontendFailedRows.push({
                     row: excelRowNumber,
@@ -323,22 +404,36 @@ const ScheduleBulkTask = () => {
                 return;
             }
 
+            if (clientEmail) {
+                const emailRegex =
+                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (
+                    !emailRegex.test(
+                        clientEmail
+                    )
+                ) {
+                    frontendFailedRows.push({
+                        row: excelRowNumber,
+                        title,
+                        error:
+                            "Invalid client email",
+                    });
+
+                    return;
+                }
+            }
+
             tasks.push({
                 title,
                 description:
                     description || null,
-
+                clientEmail:
+                    clientEmail || null,
                 priority: priorityText,
-
                 scheduledAt,
-
-                assignedToId,
-
-                siteId,
-
-                ...(campaignId
-                    ? { campaignId }
-                    : {}),
+                supervisorEmail,
+                siteCode,
             });
         });
 
@@ -365,6 +460,7 @@ const ScheduleBulkTask = () => {
             setError(
                 "Please select an Excel file first."
             );
+
             return;
         }
 
@@ -376,30 +472,33 @@ const ScheduleBulkTask = () => {
             const {
                 tasks,
                 frontendFailedRows,
-            } = await parseExcelFile(
-                selectedFile
-            );
+            } =
+                await parseExcelFile(
+                    selectedFile
+                );
 
-            const response = await apiFetch(
-                "/api/tasks/bulk",
-                {
-                    method: "POST",
+            const response =
+                await apiFetch(
+                    "/api/tasks/bulk",
+                    {
+                        method: "POST",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json",
-                    },
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+                        },
 
-                    body: JSON.stringify({
-                        tasks,
-                    }),
-                }
-            );
+                        body: JSON.stringify({
+                            tasks,
+                        }),
+                    }
+                );
 
             let data;
 
             try {
-                data = await response.json();
+                data =
+                    await response.json();
             } catch {
                 throw new Error(
                     "Invalid response received from the server."
@@ -421,18 +520,21 @@ const ScheduleBulkTask = () => {
 
                 successful:
                     Number(
-                        backendResult.successful || 0
+                        backendResult.successful ||
+                        0
                     ),
 
                 failed:
                     Number(
-                        backendResult.failed || 0
+                        backendResult.failed ||
+                        0
                     ) +
                     frontendFailedRows.length,
 
                 total:
                     Number(
-                        backendResult.total || 0
+                        backendResult.total ||
+                        0
                     ) +
                     frontendFailedRows.length,
 
@@ -442,11 +544,14 @@ const ScheduleBulkTask = () => {
             setSelectedFile(null);
 
             if (fileInputRef.current) {
-                fileInputRef.current.value = "";
+                fileInputRef.current.value =
+                    "";
             }
 
             window.dispatchEvent(
-                new CustomEvent("tasks-updated")
+                new CustomEvent(
+                    "tasks-updated"
+                )
             );
         } catch (uploadError) {
             console.error(
@@ -468,21 +573,21 @@ const ScheduleBulkTask = () => {
             [
                 "title",
                 "description",
+                "clientEmail",
                 "priority",
                 "scheduledAt",
-                "assignedToId",
-                "siteId",
-                "campaignId",
+                "supervisorEmail",
+                "siteCode",
             ],
 
             [
                 "Morning Site Inspection",
                 "Inspect the assigned site",
+                "client@example.com",
                 "HIGH",
                 "2026-09-20T09:00:00.000Z",
-                "",
-                "",
-                "",
+                "supervisor@example.com",
+                "SITE-001",
             ],
         ];
 
@@ -494,21 +599,21 @@ const ScheduleBulkTask = () => {
         worksheet["!cols"] = [
             { wch: 28 },
             { wch: 42 },
+            { wch: 34 },
             { wch: 12 },
             { wch: 30 },
-            { wch: 42 },
-            { wch: 42 },
-            { wch: 42 },
+            { wch: 38 },
+            { wch: 20 },
         ];
 
         const instructionsData = [
-            ["Bulk Task Upload Instructions"],
+            [
+                "Bulk Task Upload Instructions",
+            ],
 
             [""],
 
-            [
-                "Required columns",
-            ],
+            ["Required columns"],
 
             [
                 "title",
@@ -521,20 +626,18 @@ const ScheduleBulkTask = () => {
             ],
 
             [
-                "assignedToId",
-                "Registered active Supervisor user UUID",
+                "supervisorEmail",
+                "Email of an active Supervisor",
             ],
 
             [
-                "siteId",
-                "Active site UUID",
+                "siteCode",
+                "Active Site Code or exact Site Name",
             ],
 
             [""],
 
-            [
-                "Optional columns",
-            ],
+            ["Optional columns"],
 
             [
                 "description",
@@ -542,16 +645,21 @@ const ScheduleBulkTask = () => {
             ],
 
             [
+                "clientEmail",
+                "Client email address",
+            ],
+
+            [
                 "priority",
                 "LOW / MEDIUM / HIGH",
             ],
 
-            [
-                "campaignId",
-                "Active campaign UUID",
-            ],
-
             [""],
+
+            [
+                "Internal mapping",
+                "Supervisor Email and Site Code are automatically resolved to UUIDs. Do not enter Supervisor or Site UUIDs.",
+            ],
 
             [
                 "Maximum rows",
@@ -566,7 +674,7 @@ const ScheduleBulkTask = () => {
 
         instructionsSheet["!cols"] = [
             { wch: 25 },
-            { wch: 65 },
+            { wch: 85 },
         ];
 
         const workbook =
@@ -591,7 +699,9 @@ const ScheduleBulkTask = () => {
     };
 
     const combinedFailedRows = [
-        ...(result?.frontendFailedRows || []),
+        ...(result?.frontendFailedRows ||
+            []),
+
         ...(result?.failedTasks || []),
     ];
 
@@ -698,7 +808,8 @@ const ScheduleBulkTask = () => {
                             display: "flex",
                             alignItems: "center",
                             gap: "10px",
-                            marginBottom: "20px",
+                            marginBottom:
+                                "20px",
                         }}
                     >
                         <CheckCircle
@@ -710,8 +821,7 @@ const ScheduleBulkTask = () => {
                                 margin: 0,
                             }}
                         >
-                            Bulk Task Upload
-                            Result
+                            Bulk Task Upload Result
                         </h3>
                     </div>
 
@@ -722,14 +832,17 @@ const ScheduleBulkTask = () => {
                             gridTemplateColumns:
                                 "repeat(3, minmax(0, 1fr))",
                             gap: "12px",
-                            marginBottom: "20px",
+                            marginBottom:
+                                "20px",
                         }}
                     >
                         <div
                             style={{
                                 padding: "15px",
-                                borderRadius: "8px",
-                                border: "1px solid currentColor",
+                                borderRadius:
+                                    "8px",
+                                border:
+                                    "1px solid currentColor",
                             }}
                         >
                             <strong>
@@ -744,17 +857,17 @@ const ScheduleBulkTask = () => {
                                         "4px",
                                 }}
                             >
-                                {
-                                    result.total
-                                }
+                                {result.total}
                             </div>
                         </div>
 
                         <div
                             style={{
                                 padding: "15px",
-                                borderRadius: "8px",
-                                border: "1px solid currentColor",
+                                borderRadius:
+                                    "8px",
+                                border:
+                                    "1px solid currentColor",
                             }}
                         >
                             <strong>
@@ -778,8 +891,10 @@ const ScheduleBulkTask = () => {
                         <div
                             style={{
                                 padding: "15px",
-                                borderRadius: "8px",
-                                border: "1px solid currentColor",
+                                borderRadius:
+                                    "8px",
+                                border:
+                                    "1px solid currentColor",
                             }}
                         >
                             <strong>
@@ -802,137 +917,133 @@ const ScheduleBulkTask = () => {
                     </div>
 
                     {combinedFailedRows.length >
-                        0 && (
-                            <div>
-                                <h4>
-                                    Failed Rows
-                                </h4>
+                        0 ? (
+                        <div>
+                            <h4>
+                                Failed Rows
+                            </h4>
 
-                                <div
-                                    style={{
-                                        overflowX:
-                                            "auto",
-                                    }}
-                                >
-                                    <table
-                                        style={{
-                                            width:
-                                                "100%",
-                                            borderCollapse:
-                                                "collapse",
-                                        }}
-                                    >
-                                        <thead>
-                                            <tr>
-                                                <th
-                                                    style={{
-                                                        textAlign:
-                                                            "left",
-                                                        padding:
-                                                            "10px",
-                                                    }}
-                                                >
-                                                    Row
-                                                </th>
-
-                                                <th
-                                                    style={{
-                                                        textAlign:
-                                                            "left",
-                                                        padding:
-                                                            "10px",
-                                                    }}
-                                                >
-                                                    Title
-                                                </th>
-
-                                                <th
-                                                    style={{
-                                                        textAlign:
-                                                            "left",
-                                                        padding:
-                                                            "10px",
-                                                    }}
-                                                >
-                                                    Error
-                                                </th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            {combinedFailedRows.map(
-                                                (
-                                                    item,
-                                                    index
-                                                ) => (
-                                                    <tr
-                                                        key={`${item.row}-${index}`}
-                                                    >
-                                                        <td
-                                                            style={{
-                                                                padding:
-                                                                    "10px",
-                                                            }}
-                                                        >
-                                                            {
-                                                                item.row
-                                                            }
-                                                        </td>
-
-                                                        <td
-                                                            style={{
-                                                                padding:
-                                                                    "10px",
-                                                            }}
-                                                        >
-                                                            {
-                                                                item.title ||
-                                                                "—"
-                                                            }
-                                                        </td>
-
-                                                        <td
-                                                            style={{
-                                                                padding:
-                                                                    "10px",
-                                                            }}
-                                                        >
-                                                            {
-                                                                item.error
-                                                            }
-                                                        </td>
-                                                    </tr>
-                                                )
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        )}
-
-                    {combinedFailedRows.length ===
-                        0 && (
                             <div
                                 style={{
-                                    display:
-                                        "flex",
-                                    alignItems:
-                                        "center",
-                                    gap: "8px",
+                                    overflowX:
+                                        "auto",
                                 }}
                             >
-                                <CheckCircle
-                                    size={18}
-                                />
+                                <table
+                                    style={{
+                                        width:
+                                            "100%",
+                                        borderCollapse:
+                                            "collapse",
+                                    }}
+                                >
+                                    <thead>
+                                        <tr>
+                                            <th
+                                                style={{
+                                                    textAlign:
+                                                        "left",
+                                                    padding:
+                                                        "10px",
+                                                }}
+                                            >
+                                                Row
+                                            </th>
 
-                                <span>
-                                    All uploaded
-                                    task rows were
-                                    processed
-                                    successfully.
-                                </span>
+                                            <th
+                                                style={{
+                                                    textAlign:
+                                                        "left",
+                                                    padding:
+                                                        "10px",
+                                                }}
+                                            >
+                                                Title
+                                            </th>
+
+                                            <th
+                                                style={{
+                                                    textAlign:
+                                                        "left",
+                                                    padding:
+                                                        "10px",
+                                                }}
+                                            >
+                                                Error
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {combinedFailedRows.map(
+                                            (
+                                                item,
+                                                index
+                                            ) => (
+                                                <tr
+                                                    key={`${item.row}-${index}`}
+                                                >
+                                                    <td
+                                                        style={{
+                                                            padding:
+                                                                "10px",
+                                                        }}
+                                                    >
+                                                        {
+                                                            item.row
+                                                        }
+                                                    </td>
+
+                                                    <td
+                                                        style={{
+                                                            padding:
+                                                                "10px",
+                                                        }}
+                                                    >
+                                                        {
+                                                            item.title ||
+                                                            "—"
+                                                        }
+                                                    </td>
+
+                                                    <td
+                                                        style={{
+                                                            padding:
+                                                                "10px",
+                                                        }}
+                                                    >
+                                                        {
+                                                            item.error
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            )
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
-                        )}
+                        </div>
+                    ) : (
+                        <div
+                            style={{
+                                display:
+                                    "flex",
+                                alignItems:
+                                    "center",
+                                gap: "8px",
+                            }}
+                        >
+                            <CheckCircle
+                                size={18}
+                            />
+
+                            <span>
+                                All uploaded task
+                                rows were processed
+                                successfully.
+                            </span>
+                        </div>
+                    )}
                 </section>
             )}
         </div>

@@ -1,7 +1,11 @@
 const API_BASE_URL =
-    "https://supervisor-management-backend.onrender.com";
+    "http://localhost:5000";
 
 let refreshPromise = null;
+
+/* =========================================================
+   CLEAR AUTH
+========================================================= */
 
 const clearAuth = () => {
     localStorage.removeItem("token");
@@ -9,15 +13,24 @@ const clearAuth = () => {
     localStorage.removeItem("user");
 };
 
+/* =========================================================
+   REFRESH ACCESS TOKEN
+========================================================= */
+
 const refreshAccessToken = async () => {
-    // Prevent multiple requests from refreshing at the same time
+    /*
+     * Prevent multiple requests from refreshing
+     * the token at the same time.
+     */
     if (refreshPromise) {
         return refreshPromise;
     }
 
     refreshPromise = (async () => {
         const refreshToken =
-            localStorage.getItem("refreshToken");
+            localStorage.getItem(
+                "refreshToken"
+            );
 
         if (!refreshToken) {
             throw new Error(
@@ -29,9 +42,12 @@ const refreshAccessToken = async () => {
             `${API_BASE_URL}/api/auth/refresh`,
             {
                 method: "POST",
+
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type":
+                        "application/json",
                 },
+
                 body: JSON.stringify({
                     refreshToken,
                 }),
@@ -41,7 +57,8 @@ const refreshAccessToken = async () => {
         let data;
 
         try {
-            data = await response.json();
+            data =
+                await response.json();
         } catch {
             throw new Error(
                 "Invalid response from refresh endpoint"
@@ -72,7 +89,9 @@ const refreshAccessToken = async () => {
         if (data?.data?.user) {
             localStorage.setItem(
                 "user",
-                JSON.stringify(data.data.user)
+                JSON.stringify(
+                    data.data.user
+                )
             );
         }
 
@@ -86,14 +105,23 @@ const refreshAccessToken = async () => {
     }
 };
 
+/* =========================================================
+   API FETCH
+========================================================= */
+
 const apiFetch = async (
     endpoint,
     options = {}
 ) => {
-    let token = localStorage.getItem("token");
+    let token =
+        localStorage.getItem("token");
 
-    const makeRequest = async (accessToken) => {
+    const makeRequest = async (
+        accessToken
+    ) => {
         const headers = {
+            "Content-Type":
+                "application/json",
             ...(options.headers || {}),
         };
 
@@ -107,30 +135,47 @@ const apiFetch = async (
             {
                 ...options,
                 headers,
+                cache: "no-store",
             }
         );
     };
 
-    // First request
-    let response = await makeRequest(token);
+    /* =====================================================
+       FIRST REQUEST
+    ===================================================== */
 
-    // Access token expired
+    let response =
+        await makeRequest(token);
+
+    /* =====================================================
+       ACCESS TOKEN EXPIRED
+    ===================================================== */
+
     if (response.status === 401) {
         try {
-            // Get a fresh access token
-            token = await refreshAccessToken();
+            /*
+             * Get a fresh access token.
+             */
+            token =
+                await refreshAccessToken();
 
-            // Retry original request exactly once
-            response = await makeRequest(token);
+            /*
+             * Retry the original request
+             * exactly once.
+             */
+            response =
+                await makeRequest(token);
         } catch (error) {
             console.error(
                 "Authentication refresh failed:",
-                error.message
+                error?.message
             );
 
             clearAuth();
 
-            // Send user back to login
+            /*
+             * Redirect to login.
+             */
             if (
                 window.location.pathname !==
                 "/login"
@@ -146,6 +191,10 @@ const apiFetch = async (
 
     return response;
 };
+
+/* =========================================================
+   EXPORT
+========================================================= */
 
 export {
     apiFetch,

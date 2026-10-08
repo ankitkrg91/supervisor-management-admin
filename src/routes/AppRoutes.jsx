@@ -28,6 +28,7 @@ import TaskSummary from "../pages/Tasks/TaskSummary";
 import ScheduleTask from "../pages/Tasks/ScheduleTask";
 import ScheduleBulkTask from "../pages/Tasks/ScheduleBulkTask";
 import CancelBulkTask from "../pages/Tasks/CancelBulkTask";
+import ReassignTask from "../pages/Tasks/ReassignTask";
 import ReassignBulkTask from "../pages/Tasks/ReassignBulkTask";
 import TaskDetails from "../pages/Tasks/TaskDetails";
 import CreateCampaign from "../pages/Tasks/CreateCampaign";
@@ -154,6 +155,11 @@ const ProtectedRoutes = () => {
                 <Route
                     path="/tasks/cancel-bulk"
                     element={<CancelBulkTask />}
+                />
+
+                <Route
+                    path="/tasks/reassign"
+                    element={<ReassignTask />}
                 />
 
                 <Route

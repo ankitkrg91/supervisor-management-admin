@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+
 import {
     Upload,
     FileSpreadsheet,
@@ -6,20 +7,54 @@ import {
     AlertTriangle,
     CheckCircle,
 } from "lucide-react";
+
 import * as XLSX from "xlsx";
 
 import { apiFetch } from "../../utils/api";
+
 import "./CancelBulkTask.css";
 
-const REQUIRED_COLUMN = "taskId";
-
-const COLUMN_ALIASES = [
-    "taskid",
-    "task id",
-    "id",
-    "task identifier",
-    "task uuid",
+const REQUIRED_COLUMNS = [
+    "title",
+    "scheduledAt",
+    "supervisorEmail",
+    "siteCode",
 ];
+
+const COLUMN_ALIASES = {
+    title: [
+        "title",
+        "task title",
+    ],
+
+    scheduledAt: [
+        "scheduledat",
+        "scheduled at",
+        "scheduled date",
+        "schedule date",
+        "scheduled time",
+    ],
+
+    supervisorEmail: [
+        "supervisoremail",
+        "supervisor email",
+        "assigned supervisor email",
+        "supervisor",
+    ],
+
+    siteCode: [
+        "sitecode",
+        "site code",
+        "site",
+        "site name",
+    ],
+
+    clientEmail: [
+        "clientemail",
+        "client email",
+        "customer email",
+    ],
+};
 
 const normalizeHeader = (value) => {
     return String(value ?? "")
@@ -28,27 +63,93 @@ const normalizeHeader = (value) => {
         .replace(/\s+/g, " ");
 };
 
-const findTaskIdColumn = (headers) => {
+const findColumnKey = (headers, aliases) => {
     return headers.find((header) => {
-        const normalized = normalizeHeader(header);
+        const normalizedHeader =
+            normalizeHeader(header);
+
+        const compactHeader =
+            normalizedHeader.replace(/\s+/g, "");
 
         return (
-            COLUMN_ALIASES.includes(normalized) ||
-            COLUMN_ALIASES.includes(normalized.replace(/\s+/g, ""))
+            aliases.includes(normalizedHeader) ||
+            aliases.includes(compactHeader)
         );
     });
 };
 
-const CancelBulkTask = () => {
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [uploadStatus, setUploadStatus] = useState("");
-    const [result, setResult] = useState(null);
+const getExcelDateAsISO = (value) => {
+    if (
+        value instanceof Date &&
+        !Number.isNaN(value.getTime())
+    ) {
+        return value.toISOString();
+    }
 
-    const fileInputRef = useRef(null);
+    if (typeof value === "number") {
+        const parsed =
+            XLSX.SSF.parse_date_code(value);
+
+        if (!parsed) {
+            return "";
+        }
+
+        const date = new Date(
+            Date.UTC(
+                parsed.y,
+                parsed.m - 1,
+                parsed.d,
+                parsed.H || 0,
+                parsed.M || 0,
+                parsed.S || 0
+            )
+        );
+
+        return Number.isNaN(date.getTime())
+            ? ""
+            : date.toISOString();
+    }
+
+    const text =
+        String(value ?? "").trim();
+
+    if (!text) {
+        return "";
+    }
+
+    const parsedDate =
+        new Date(text);
+
+    if (
+        Number.isNaN(
+            parsedDate.getTime()
+        )
+    ) {
+        return "";
+    }
+
+    return parsedDate.toISOString();
+};
+
+const CancelBulkTask = () => {
+    const [selectedFile, setSelectedFile] =
+        useState(null);
+
+    const [loading, setLoading] =
+        useState(false);
+
+    const [uploadStatus, setUploadStatus] =
+        useState("");
+
+    const [result, setResult] =
+        useState(null);
+
+    const fileInputRef =
+        useRef(null);
 
     const handleFileChange = (event) => {
-        const file = event.target.files?.[0];
+        const file =
+            event.target.files?.[0];
 
         setUploadStatus("");
         setResult(null);
@@ -58,16 +159,23 @@ const CancelBulkTask = () => {
             return;
         }
 
-        const extension = file.name
-            .split(".")
-            .pop()
-            ?.toLowerCase();
+        const extension =
+            file.name
+                .split(".")
+                .pop()
+                ?.toLowerCase();
 
-        if (!["xlsx", "xls"].includes(extension)) {
+        if (
+            !["xlsx", "xls"].includes(
+                extension
+            )
+        ) {
             setSelectedFile(null);
+
             setUploadStatus(
                 "Please select a valid Excel file (.xlsx or .xls)."
             );
+
             return;
         }
 
@@ -75,14 +183,17 @@ const CancelBulkTask = () => {
     };
 
     const parseExcelFile = async (file) => {
-        const arrayBuffer = await file.arrayBuffer();
+        const arrayBuffer =
+            await file.arrayBuffer();
 
-        const workbook = XLSX.read(arrayBuffer, {
-            type: "array",
-            cellDates: true,
-        });
+        const workbook =
+            XLSX.read(arrayBuffer, {
+                type: "array",
+                cellDates: true,
+            });
 
-        const firstSheetName = workbook.SheetNames[0];
+        const firstSheetName =
+            workbook.SheetNames[0];
 
         if (!firstSheetName) {
             throw new Error(
@@ -90,68 +201,206 @@ const CancelBulkTask = () => {
             );
         }
 
-        const worksheet = workbook.Sheets[firstSheetName];
+        const worksheet =
+            workbook.Sheets[
+            firstSheetName
+            ];
 
-        const rows = XLSX.utils.sheet_to_json(worksheet, {
-            defval: "",
-            raw: true,
-        });
+        const rows =
+            XLSX.utils.sheet_to_json(
+                worksheet,
+                {
+                    defval: "",
+                    raw: true,
+                }
+            );
 
         if (!rows.length) {
-            throw new Error("The Excel file is empty.");
-        }
-
-        const headers = Object.keys(rows[0]);
-
-        const taskIdColumn = findTaskIdColumn(headers);
-
-        if (!taskIdColumn) {
             throw new Error(
-                `Missing required Excel column: ${REQUIRED_COLUMN}`
+                "The Excel file is empty."
             );
         }
 
-        const taskIds = [];
+        const headers =
+            Object.keys(rows[0]);
+
+        const columnMap = {};
+
+        for (
+            const field of Object.keys(
+                COLUMN_ALIASES
+            )
+        ) {
+            const matchedColumn =
+                findColumnKey(
+                    headers,
+                    COLUMN_ALIASES[field]
+                );
+
+            if (matchedColumn) {
+                columnMap[field] =
+                    matchedColumn;
+            }
+        }
+
+        const missingColumns =
+            REQUIRED_COLUMNS.filter(
+                (column) =>
+                    !columnMap[column]
+            );
+
+        if (missingColumns.length) {
+            throw new Error(
+                `Missing required Excel columns: ${missingColumns.join(
+                    ", "
+                )}. Required format: title, scheduledAt, supervisorEmail, siteCode.`
+            );
+        }
+
+        const tasks = [];
         const frontendFailedRows = [];
 
         rows.forEach((row, index) => {
-            const excelRowNumber = index + 2;
+            const excelRowNumber =
+                index + 2;
 
-            const taskId = String(
-                row[taskIdColumn] ?? ""
-            ).trim();
+            const title =
+                String(
+                    row[
+                    columnMap.title
+                    ] ?? ""
+                ).trim();
 
-            // Ignore completely empty rows.
-            if (!taskId) {
+            const scheduledAt =
+                getExcelDateAsISO(
+                    row[
+                    columnMap.scheduledAt
+                    ]
+                );
+
+            const supervisorEmail =
+                String(
+                    row[
+                    columnMap
+                        .supervisorEmail
+                    ] ?? ""
+                ).trim();
+
+            const siteCode =
+                String(
+                    row[
+                    columnMap.siteCode
+                    ] ?? ""
+                ).trim();
+
+            const clientEmail =
+                columnMap.clientEmail
+                    ? String(
+                        row[
+                        columnMap
+                            .clientEmail
+                        ] ?? ""
+                    ).trim()
+                    : "";
+
+            const isBlankRow =
+                !title &&
+                !scheduledAt &&
+                !supervisorEmail &&
+                !siteCode;
+
+            if (isBlankRow) {
+                return;
+            }
+
+            if (!title) {
                 frontendFailedRows.push({
                     row: excelRowNumber,
-                    title: "—",
-                    error: "Task ID is required",
+                    title: "",
+                    error:
+                        "Title is required",
                 });
 
                 return;
             }
 
-            taskIds.push({
-                taskId,
-                row: excelRowNumber,
+            if (!scheduledAt) {
+                frontendFailedRows.push({
+                    row: excelRowNumber,
+                    title,
+                    error:
+                        "Invalid or missing scheduled date",
+                });
+
+                return;
+            }
+
+            if (!supervisorEmail) {
+                frontendFailedRows.push({
+                    row: excelRowNumber,
+                    title,
+                    error:
+                        "Supervisor Email is required",
+                });
+
+                return;
+            }
+
+            if (!siteCode) {
+                frontendFailedRows.push({
+                    row: excelRowNumber,
+                    title,
+                    error:
+                        "Site Code is required",
+                });
+
+                return;
+            }
+
+            if (clientEmail) {
+                const emailRegex =
+                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (
+                    !emailRegex.test(
+                        clientEmail
+                    )
+                ) {
+                    frontendFailedRows.push({
+                        row: excelRowNumber,
+                        title,
+                        error:
+                            "Invalid client email",
+                    });
+
+                    return;
+                }
+            }
+
+            tasks.push({
+                title,
+                scheduledAt,
+                supervisorEmail,
+                siteCode,
+                clientEmail:
+                    clientEmail || null,
             });
         });
 
-        if (!taskIds.length) {
+        if (!tasks.length) {
             throw new Error(
-                "No valid task IDs were found in the Excel file."
+                "No valid task rows were found in the Excel file."
             );
         }
 
-        if (taskIds.length > 500) {
+        if (tasks.length > 500) {
             throw new Error(
                 "Maximum 500 tasks can be cancelled at once."
             );
         }
 
         return {
-            taskIds,
+            tasks,
             frontendFailedRows,
         };
     };
@@ -170,27 +419,35 @@ const CancelBulkTask = () => {
             setResult(null);
 
             const {
-                taskIds,
+                tasks,
                 frontendFailedRows,
-            } = await parseExcelFile(selectedFile);
+            } =
+                await parseExcelFile(
+                    selectedFile
+                );
 
-            const response = await apiFetch(
-                "/api/tasks/bulk-cancel",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        tasks: taskIds,
-                    }),
-                }
-            );
+            const response =
+                await apiFetch(
+                    "/api/tasks/bulk-cancel",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+                        },
+
+                        body: JSON.stringify({
+                            tasks,
+                        }),
+                    }
+                );
 
             let data;
 
             try {
-                data = await response.json();
+                data =
+                    await response.json();
             } catch {
                 throw new Error(
                     "Invalid response received from the server."
@@ -204,29 +461,40 @@ const CancelBulkTask = () => {
                 );
             }
 
-            const backendResult = data?.data || {};
+            const backendResult =
+                data?.data || {};
 
             setResult({
                 ...backendResult,
+
                 successful:
                     Number(
-                        backendResult.successful || 0
+                        backendResult.successful ||
+                        0
                     ),
+
                 failed:
                     Number(
-                        backendResult.failed || 0
-                    ) + frontendFailedRows.length,
+                        backendResult.failed ||
+                        0
+                    ) +
+                    frontendFailedRows.length,
+
                 total:
                     Number(
-                        backendResult.total || 0
-                    ) + frontendFailedRows.length,
+                        backendResult.total ||
+                        0
+                    ) +
+                    frontendFailedRows.length,
+
                 frontendFailedRows,
             });
 
             setSelectedFile(null);
 
             if (fileInputRef.current) {
-                fileInputRef.current.value = "";
+                fileInputRef.current.value =
+                    "";
             }
 
             setUploadStatus(
@@ -234,7 +502,9 @@ const CancelBulkTask = () => {
             );
 
             window.dispatchEvent(
-                new CustomEvent("tasks-updated")
+                new CustomEvent(
+                    "tasks-updated"
+                )
             );
         } catch (error) {
             console.error(
@@ -253,8 +523,21 @@ const CancelBulkTask = () => {
 
     const handleDownloadFormat = () => {
         const worksheetData = [
-            ["taskId"],
-            ["PASTE-TASK-UUID-HERE"],
+            [
+                "title",
+                "scheduledAt",
+                "supervisorEmail",
+                "siteCode",
+                "clientEmail",
+            ],
+
+            [
+                "Morning Site Inspection",
+                "2026-09-20T09:00:00.000Z",
+                "supervisor@example.com",
+                "SITE-001",
+                "client@example.com",
+            ],
         ];
 
         const worksheet =
@@ -263,33 +546,81 @@ const CancelBulkTask = () => {
             );
 
         worksheet["!cols"] = [
-            { wch: 42 },
+            { wch: 32 },
+            { wch: 30 },
+            { wch: 38 },
+            { wch: 20 },
+            { wch: 34 },
         ];
 
         const instructionsData = [
-            ["Cancel Bulk Task Instructions"],
+            [
+                "Cancel Bulk Task Instructions",
+            ],
+
             [""],
-            ["Required column"],
+
+            ["Required columns"],
+
             [
-                "taskId",
-                "UUID of the task that should be cancelled",
+                "title",
+                "Exact task title",
             ],
+
+            [
+                "scheduledAt",
+                "Exact scheduled date/time",
+            ],
+
+            [
+                "supervisorEmail",
+                "Email of the assigned Supervisor",
+            ],
+
+            [
+                "siteCode",
+                "Site Code of the task",
+            ],
+
             [""],
-            ["Rules"],
+
+            ["Optional column"],
+
             [
-                "Only existing tasks can be cancelled",
+                "clientEmail",
+                "Can be used when duplicate tasks exist",
             ],
-            [
-                "Completed tasks cannot be cancelled",
-            ],
-            [
-                "Already cancelled tasks cannot be cancelled again",
-            ],
-            [
-                "Only Super Admin can perform bulk cancellation",
-            ],
+
             [""],
-            ["Maximum rows", "500 tasks per upload"],
+
+            ["Important"],
+
+            [
+                "No Task UUID is required.",
+            ],
+
+            [
+                "Supervisor Email and Site Code are automatically resolved by the backend.",
+            ],
+
+            [
+                "The task must match title + scheduledAt + supervisorEmail + siteCode.",
+            ],
+
+            [
+                "If multiple matching tasks exist, cancellation will fail for that row to avoid cancelling the wrong task.",
+            ],
+
+            [
+                "Completed and already cancelled tasks cannot be cancelled.",
+            ],
+
+            [""],
+
+            [
+                "Maximum rows",
+                "500 tasks per upload",
+            ],
         ];
 
         const instructionsSheet =
@@ -299,7 +630,7 @@ const CancelBulkTask = () => {
 
         instructionsSheet["!cols"] = [
             { wch: 32 },
-            { wch: 70 },
+            { wch: 90 },
         ];
 
         const workbook =
@@ -329,12 +660,15 @@ const CancelBulkTask = () => {
         setResult(null);
 
         if (fileInputRef.current) {
-            fileInputRef.current.value = "";
+            fileInputRef.current.value =
+                "";
         }
     };
 
     const combinedFailedRows = [
-        ...(result?.frontendFailedRows || []),
+        ...(result?.frontendFailedRows ||
+            []),
+
         ...(result?.failedTasks || []),
     ];
 
@@ -343,15 +677,21 @@ const CancelBulkTask = () => {
             <section className="cancel-bulk-task-card">
                 <div className="cancel-bulk-task-header">
                     <div>
-                        <h1>Cancel Bulk Task</h1>
+                        <h1>
+                            Cancel Bulk Task
+                        </h1>
+
                         <p>
-                            Upload an Excel file to cancel
-                            multiple scheduled tasks at once.
+                            Upload an Excel file to
+                            cancel multiple tasks at
+                            once.
                         </p>
                     </div>
 
                     <div className="cancel-bulk-task-icon">
-                        <FileSpreadsheet size={25} />
+                        <FileSpreadsheet
+                            size={25}
+                        />
                     </div>
                 </div>
 
@@ -359,22 +699,29 @@ const CancelBulkTask = () => {
 
                 <div className="cancel-bulk-format-row">
                     <div>
-                        <h3>Excel Format</h3>
+                        <h3>
+                            Excel Format
+                        </h3>
 
                         <p>
-                            Download the template and enter
-                            the task IDs that need to be
-                            cancelled.
+                            Download the template and
+                            enter task details. No UUID
+                            is required.
                         </p>
                     </div>
 
                     <button
                         type="button"
                         className="cancel-bulk-download-button"
-                        onClick={handleDownloadFormat}
+                        onClick={
+                            handleDownloadFormat
+                        }
                         disabled={loading}
                     >
-                        <Download size={17} />
+                        <Download
+                            size={17}
+                        />
+
                         DOWNLOAD FORMAT
                     </button>
                 </div>
@@ -383,7 +730,9 @@ const CancelBulkTask = () => {
                     <div className="cancel-bulk-upload-content">
                         <Upload size={28} />
 
-                        <h3>Select Excel File</h3>
+                        <h3>
+                            Select Excel File
+                        </h3>
 
                         <p>
                             Upload the completed Cancel
@@ -394,7 +743,9 @@ const CancelBulkTask = () => {
                             ref={fileInputRef}
                             type="file"
                             accept=".xlsx,.xls"
-                            onChange={handleFileChange}
+                            onChange={
+                                handleFileChange
+                            }
                             className="cancel-bulk-file-input"
                         />
 
@@ -418,7 +769,9 @@ const CancelBulkTask = () => {
                 </div>
 
                 <div className="cancel-bulk-warning">
-                    <AlertTriangle size={19} />
+                    <AlertTriangle
+                        size={19}
+                    />
 
                     <div>
                         <strong>
@@ -441,7 +794,9 @@ const CancelBulkTask = () => {
                 {result && (
                     <section className="cancel-bulk-result">
                         <div className="cancel-bulk-result-header">
-                            <CheckCircle size={20} />
+                            <CheckCircle
+                                size={20}
+                            />
 
                             <h3>
                                 Bulk Cancellation Result
@@ -450,7 +805,9 @@ const CancelBulkTask = () => {
 
                         <div className="cancel-bulk-stats">
                             <div>
-                                <strong>Total</strong>
+                                <strong>
+                                    Total
+                                </strong>
 
                                 <div>
                                     {result.total}
@@ -463,7 +820,9 @@ const CancelBulkTask = () => {
                                 </strong>
 
                                 <div>
-                                    {result.successful}
+                                    {
+                                        result.successful
+                                    }
                                 </div>
                             </div>
 
@@ -473,14 +832,19 @@ const CancelBulkTask = () => {
                                 </strong>
 
                                 <div>
-                                    {result.failed}
+                                    {
+                                        result.failed
+                                    }
                                 </div>
                             </div>
                         </div>
 
-                        {combinedFailedRows.length > 0 ? (
+                        {combinedFailedRows.length >
+                            0 ? (
                             <div>
-                                <h4>Failed Rows</h4>
+                                <h4>
+                                    Failed Rows
+                                </h4>
 
                                 <div className="cancel-bulk-failed-table-wrapper">
                                     <table className="cancel-bulk-failed-table">
@@ -491,7 +855,7 @@ const CancelBulkTask = () => {
                                                 </th>
 
                                                 <th>
-                                                    Task ID
+                                                    Title
                                                 </th>
 
                                                 <th>
@@ -516,8 +880,10 @@ const CancelBulkTask = () => {
                                                         </td>
 
                                                         <td>
-                                                            {item.taskId ||
-                                                                "—"}
+                                                            {
+                                                                item.title ||
+                                                                "—"
+                                                            }
                                                         </td>
 
                                                         <td>
@@ -534,7 +900,9 @@ const CancelBulkTask = () => {
                             </div>
                         ) : (
                             <div className="cancel-bulk-success-message">
-                                <CheckCircle size={18} />
+                                <CheckCircle
+                                    size={18}
+                                />
 
                                 <span>
                                     All tasks were cancelled
@@ -549,7 +917,9 @@ const CancelBulkTask = () => {
                     <button
                         type="button"
                         className="cancel-bulk-clear-button"
-                        onClick={handleClear}
+                        onClick={
+                            handleClear
+                        }
                         disabled={loading}
                     >
                         CLEAR
@@ -558,13 +928,17 @@ const CancelBulkTask = () => {
                     <button
                         type="button"
                         className="cancel-bulk-upload-button"
-                        onClick={handleUpload}
+                        onClick={
+                            handleUpload
+                        }
                         disabled={
                             loading ||
                             !selectedFile
                         }
                     >
-                        <Upload size={17} />
+                        <Upload
+                            size={17}
+                        />
 
                         {loading
                             ? "PROCESSING..."

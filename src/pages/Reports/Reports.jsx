@@ -42,6 +42,22 @@ const formatDistance = (value) => {
         : number.toFixed(2);
 };
 
+// Always use the CLIENT email stored on the task/report row.
+// Never use Supervisor/Field Force email.
+const getClientEmail = (item) => {
+    const email =
+        item?.clientEmail ||
+        item?.task?.clientEmail ||
+        item?.client?.email ||
+        "";
+
+    const normalizedEmail = String(email).trim();
+
+    return normalizedEmail && normalizedEmail !== "-"
+        ? normalizedEmail
+        : "-";
+};
+
 const Reports = () => {
     const [reportType, setReportType] =
         useState("Task Report");
@@ -583,6 +599,7 @@ const Reports = () => {
                 Date: item.date || "-",
                 "Field Force": item.user || "-",
                 Client: item.client || "-",
+                "Client Email": getClientEmail(item),
                 Site: item.site || "-",
                 "Task / Visit Type": item.type || "-",
                 Status: item.status || "-",
@@ -612,6 +629,7 @@ const Reports = () => {
                 { wch: 25 },
                 { wch: 25 },
                 { wch: 25 },
+                { wch: 30 },
                 { wch: 25 },
                 { wch: 18 },
                 { wch: 15 },
@@ -693,6 +711,7 @@ const Reports = () => {
                 "Date",
                 "Field Force",
                 "Client",
+                "Client Email",
                 "Site",
                 "Task / Visit Type",
                 "Status",
@@ -706,6 +725,7 @@ const Reports = () => {
                 item.date || "-",
                 item.user || "-",
                 item.client || "-",
+                getClientEmail(item),
                 item.site || "-",
                 item.type || "-",
                 item.status || "-",
@@ -718,7 +738,7 @@ const Reports = () => {
                 autoTable(doc, {
                     startY: metaY + 7,
                     head: [tableHead],
-                    body: [["", "", "", "", "No records found", "", "", "", "", ""]],
+                    body: [["", "", "", "", "", "No records found", "", "", "", "", ""]],
                     theme: "grid",
                     styles: {
                         fontSize: 8,
@@ -764,6 +784,7 @@ const Reports = () => {
                         7: { cellWidth: 22 },
                         8: { cellWidth: 22 },
                         9: { cellWidth: 23, halign: "right" },
+                        10: { cellWidth: 28 },
                     },
                     didDrawPage: (data) => {
                         const pageWidth = doc.internal.pageSize.getWidth();
@@ -2301,6 +2322,7 @@ const Reports = () => {
                                     <th>Date</th>
                                     <th>Field Force</th>
                                     <th>Client</th>
+                                    <th>Client Email</th>
                                     <th>Site</th>
                                     <th>
                                         Task / Visit Type
@@ -2317,7 +2339,7 @@ const Reports = () => {
                                 {loading ? (
                                     <tr>
                                         <td
-                                            colSpan="10"
+                                            colSpan="11"
                                             className="reports-empty"
                                         >
                                             Generating report...
@@ -2382,6 +2404,12 @@ const Reports = () => {
                                                 <td>
                                                     {
                                                         item.client
+                                                    }
+                                                </td>
+
+                                                <td>
+                                                    {
+                                                        getClientEmail(item)
                                                     }
                                                 </td>
 

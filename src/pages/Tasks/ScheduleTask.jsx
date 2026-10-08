@@ -1212,6 +1212,16 @@ const ScheduleTask = () => {
 
         }
 
+        if (clientEmail.trim()) {
+
+            parts.push(
+
+                `Client Email: ${clientEmail.trim()}`
+
+            );
+
+        }
+
         if (address.trim()) {
 
             parts.push(
