@@ -1,3 +1,5 @@
+import { lazy, Suspense } from "react";
+
 import {
     Routes,
     Route,
@@ -5,265 +7,305 @@ import {
     useLocation,
 } from "react-router-dom";
 
-import AdminLayout from "../components/layout/AdminLayout";
+const AdminLayout = lazy(
+    () => import("../components/layout/AdminLayout")
+);
 
-import AuditManagement from "../pages/AuditManagement/AuditManagement";
+const Login = lazy(
+    () => import("../pages/Login/Login")
+);
 
-import Login from "../pages/Login/Login";
+const Dashboard = lazy(
+    () => import("../pages/Dashboard/Dashboard")
+);
 
-import Online from "../pages/FieldTracker/Online";
-import TrackFieldForce from "../pages/FieldTracker/TrackFieldForce";
-import Offline from "../pages/FieldTracker/Offline";
-import BatteryLowPage from "../pages/FieldTracker/BatteryLow";
-import NotCheckedIn from "../pages/FieldTracker/NotCheckedIn";
+const AuditManagement = lazy(
+    () => import("../pages/AuditManagement/AuditManagement")
+);
 
-import LatestCheckIn from "../pages/CheckInCheckOut/LatestCheckIn";
+const Online = lazy(
+    () => import("../pages/FieldTracker/Online")
+);
 
-import LatestVisits from "../pages/Visits/LatestVisits";
-import VerifiedUnverifiedVisit from "../pages/Visits/VerifiedUnverifiedVisit";
+const TrackFieldForce = lazy(
+    () => import("../pages/FieldTracker/TrackFieldForce")
+);
 
-import Dashboard from "../pages/Dashboard/Dashboard";
+const Offline = lazy(
+    () => import("../pages/FieldTracker/Offline")
+);
 
-import TaskDashboard from "../pages/Tasks/Dashboard";
-import TaskSummary from "../pages/Tasks/TaskSummary";
-import ScheduleTask from "../pages/Tasks/ScheduleTask";
-import ScheduleBulkTask from "../pages/Tasks/ScheduleBulkTask";
-import CancelBulkTask from "../pages/Tasks/CancelBulkTask";
-import ReassignTask from "../pages/Tasks/ReassignTask";
-import ReassignBulkTask from "../pages/Tasks/ReassignBulkTask";
-import TaskDetails from "../pages/Tasks/TaskDetails";
-import CreateCampaign from "../pages/Tasks/CreateCampaign";
-import Campaign from "../pages/Tasks/Campaign";
+const BatteryLowPage = lazy(
+    () => import("../pages/FieldTracker/BatteryLow")
+);
 
-import DistanceReport from "../pages/DistanceReport/DistanceReport";
-import Reports from "../pages/Reports/Reports";
+const NotCheckedIn = lazy(
+    () => import("../pages/FieldTracker/NotCheckedIn")
+);
 
-import Settings from "../pages/Settings/Settings";
-import ChangePassword from "../pages/ChangePassword/ChangePassword";
-import TakeTour from "../pages/TakeTour/TakeTour";
+const LatestCheckIn = lazy(
+    () => import("../pages/CheckInCheckOut/LatestCheckIn")
+);
 
+const LatestVisits = lazy(
+    () => import("../pages/Visits/LatestVisits")
+);
 
-// ============================================================
-// PROTECTED ROUTES
-// ============================================================
+const VerifiedUnverifiedVisit = lazy(
+    () => import("../pages/Visits/VerifiedUnverifiedVisit")
+);
 
+const TaskDashboard = lazy(
+    () => import("../pages/Tasks/Dashboard")
+);
+
+const TaskSummary = lazy(
+    () => import("../pages/Tasks/TaskSummary")
+);
+
+const ScheduleTask = lazy(
+    () => import("../pages/Tasks/ScheduleTask")
+);
+
+const ScheduleBulkTask = lazy(
+    () => import("../pages/Tasks/ScheduleBulkTask")
+);
+
+const CancelBulkTask = lazy(
+    () => import("../pages/Tasks/CancelBulkTask")
+);
+
+const ReassignTask = lazy(
+    () => import("../pages/Tasks/ReassignTask")
+);
+
+const ReassignBulkTask = lazy(
+    () => import("../pages/Tasks/ReassignBulkTask")
+);
+
+const TaskDetails = lazy(
+    () => import("../pages/Tasks/TaskDetails")
+);
+
+const CreateCampaign = lazy(
+    () => import("../pages/Tasks/CreateCampaign")
+);
+
+const Campaign = lazy(
+    () => import("../pages/Tasks/Campaign")
+);
+
+const DistanceReport = lazy(
+    () => import("../pages/DistanceReport/DistanceReport")
+);
+
+const Reports = lazy(
+    () => import("../pages/Reports/Reports")
+);
+
+const Settings = lazy(
+    () => import("../pages/Settings/Settings")
+);
+
+const ChangePassword = lazy(
+    () => import("../pages/ChangePassword/ChangePassword")
+);
+
+const TakeTour = lazy(
+    () => import("../pages/TakeTour/TakeTour")
+);
+
+// Lightweight loading screen
+const RouteLoading = () => (
+    <div
+        role="status"
+        aria-live="polite"
+        style={{
+            minHeight: "60vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "24px",
+            background: "var(--bg-primary, #f6f8fb)",
+            color: "var(--text-primary, #172033)",
+            fontSize: "14px",
+        }}
+    >
+        Loading page...
+    </div>
+);
+
+// Protected Admin routes
 const ProtectedRoutes = () => {
     const token = localStorage.getItem("token");
 
-    // No token = not logged in
     if (!token) {
-        return (
-            <Navigate
-                to="/login"
-                replace
-            />
-        );
+        return <Navigate to="/login" replace />;
     }
 
     return (
-        <AdminLayout>
-            <Routes>
+        <Suspense fallback={<RouteLoading />}>
+            <AdminLayout>
+                <Routes>
+                    <Route
+                        path="/dashboard"
+                        element={<Dashboard />}
+                    />
 
-                {/* =================================================
-                    DASHBOARD
-                ================================================= */}
+                    <Route
+                        path="/field-tracker/online"
+                        element={<Online />}
+                    />
 
-                <Route
-                    path="/dashboard"
-                    element={<Dashboard />}
-                />
+                    <Route
+                        path="/field-tracker/offline"
+                        element={<Offline />}
+                    />
 
+                    <Route
+                        path="/field-tracker/battery-low"
+                        element={<BatteryLowPage />}
+                    />
 
-                {/* =================================================
-                    FIELD TRACKER
-                ================================================= */}
+                    <Route
+                        path="/field-tracker/track"
+                        element={<TrackFieldForce />}
+                    />
 
-                <Route
-                    path="/field-tracker/online"
-                    element={<Online />}
-                />
+                    <Route
+                        path="/field-tracker/not-checked-in"
+                        element={<NotCheckedIn />}
+                    />
 
-                <Route
-                    path="/field-tracker/offline"
-                    element={<Offline />}
-                />
+                    <Route
+                        path="/check-in/latest"
+                        element={<LatestCheckIn />}
+                    />
 
-                <Route
-                    path="/field-tracker/battery-low"
-                    element={<BatteryLowPage />}
-                />
+                    <Route
+                        path="/visits/latest"
+                        element={<LatestVisits />}
+                    />
 
-                <Route
-                    path="/field-tracker/track"
-                    element={<TrackFieldForce />}
-                />
+                    <Route
+                        path="/visits/verified"
+                        element={<VerifiedUnverifiedVisit />}
+                    />
 
-                <Route
-                    path="/field-tracker/not-checked-in"
-                    element={<NotCheckedIn />}
-                />
+                    <Route
+                        path="/tasks/dashboard"
+                        element={<TaskDashboard />}
+                    />
 
+                    <Route
+                        path="/tasks/summary"
+                        element={<TaskSummary />}
+                    />
 
-                {/* =================================================
-                    CHECK IN / CHECK OUT
-                ================================================= */}
+                    <Route
+                        path="/tasks/schedule"
+                        element={<ScheduleTask />}
+                    />
 
-                <Route
-                    path="/check-in/latest"
-                    element={<LatestCheckIn />}
-                />
+                    <Route
+                        path="/tasks/schedule-bulk"
+                        element={<ScheduleBulkTask />}
+                    />
 
+                    <Route
+                        path="/tasks/cancel-bulk"
+                        element={<CancelBulkTask />}
+                    />
 
-                {/* =================================================
-                    VISITS
-                ================================================= */}
+                    <Route
+                        path="/tasks/reassign"
+                        element={<ReassignTask />}
+                    />
 
-                <Route
-                    path="/visits/latest"
-                    element={<LatestVisits />}
-                />
+                    <Route
+                        path="/tasks/reassign-bulk"
+                        element={<ReassignBulkTask />}
+                    />
 
-                <Route
-                    path="/visits/verified"
-                    element={<VerifiedUnverifiedVisit />}
-                />
+                    <Route
+                        path="/tasks/details"
+                        element={<TaskDetails />}
+                    />
 
+                    <Route
+                        path="/tasks/create-campaign"
+                        element={<CreateCampaign />}
+                    />
 
-                {/* =================================================
-                    TASKS
-                ================================================= */}
+                    <Route
+                        path="/tasks/campaign"
+                        element={<Campaign />}
+                    />
 
-                <Route
-                    path="/tasks/dashboard"
-                    element={<TaskDashboard />}
-                />
+                    <Route
+                        path="/distance-report"
+                        element={<DistanceReport />}
+                    />
 
-                <Route
-                    path="/tasks/summary"
-                    element={<TaskSummary />}
-                />
+                    <Route
+                        path="/reports"
+                        element={<Reports />}
+                    />
 
-                <Route
-                    path="/tasks/schedule"
-                    element={<ScheduleTask />}
-                />
+                    <Route
+                        path="/audit-management"
+                        element={<AuditManagement />}
+                    />
 
-                <Route
-                    path="/tasks/schedule-bulk"
-                    element={<ScheduleBulkTask />}
-                />
+                    <Route
+                        path="/settings"
+                        element={<Settings />}
+                    />
 
-                <Route
-                    path="/tasks/cancel-bulk"
-                    element={<CancelBulkTask />}
-                />
+                    <Route
+                        path="/change-password"
+                        element={<ChangePassword />}
+                    />
 
-                <Route
-                    path="/tasks/reassign"
-                    element={<ReassignTask />}
-                />
+                    <Route
+                        path="/take-tour"
+                        element={<TakeTour />}
+                    />
 
-                <Route
-                    path="/tasks/reassign-bulk"
-                    element={<ReassignBulkTask />}
-                />
+                    <Route
+                        path="/"
+                        element={
+                            <Navigate
+                                to="/dashboard"
+                                replace
+                            />
+                        }
+                    />
 
-                <Route
-                    path="/tasks/details"
-                    element={<TaskDetails />}
-                />
-
-                <Route
-                    path="/tasks/create-campaign"
-                    element={<CreateCampaign />}
-                />
-
-                <Route
-                    path="/tasks/campaign"
-                    element={<Campaign />}
-                />
-
-
-                {/* =================================================
-                    OTHER PAGES
-                ================================================= */}
-
-                <Route
-                    path="/distance-report"
-                    element={<DistanceReport />}
-                />
-
-                <Route
-                    path="/reports"
-                    element={<Reports />}
-                />
-
-                <Route
-                    path="/audit-management"
-                    element={<AuditManagement />}
-                />
-
-                <Route
-                    path="/settings"
-                    element={<Settings />}
-                />
-
-                <Route
-                    path="/change-password"
-                    element={<ChangePassword />}
-                />
-
-                <Route
-                    path="/take-tour"
-                    element={<TakeTour />}
-                />
-
-
-                {/* =================================================
-                    DEFAULT PROTECTED ROUTE
-                ================================================= */}
-
-                <Route
-                    path="/"
-                    element={
-                        <Navigate
-                            to="/dashboard"
-                            replace
-                        />
-                    }
-                />
-
-                <Route
-                    path="*"
-                    element={
-                        <Navigate
-                            to="/dashboard"
-                            replace
-                        />
-                    }
-                />
-
-            </Routes>
-        </AdminLayout>
+                    <Route
+                        path="*"
+                        element={
+                            <Navigate
+                                to="/dashboard"
+                                replace
+                            />
+                        }
+                    />
+                </Routes>
+            </AdminLayout>
+        </Suspense>
     );
 };
 
-
-// ============================================================
-// APP ROUTES
-// ============================================================
-
+// Main application routes
 const AppRoutes = () => {
+    // Re-render when the URL changes, including after logout.
     useLocation();
+
     const token = localStorage.getItem("token");
 
     return (
         <Routes>
-
-            {/* =================================================
-                LOGIN
-            ================================================= */}
-
             <Route
                 path="/login"
                 element={
@@ -273,21 +315,17 @@ const AppRoutes = () => {
                             replace
                         />
                     ) : (
-                        <Login />
+                        <Suspense fallback={<RouteLoading />}>
+                            <Login />
+                        </Suspense>
                     )
                 }
             />
-
-
-            {/* =================================================
-                EVERYTHING ELSE = PROTECTED
-            ================================================= */}
 
             <Route
                 path="/*"
                 element={<ProtectedRoutes />}
             />
-
         </Routes>
     );
 };
