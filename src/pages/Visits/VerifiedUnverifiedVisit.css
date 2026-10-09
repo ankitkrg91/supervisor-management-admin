@@ -1,14 +1,15 @@
-/* =========================================================
-   VISIT VERIFICATION
-   ========================================================= */
-
 .verification-page {
+
     width: 100%;
+
     min-height: 100%;
+
 }
 
 .verification-card {
+
     width: 100%;
+
     padding: 22px;
 
     box-sizing: border-box;
@@ -16,19 +17,19 @@
     background: var(--card-bg);
 
     border: 1px solid var(--border-color);
+
     border-radius: 10px;
 
     box-shadow: var(--shadow);
+
 }
 
-
-/* =========================================================
-   HEADER
-   ========================================================= */
-
 .verification-header {
+
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 20px;
@@ -36,54 +37,65 @@
     padding-bottom: 18px;
 
     border-bottom: 1px solid var(--border-color);
+
 }
 
 .verification-header h2 {
+
     margin: 0;
 
     color: var(--text-primary);
 
     font-size: 21px;
+
     font-weight: 800;
+
 }
 
 .verification-header p {
+
     margin: 5px 0 0;
 
     color: var(--text-muted);
 
     font-size: 12px;
+
 }
 
 .verification-refresh {
+
     height: 38px;
 
     display: inline-flex;
+
     align-items: center;
+
     gap: 6px;
 
     padding: 0 13px;
 
     border: 1px solid var(--border-color);
+
     border-radius: 7px;
 
     background: var(--bg-tertiary);
+
     color: var(--text-primary);
 
     cursor: pointer;
 
     font-size: 11px;
+
     font-weight: 800;
+
 }
 
-
-/* =========================================================
-   STATUS TABS
-   ========================================================= */
-
 .verification-tabs {
+
     display: flex;
+
     align-items: center;
+
     flex-wrap: wrap;
 
     gap: 7px;
@@ -95,78 +107,99 @@
     width: fit-content;
 
     border: 1px solid var(--border-color);
+
     border-radius: 9px;
 
     background: var(--bg-tertiary);
+
 }
 
 .verification-tabs button {
+
     height: 34px;
 
     padding: 0 14px;
 
     border: none;
+
     border-radius: 7px;
 
     background: transparent;
+
     color: var(--text-secondary);
 
     cursor: pointer;
 
     font-size: 10px;
+
     font-weight: 900;
+
 }
 
 .verification-tabs button:hover {
+
     background: var(--card-bg-hover);
+
 }
 
 .verification-tabs button.active {
+
     background: var(--primary);
+
     color: #ffffff;
+
 }
 
-
-/* =========================================================
-   FILTER
-   ========================================================= */
-
 .verification-filter-row {
+
     display: flex;
+
     justify-content: flex-end;
 
     margin: 8px 0 14px;
+
 }
 
 .verification-filter-toggle {
+
     height: 36px;
 
     display: inline-flex;
+
     align-items: center;
+
     gap: 6px;
 
     padding: 0 12px;
 
     border: 1px solid var(--border-color);
+
     border-radius: 7px;
 
     background: var(--bg-tertiary);
+
     color: var(--text-primary);
 
     cursor: pointer;
 
     font-size: 11px;
+
     font-weight: 800;
+
 }
 
 .verification-filter-toggle:hover {
+
     background: var(--card-bg-hover);
+
 }
 
 .verification-filter-panel {
+
     display: grid;
 
     grid-template-columns:
+
         repeat(3, minmax(180px, 1fr));
 
     gap: 14px;
@@ -176,28 +209,39 @@
     padding: 16px;
 
     border: 1px solid var(--border-color);
+
     border-radius: 9px;
 
     background: var(--bg-tertiary);
+
 }
 
 .verification-filter-panel>div {
+
     display: flex;
+
     flex-direction: column;
 
     gap: 6px;
+
 }
 
 .verification-filter-panel label {
+
     color: var(--text-primary);
 
     font-size: 11px;
+
     font-weight: 800;
+
 }
 
 .verification-filter-panel input,
+
 .verification-filter-panel select {
+
     width: 100%;
+
     height: 38px;
 
     padding: 0 10px;
@@ -205,201 +249,247 @@
     box-sizing: border-box;
 
     border: 1px solid var(--border-color);
+
     border-radius: 7px;
 
     outline: none;
 
     background: var(--input-bg);
+
     color: var(--text-primary);
 
     font-size: 12px;
+
 }
 
 .verification-filter-panel input:focus,
+
 .verification-filter-panel select:focus {
+
     border-color: var(--primary);
+
 }
 
 .verification-filter-actions {
+
     display: flex !important;
+
     flex-direction: row !important;
 
     align-items: flex-end;
 
     gap: 8px;
+
 }
 
 .verification-filter-actions button {
+
     height: 38px;
 
     padding: 0 15px;
 
     border: none;
+
     border-radius: 7px;
 
     background: var(--primary);
+
     color: #ffffff;
 
     cursor: pointer;
 
     font-size: 11px;
+
     font-weight: 800;
+
 }
 
 .verification-filter-actions button:last-child {
+
     background: var(--text-secondary);
+
 }
 
-
-/* =========================================================
-   TOOLBAR
-   ========================================================= */
-
 .verification-toolbar {
+
     display: flex;
+
     align-items: center;
 
     gap: 9px;
 
     margin-bottom: 16px;
+
 }
 
 .verification-search {
+
     flex: 1;
+
     max-width: 450px;
 
     height: 40px;
 
     display: flex;
+
     align-items: center;
 
     padding: 0 12px;
 
     border: 1px solid var(--border-color);
+
     border-radius: 8px;
 
     background: var(--input-bg);
 
     color: var(--text-secondary);
+
 }
 
 .verification-search input {
+
     width: 100%;
+
     height: 100%;
 
     padding: 0 8px;
 
     border: none;
+
     outline: none;
 
     background: transparent;
+
     color: var(--text-primary);
 
     font-size: 12px;
+
 }
 
 .verification-search input::placeholder {
+
     color: var(--text-muted);
+
 }
 
 .verification-record-count {
+
     height: 40px;
 
     display: inline-flex;
+
     align-items: center;
 
     padding: 0 11px;
 
     border: 1px solid var(--border-color);
+
     border-radius: 8px;
 
     background: var(--bg-tertiary);
+
     color: var(--text-secondary);
 
     white-space: nowrap;
 
     font-size: 10px;
+
     font-weight: 800;
+
 }
 
 .verification-export-group {
+
     margin-left: auto;
 
     display: flex;
 
     gap: 6px;
+
 }
 
 .verification-export-group button {
+
     width: 40px;
+
     height: 40px;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     border: 1px solid var(--border-color);
+
     border-radius: 7px;
 
     background: var(--bg-tertiary);
+
     color: var(--text-secondary);
 
     cursor: pointer;
+
 }
 
 .verification-export-group button:hover {
+
     background: var(--card-bg-hover);
+
     color: var(--text-primary);
+
 }
 
-
-/* =========================================================
-   ERROR
-   ========================================================= */
-
 .verification-error {
+
     margin-bottom: 15px;
 
     padding: 10px 12px;
 
     border: 1px solid #fecaca;
+
     border-radius: 7px;
 
     background: #fef2f2;
+
     color: #b91c1c;
 
     font-size: 12px;
+
     font-weight: 600;
+
 }
 
-
-/* =========================================================
-   TABLE
-   ========================================================= */
-
 .verification-table-wrap {
+
     width: 100%;
 
     overflow-x: auto;
 
     border: 1px solid var(--border-color);
+
     border-radius: 10px;
+
 }
 
 .verification-table {
+
     width: 100%;
+
     min-width: 1080px;
 
     border-collapse: collapse;
 
     background: var(--card-bg);
+
 }
 
 .verification-table thead {
-    background: #f8fafc;
+    background: var(--bg-tertiary);
 }
 
 .verification-table th {
+
     height: 48px;
 
     padding: 0 13px;
@@ -409,15 +499,19 @@
     color: var(--text-secondary);
 
     font-size: 10px;
+
     font-weight: 900;
 
     letter-spacing: 0.6px;
 
     text-align: left;
+
     text-transform: uppercase;
+
 }
 
 .verification-table td {
+
     padding: 12px 13px;
 
     border-bottom: 1px solid var(--border-color);
@@ -427,133 +521,175 @@
     font-size: 12px;
 
     vertical-align: middle;
+
+}
+
+.verification-main-row {
+    background: var(--card-bg);
 }
 
 .verification-main-row:nth-child(even) {
-    background: #fafbfc;
+    background: var(--bg-tertiary);
 }
 
 .verification-main-row:hover {
+
     background: var(--card-bg-hover);
+
 }
 
 .verification-main-row.expanded {
-    background: #f8fafc;
+    background: var(--bg-tertiary);
 }
 
-
-/* =========================================================
-   EVIDENCE
-   ========================================================= */
-
 .verification-evidence {
+
     display: flex;
+
     align-items: center;
 
     gap: 5px;
+
 }
 
 .verification-expand {
+
     width: 27px;
+
     height: 27px;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     border: none;
+
     border-radius: 50%;
 
     background: var(--primary);
+
     color: #ffffff;
 
     cursor: pointer;
+
 }
 
 .verification-expand:hover {
+
     background: var(--primary-hover);
+
 }
 
 .verification-photo-button,
+
 .verification-download-button {
+
     width: 29px;
+
     height: 29px;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     border-radius: 7px;
 
     cursor: pointer;
+
 }
 
 .verification-photo-button {
+
     border: 1px solid #bfdbfe;
 
     background: #eff6ff;
+
     color: #2563eb;
+
 }
 
 .verification-download-button {
+
     border: 1px solid var(--border-color);
 
     background: var(--card-bg);
+
     color: var(--text-secondary);
+
 }
 
 .verification-photo-button:hover,
+
 .verification-download-button:hover {
+
     background: var(--card-bg-hover);
+
 }
 
 .verification-no-photo {
+
     padding: 5px 7px;
 
     border-radius: 6px;
 
     background: var(--bg-tertiary);
+
     color: var(--text-muted);
 
     font-size: 9px;
+
     font-weight: 800;
+
 }
 
-
-/* =========================================================
-   PERSON / SITE / VISIT
-   ========================================================= */
-
 .verification-person,
+
 .verification-site,
+
 .verification-visit {
+
     display: flex;
+
     flex-direction: column;
+
     gap: 3px;
+
 }
 
 .verification-person strong,
+
 .verification-site strong,
+
 .verification-visit strong {
+
     color: var(--text-primary);
+
     font-weight: 800;
+
 }
 
 .verification-person span,
+
 .verification-site span,
+
 .verification-visit span {
+
     color: var(--text-muted);
+
     font-size: 10px;
+
 }
 
-
-/* =========================================================
-   STATUS
-   ========================================================= */
-
 .verification-status-badge {
+
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     min-width: 84px;
@@ -563,145 +699,184 @@
     border-radius: 999px;
 
     font-size: 9px;
+
     font-weight: 900;
 
     letter-spacing: 0.4px;
+
 }
 
 .verification-pending {
+
     background: #fff7ed;
+
     color: #c2410c;
+
 }
 
 .verification-verified {
+
     background: #ecfdf5;
+
     color: #15803d;
+
 }
 
 .verification-unverified {
+
     background: #eff6ff;
+
     color: #1d4ed8;
+
 }
 
 .verification-rejected {
+
     background: #fef2f2;
+
     color: #b91c1c;
+
 }
 
-
-/* =========================================================
-   GPS
-   ========================================================= */
-
 .verification-map-btn {
+
     height: 30px;
 
     display: inline-flex;
+
     align-items: center;
+
     gap: 5px;
 
     padding: 0 9px;
 
     border: 1px solid #bfdbfe;
+
     border-radius: 7px;
 
     background: #eff6ff;
+
     color: #2563eb;
 
     cursor: pointer;
 
     font-size: 10px;
+
     font-weight: 800;
+
 }
 
 .verification-map-btn:hover {
+
     background: #dbeafe;
+
 }
 
 .verification-no-gps {
+
     color: var(--text-muted);
 
     font-size: 10px;
+
     font-weight: 700;
+
 }
 
-
-/* =========================================================
-   REVIEW
-   ========================================================= */
-
 .verification-actions {
+
     display: flex;
+
     gap: 5px;
+
 }
 
 .verification-actions button {
+
     width: 30px;
+
     height: 30px;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     border-radius: 7px;
 
     cursor: pointer;
+
 }
 
 .verification-actions button:disabled {
+
     opacity: 0.4;
 
     cursor: not-allowed;
+
 }
 
 .verification-actions .verify {
+
     border: 1px solid #bbf7d0;
+
     background: #f0fdf4;
+
     color: #15803d;
+
 }
 
 .verification-actions .unverify {
+
     border: 1px solid #bfdbfe;
+
     background: #eff6ff;
+
     color: #2563eb;
+
 }
 
 .verification-actions .reject {
+
     border: 1px solid #fecaca;
+
     background: #fef2f2;
+
     color: #dc2626;
+
 }
-
-
-/* =========================================================
-   EXPANDED
-   ========================================================= */
 
 .verification-expanded-row td {
     padding: 0 !important;
-
-    background: #f8fafc;
+    background: var(--bg-tertiary);
 }
 
 .verification-expanded-content {
+
     padding: 16px;
+
 }
 
 .verification-info-grid {
+
     display: grid;
 
     grid-template-columns:
+
         repeat(4, minmax(180px, 1fr));
 
     gap: 10px;
 
     margin-bottom: 15px;
+
 }
 
 .verification-info-grid>div {
+
     min-height: 64px;
 
     display: flex;
+
     flex-direction: column;
 
     justify-content: center;
@@ -711,65 +886,81 @@
     padding: 11px;
 
     border: 1px solid var(--border-color);
+
     border-radius: 8px;
 
     background: var(--card-bg);
+
 }
 
 .verification-info-grid span {
+
     color: var(--text-muted);
 
     font-size: 9px;
+
     font-weight: 900;
 
     text-transform: uppercase;
+
 }
 
 .verification-info-grid strong {
+
     color: var(--text-primary);
 
     font-size: 12px;
+
 }
 
-
-/* =========================================================
-   PHOTO SECTION
-   ========================================================= */
-
 .verification-photo-section {
+
     padding: 14px;
 
     border: 1px solid var(--border-color);
+
     border-radius: 9px;
 
     background: var(--card-bg);
+
 }
 
 .verification-photo-section-header {
+
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 10px;
 
     margin-bottom: 10px;
+
 }
 
 .verification-photo-section-header strong {
+
     color: var(--text-primary);
 
     font-size: 13px;
+
 }
 
 .verification-photo-section-header>div {
+
     display: flex;
+
     gap: 6px;
+
 }
 
 .verification-photo-section-header button {
+
     height: 30px;
 
     display: inline-flex;
+
     align-items: center;
 
     gap: 5px;
@@ -777,29 +968,37 @@
     padding: 0 9px;
 
     border: 1px solid var(--border-color);
+
     border-radius: 6px;
 
     background: var(--bg-tertiary);
+
     color: var(--primary);
 
     cursor: pointer;
 
     font-size: 10px;
+
     font-weight: 800;
+
 }
 
 .verification-photo-ready {
+
     min-height: 110px;
 
     display: flex;
+
     flex-direction: column;
 
     align-items: center;
+
     justify-content: center;
 
     gap: 6px;
 
     border: 1px dashed var(--border-color);
+
     border-radius: 8px;
 
     background: var(--bg-tertiary);
@@ -807,45 +1006,53 @@
     color: var(--primary);
 
     text-align: center;
+
 }
 
 .verification-photo-ready strong {
+
     color: var(--text-primary);
 
     font-size: 12px;
+
 }
 
 .verification-photo-ready span {
+
     color: var(--text-muted);
 
     font-size: 10px;
+
 }
 
 .verification-photo-empty {
+
     min-height: 110px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     border: 1px dashed var(--border-color);
+
     border-radius: 8px;
 
     color: var(--text-muted);
 
     font-size: 11px;
+
 }
 
-
-/* =========================================================
-   PAGINATION
-   ========================================================= */
-
 .verification-pagination-footer {
+
     min-height: 58px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 15px;
@@ -853,85 +1060,103 @@
     color: var(--text-muted);
 
     font-size: 11px;
+
 }
 
 .verification-pagination {
+
     display: flex;
+
     gap: 5px;
+
 }
 
 .verification-pagination button {
+
     min-width: 78px;
+
     height: 34px;
 
     padding: 0 10px;
 
     border: 1px solid var(--border-color);
+
     border-radius: 7px;
 
     background: var(--bg-tertiary);
+
     color: var(--text-secondary);
 
     cursor: pointer;
 
     font-size: 10px;
+
     font-weight: 700;
+
 }
 
 .verification-pagination button:nth-child(2) {
+
     min-width: 36px;
+
 }
 
 .verification-pagination button.active {
+
     border-color: var(--primary);
 
     background: var(--primary);
+
     color: #ffffff;
+
 }
 
 .verification-pagination button:disabled {
+
     opacity: 0.45;
+
     cursor: not-allowed;
+
 }
 
-
-/* =========================================================
-   EMPTY
-   ========================================================= */
-
 .verification-empty {
+
     height: 120px;
 
     text-align: center !important;
 
     color: var(--text-muted) !important;
+
 }
 
-
-/* =========================================================
-   PHOTO MODAL
-   ========================================================= */
-
 .verification-modal-backdrop {
+
     position: fixed;
+
     inset: 0;
 
     z-index: 9999;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     padding: 20px;
 
     background: rgba(0, 0, 0, 0.78);
+
 }
 
 .verification-photo-modal {
+
     width: min(1050px, 95vw);
+
     max-height: 92vh;
 
     display: flex;
+
     flex-direction: column;
 
     overflow: hidden;
@@ -939,13 +1164,17 @@
     border-radius: 12px;
 
     background: var(--card-bg);
+
 }
 
 .verification-modal-header {
+
     min-height: 62px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 15px;
@@ -953,73 +1182,101 @@
     padding: 0 14px;
 
     border-bottom: 1px solid var(--border-color);
+
 }
 
 .verification-modal-header>div:first-child {
+
     display: flex;
+
     flex-direction: column;
+
     gap: 3px;
+
 }
 
 .verification-modal-header strong {
+
     color: var(--text-primary);
+
 }
 
 .verification-modal-header span {
+
     color: var(--text-muted);
 
     font-size: 10px;
+
 }
 
 .verification-modal-header>div:last-child {
+
     display: flex;
+
     gap: 6px;
+
 }
 
 .verification-modal-header button {
+
     width: 34px;
+
     height: 34px;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     border: 1px solid var(--border-color);
+
     border-radius: 7px;
 
     background: var(--card-bg);
+
     color: var(--text-primary);
 
     cursor: pointer;
+
 }
 
 .verification-modal-body {
+
     padding: 12px;
 
     overflow: hidden;
 
     background: #111827;
+
 }
 
 .verification-photo-iframe {
+
     display: block;
 
     width: 100%;
+
     height: 70vh;
 
     min-height: 500px;
 
     border: none;
+
     border-radius: 8px;
 
     background: #111827;
+
 }
 
 .verification-modal-footer {
+
     min-height: 48px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 15px;
@@ -1029,120 +1286,169 @@
     color: var(--text-secondary);
 
     font-size: 11px;
+
 }
-
-
-/* =========================================================
-   PRINT
-   ========================================================= */
 
 @media print {
 
     .verification-header,
+
     .verification-tabs,
+
     .verification-filter-row,
+
     .verification-filter-panel,
+
     .verification-toolbar,
+
     .verification-error,
+
     .verification-pagination-footer,
+
     .verification-expanded-row,
+
     .verification-modal-backdrop {
+
         display: none !important;
+
     }
 
     .verification-card {
+
         padding: 0;
 
         border: none;
+
         box-shadow: none;
+
     }
 
     .verification-table-wrap {
+
         overflow: visible;
+
         border: none;
+
     }
 
     .verification-table {
+
         width: 100%;
+
         min-width: 0;
+
     }
 
     .verification-table th,
+
     .verification-table td {
+
         padding: 6px;
 
         font-size: 9px;
+
     }
+
 }
 
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
 @media (max-width: 900px) {
+
     .verification-filter-panel {
+
         grid-template-columns:
+
             repeat(2, minmax(180px, 1fr));
+
     }
 
     .verification-info-grid {
+
         grid-template-columns:
+
             repeat(2, minmax(180px, 1fr));
+
     }
 
     .verification-toolbar {
+
         flex-wrap: wrap;
+
     }
 
     .verification-search {
+
         max-width: none;
+
         width: 100%;
+
     }
 
     .verification-pagination-footer {
+
         align-items: flex-start;
 
         flex-direction: column;
 
         padding: 12px 0;
+
     }
+
 }
 
 @media (max-width: 600px) {
+
     .verification-card {
+
         padding: 14px;
+
     }
 
     .verification-header {
+
         align-items: flex-start;
+
         flex-direction: column;
+
     }
 
     .verification-tabs {
+
         width: 100%;
 
         overflow-x: auto;
+
     }
 
     .verification-tabs button {
+
         flex-shrink: 0;
+
     }
 
     .verification-filter-panel {
+
         grid-template-columns: 1fr;
+
     }
 
     .verification-info-grid {
+
         grid-template-columns: 1fr;
+
     }
 
     .verification-export-group {
+
         margin-left: 0;
+
     }
 
     .verification-photo-section-header {
+
         align-items: flex-start;
+
         flex-direction: column;
+
     }
+
 }

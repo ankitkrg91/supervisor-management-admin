@@ -3235,143 +3235,50 @@ const ScheduleTask = () => {
                 { }
 
                 <div className="schedule-map-container">
-
                     <MapContainer
-
                         key={`${mapPosition[0]}-${mapPosition[1]}`}
-
-                        center={
-
-                            mapPosition
-
-                        }
-
+                        center={mapPosition}
                         zoom={
-
-                            selectedSite &&
-
-                                hasSelectedCoordinates
-
+                            selectedSite && hasSelectedCoordinates
                                 ? 14
-
                                 : 11
-
                         }
-
-                        scrollWheelZoom={
-
-                            true
-
-                        }
-
+                        scrollWheelZoom={true}
                         className="schedule-map"
-
                     >
-
                         <TileLayer
-
-                            attribution='&copy; OpenStreetMap contributors'
-
-                            url="https\://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
 
                         <Marker
-
-                            position={
-
-                                mapPosition
-
-                            }
-
-                            icon={
-
-                                markerIcon
-
-                            }
-
+                            position={mapPosition}
+                            icon={markerIcon}
                         >
-
                             <Popup>
-
                                 {selectedSite ? (
-
                                     <div>
-
                                         <strong>
-
-                                            {
-
-                                                selectedSite.siteCode
-
-                                            }
-
+                                            {selectedSite.siteCode}
                                         </strong>
 
                                         <br />
 
-                                        {
-
-                                            selectedSite.name
-
-                                        }
+                                        {selectedSite.name}
 
                                         {selectedSite.city && (
-
                                             <>
-
                                                 <br />
-
-                                                {
-
-                                                    selectedSite.city
-
-                                                }
-
+                                                {selectedSite.city}
                                             </>
-
                                         )}
-
                                     </div>
-
                                 ) : (
-
                                     "Supervisor Management site map"
-
                                 )}
-
                             </Popup>
-
                         </Marker>
-
                     </MapContainer>
-
-                    <div className="schedule-map-switch">
-
-                        <button
-
-                            type="button"
-
-                            className="active"
-
-                        >
-
-                            Map
-
-                        </button>
-
-                        <button
-
-                            type="button"
-
-                        >
-
-                            Satellite
-
-                        </button>
-
-                    </div>
-
                 </div>
 
             </div>
