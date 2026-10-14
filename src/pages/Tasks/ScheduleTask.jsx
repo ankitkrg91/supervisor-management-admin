@@ -72,6 +72,10 @@ const ScheduleTask = () => {
 
         useState("");
 
+    const [clientPhone, setClientPhone] =
+
+        useState("");
+
     const [clientEmail, setClientEmail] =
 
         useState("");
@@ -1212,6 +1216,16 @@ const ScheduleTask = () => {
 
         }
 
+        if (clientPhone.trim()) {
+
+            parts.push(
+
+                `Client Mobile: ${clientPhone.trim()}`
+
+            );
+
+        }
+
         if (clientEmail.trim()) {
 
             parts.push(
@@ -1569,6 +1583,8 @@ const ScheduleTask = () => {
             setMessageType("success");
 
             setClient("");
+
+            setClientPhone("");
 
             setClientEmail("");
 
@@ -2137,6 +2153,31 @@ const ScheduleTask = () => {
                     </div>
 
                     { }
+
+                    {/* CLIENT MOBILE */}
+                    <div className="schedule-field">
+                        <label>
+                            Client Mobile
+                        </label>
+                        <div className="schedule-input-with-action">
+                            <input
+                                type="tel"
+                                value={clientPhone}
+                                onChange={(e) => setClientPhone(e.target.value)}
+                                placeholder="Client mobile number (e.g. 9876543210)"
+                            />
+                            {clientPhone && (
+                                <button
+                                    type="button"
+                                    className="schedule-remove-button"
+                                    onClick={() => setClientPhone("")}
+                                    title="Clear"
+                                >
+                                    <X size={19} />
+                                </button>
+                            )}
+                        </div>
+                    </div>
 
                     <div className="schedule-field">
 

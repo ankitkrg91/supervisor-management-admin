@@ -16,7 +16,7 @@ import {
     Printer,
 } from "lucide-react";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import * as XLSX from "xlsx";
 
@@ -27,6 +27,7 @@ import "./BatteryLow.css";
 const BATTERY_LOW_THRESHOLD = 20;
 
 const BatteryLowPage = () => {
+    const navigate = useNavigate();
     const [fieldForce, setFieldForce] = useState([]);
     const [notCheckedInCount, setNotCheckedInCount] =
         useState(0);
@@ -362,27 +363,13 @@ const BatteryLowPage = () => {
     // OPEN GOOGLE MAP
     // =========================================================
 
-    const openMap = (
-        person
-    ) => {
-        const latitude =
-            person.location?.latitude;
-
-        const longitude =
-            person.location?.longitude;
-
-        if (
-            latitude === undefined ||
-            longitude === undefined
-        ) {
+    const openMap = (person) => {
+        const userId = person?.user?.id || person?.user?.userId || person?.id;
+        if (!userId) {
             return;
         }
-
-        window.open(
-            `https://www.google.com/maps?q=${latitude},${longitude}`,
-            "_blank",
-            "noopener,noreferrer"
-        );
+        const today = new Date().toISOString().split("T")[0];
+        navigate(`/distance-report?userId=${userId}&date=${today}`);
     };
 
     // =========================================================
@@ -996,33 +983,9 @@ const BatteryLowPage = () => {
                                                 <button
                                                     type="button"
                                                     className="battery-low-map-button"
-                                                    title={
-                                                        person
-                                                            .location
-                                                            ?.latitude !==
-                                                            undefined &&
-                                                            person
-                                                                .location
-                                                                ?.longitude !==
-                                                            undefined
-                                                            ? "View supervisor on map"
-                                                            : "No location available"
-                                                    }
-                                                    onClick={() =>
-                                                        openMap(
-                                                            person
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        person
-                                                            .location
-                                                            ?.latitude ===
-                                                        undefined ||
-                                                        person
-                                                            .location
-                                                            ?.longitude ===
-                                                        undefined
-                                                    }
+                                                    title={person.user?.id ? "View supervisor daily route & map" : "No supervisor available"}
+                                                    onClick={() => openMap(person)}
+                                                    disabled={!person.user?.id}
                                                 >
 
                                                     <Map

@@ -8,12 +8,45 @@ import {
     Search,
     XCircle,
     X,
+    Phone,
 } from "lucide-react";
 
 import * as XLSX from "xlsx";
 
 import { apiFetch } from "../../utils/api";
 import "./TaskDetails.css";
+
+const extractClientDetails = (desc, task = {}) => {
+    const text = String(desc || "");
+
+    // 1. Mobile Number (from task fields or description)
+    let mobile = task?.clientMobile || task?.clientPhone || null;
+    if (!mobile && text) {
+        const m = text.match(/Client Mobile:\s*([^|\n]+)/i) ||
+            text.match(/(?:Mobile|Phone):\s*([0-9\+\-\s]{8,15})/i) ||
+            text.match(/(?:Mobile|Phone):\s*([^|\n]+)/i);
+        if (m) mobile = m[1].trim();
+    }
+
+    // 2. Client Name (from task or description)
+    let client = task?.clientName || task?.client || null;
+    if (!client && text) {
+        const c = text.match(/Client:\s*([^|\n]+?)(?=\s*(?:Client Email|Client Mobile|Address|Site|Category|Type|$))/i) ||
+            text.match(/Client:\s*([^|\n]+)/i);
+        if (c) client = c[1].trim();
+    }
+
+    // 3. Client Email (from task or description)
+    let email = task?.clientEmail || null;
+    if (!email && text) {
+        const e = text.match(/Client Email:\s*([^|\n]+?)(?=\s*(?:Address|Site|Category|Type|$))/i) ||
+            text.match(/Client Email:\s*([^|\n]+)/i);
+        if (e) email = e[1].trim();
+    }
+
+    return { client, mobile, email };
+};
+
 
 // =========================================================
 // STATUS CONFIG
@@ -1620,6 +1653,61 @@ const TaskDetails = () => {
                                         "—"}
                                 </strong>
                             </div>
+
+                            {/* CLIENT DETAILS (ALWAYS VISIBLE) */}
+                            {(() => {
+                                const details = extractClientDetails(selectedTask.description, selectedTask);
+                                return (
+                                    <>
+                                        {/* CLIENT NAME */}
+                                        <div className="task-detail-field">
+                                            <span>Client</span>
+                                            <strong>{details.client || "—"}</strong>
+                                        </div>
+
+                                        {/* CLIENT MOBILE (ALWAYS VISIBLE WITH CALL LINK OR DASH) */}
+                                        <div className="task-detail-field">
+                                            <span>Client Mobile</span>
+                                            <strong>
+                                                {details.mobile ? (
+                                                    <a
+                                                        href={`tel:${details.mobile}`}
+                                                        style={{
+                                                            color: "#2563eb",
+                                                            textDecoration: "none",
+                                                            display: "inline-flex",
+                                                            alignItems: "center",
+                                                            gap: "6px",
+                                                        }}
+                                                    >
+                                                        <Phone size={14} />
+                                                        {details.mobile}
+                                                    </a>
+                                                ) : (
+                                                    "—"
+                                                )}
+                                            </strong>
+                                        </div>
+
+                                        {/* CLIENT EMAIL */}
+                                        <div className="task-detail-field">
+                                            <span>Client Email</span>
+                                            <strong>
+                                                {details.email ? (
+                                                    <a
+                                                        href={`mailto:${details.email}`}
+                                                        style={{ color: "#2563eb", textDecoration: "none" }}
+                                                    >
+                                                        {details.email}
+                                                    </a>
+                                                ) : (
+                                                    "—"
+                                                )}
+                                            </strong>
+                                        </div>
+                                    </>
+                                );
+                            })()}
 
                             {/* STATUS */}
                             <div className="task-detail-field">

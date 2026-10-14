@@ -31,6 +31,16 @@ const COLUMN_ALIASES = {
         "task description",
     ],
 
+    clientPhone: [
+        "clientphone",
+        "client phone",
+        "client mobile",
+        "clientmobile",
+        "phone",
+        "mobile",
+        "contact",
+    ],
+
     clientEmail: [
         "clientemail",
         "client email",
@@ -291,6 +301,16 @@ const ScheduleBulkTask = () => {
                     ] ?? ""
                 ).trim();
 
+            const clientPhone =
+                columnMap.clientPhone
+                    ? String(
+                        row[
+                        columnMap
+                            .clientPhone
+                        ] ?? ""
+                    ).trim()
+                    : "";
+
             const clientEmail =
                 columnMap.clientEmail
                     ? String(
@@ -424,10 +444,17 @@ const ScheduleBulkTask = () => {
                 }
             }
 
+            let finalDescription = description || "";
+            if (clientPhone) {
+                finalDescription = finalDescription
+                    ? `${finalDescription} | Client Mobile: ${clientPhone}`
+                    : `Client Mobile: ${clientPhone}`;
+            }
+
             tasks.push({
                 title,
                 description:
-                    description || null,
+                    finalDescription || null,
                 clientEmail:
                     clientEmail || null,
                 priority: priorityText,
@@ -573,6 +600,7 @@ const ScheduleBulkTask = () => {
             [
                 "title",
                 "description",
+                "clientPhone",
                 "clientEmail",
                 "priority",
                 "scheduledAt",
@@ -583,6 +611,7 @@ const ScheduleBulkTask = () => {
             [
                 "Morning Site Inspection",
                 "Inspect the assigned site",
+                "9876543210",
                 "client@example.com",
                 "HIGH",
                 "2026-09-20T09:00:00.000Z",
@@ -642,6 +671,11 @@ const ScheduleBulkTask = () => {
             [
                 "description",
                 "Task description",
+            ],
+
+            [
+                "clientPhone",
+                "Client mobile number (e.g. 9876543210)",
             ],
 
             [

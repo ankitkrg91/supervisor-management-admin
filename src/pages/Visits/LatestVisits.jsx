@@ -1,1840 +1,668 @@
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-    Fragment,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
-
-import {
-    CalendarDays,
-    Search,
-    FileSpreadsheet,
-    FileText,
-    Printer,
-    Image as ImageIcon,
-    File,
-    Plus,
-    Minus,
-    Download,
-    MapPin,
-    X,
-    ExternalLink,
-    RefreshCw,
+    CalendarDays, Search, FileSpreadsheet, FileText, Printer, MapPin,
+    Check, X, RefreshCw, ShieldCheck, CheckCircle2, XCircle, RotateCcw,
+    Camera, Loader2, ZoomIn, Download,
 } from "lucide-react";
-
 import * as XLSX from "xlsx";
-
 import { apiFetch } from "../../utils/api";
-
 import "./LatestVisits.css";
 
-
 const PAGE_SIZE = 10;
+const LOCAL_QUESTIONS_KEY = "audit_custom_questions_v6";
 
+export const getLocalActiveQuestions = () => {
+    try {
+        const parsed = JSON.parse(localStorage.getItem(LOCAL_QUESTIONS_KEY) || "[]");
+        return Array.isArray(parsed) ? parsed.filter((q) => q.isActive !== false) : [];
+    } catch {
+        return [];
+    }
+};
 
-const LatestVisits = () => {
+export const extractSiteEvidencePhotos = (visit) => {
+    if (!visit) return [];
+    const list = [];
+    const seen = new Set();
+    const add = (url, label) => {
+        const clean = typeof url === "string" ? url.trim() : "";
+        if (!clean || seen.has(clean)) return;
+        seen.add(clean);
+        list.push({ url: clean, label });
+    };
+
+    if (typeof visit.notes === "string") {
+        const m = visit.notes.match(/\[SITE_EVIDENCE\]:\s*(\{[\s\S]*?\})/);
+        if (m) {
+            try {
+                const ev = JSON.parse(m[1]);
+                add(ev.nameplate || ev.namePlatePhoto, "Client Name Plate Photo");
+                add(ev.selfie || ev.selfiePhoto, "Supervisor Selfie");
+                add(ev.photo1 || ev.sitePhoto1 || ev.sitePhoto, "Site Photo 1");
+            } catch { }
+        }
+    }
+    add(visit.photoUrl, list.length === 0 ? "Site Evidence Photo" : "Site Photo");
+    add(visit.selfieUrl, "Check-In Selfie");
+    return list;
+};
+
+export const extractAuditQuestions = (visit, activeChecklist = []) => {
+    const answers = visit?.auditSubmission?.answers;
+    if (Array.isArray(answers) && answers.length > 0) {
+        return answers.map((ans, idx) => {
+            let photos = [];
+            let textVal = ans.textValue;
+            if (textVal) {
+                try {
+                    const p = JSON.parse(textVal);
+                    if (Array.isArray(p)) {
+                        photos = p.filter(Boolean);
+                        textVal = null;
+                    } else if (typeof p === "string" && (p.startsWith("data:image") || p.startsWith("http"))) {
+                        photos = [p];
+                        textVal = null;
+                    }
+                } catch {
+                    if (typeof textVal === "string" && (textVal.startsWith("data:image") || textVal.startsWith("http"))) {
+                        photos = [textVal];
+                        textVal = null;
+                    }
+                }
+            }
+            const hasBool = typeof ans.booleanValue === "boolean";
+            return {
+                no: ans.questionNo || idx + 1,
+                text: ans.questionText || `Question #${ans.questionNo || idx + 1}`,
+                ans: hasBool ? (ans.booleanValue ? "YES" : "NO") : (textVal || "—"),
+                booleanValue: hasBool ? ans.booleanValue : true,
+                photos,
+            };
+        });
+    }
+
+    const src = Array.isArray(activeChecklist) && activeChecklist.length > 0
+        ? activeChecklist.filter((q) => q.isActive !== false)
+        : getLocalActiveQuestions();
+
+    return src.map((q, idx) => ({
+        no: idx + 1,
+        text: q.question || q.text || `Question #${idx + 1}`,
+        ans: "Pending",
+        booleanValue: null,
+        photos: [],
+    }));
+};
+
+export const formatDate = (d) =>
+    d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "N/A";
+
+export const formatTime = (d) =>
+    d ? new Date(d).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "N/A";
+
+const LatestVisits = ({ showVerificationTabs = false }) => {
+    const navigate = useNavigate();
     const [visits, setVisits] = useState([]);
-
+    const [activeChecklist, setActiveChecklist] = useState([]);
     const [loading, setLoading] = useState(true);
-
     const [error, setError] = useState("");
-
     const [searchText, setSearchText] = useState("");
-
     const [fromDate, setFromDate] = useState("");
-
     const [toDate, setToDate] = useState("");
-
-    const [region, setRegion] = useState("ALL");
-
-    const [branch, setBranch] = useState("ALL");
-
-    const [client, setClient] = useState("ALL");
-
-    const [showFilters, setShowFilters] = useState(false);
-
-    const [expandedRows, setExpandedRows] = useState([]);
-
-    const [photoModal, setPhotoModal] = useState(null);
-
+    const [statusFilter, setStatusFilter] = useState("ALL");
     const [page, setPage] = useState(1);
 
+    const [selectedAuditVisit, setSelectedAuditVisit] = useState(null);
+    const [updatingId, setUpdatingId] = useState(null);
+    const [previewPhoto, setPreviewPhoto] = useState(null);
 
-    /* =========================================================
-       FETCH VISITS
-       ========================================================= */
+    const fetchActiveChecklist = async () => {
+        try {
+            const local = getLocalActiveQuestions();
+            if (local.length > 0) setActiveChecklist(local);
+            const res = await apiFetch("/api/audit/checklist", { method: "GET" });
+            if (res.ok) {
+                const body = await res.json();
+                const qs = (body?.data?.checklist?.questions || []).filter((q) => q.isActive !== false);
+                if (qs.length > 0) setActiveChecklist(qs);
+            }
+        } catch { }
+    };
 
     const fetchVisits = async () => {
         try {
             setLoading(true);
             setError("");
-
-            const params = new URLSearchParams();
-
-            params.set("role", "SUPERVISOR");
-            params.set("page", "1");
-            params.set("limit", "100");
-
-            const response = await apiFetch(
-                `/api/visits?${params.toString()}`,
-                {
-                    method: "GET",
-                }
-            );
-
-            const body = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    body?.message ||
-                    "Failed to load visits"
-                );
-            }
-
-            const rows =
-                body?.data?.visits ||
-                body?.visits ||
-                [];
-
-            setVisits(
-                Array.isArray(rows)
-                    ? rows
-                    : []
-            );
-
-            setExpandedRows([]);
+            const res = await apiFetch("/api/visits?role=SUPERVISOR&page=1&limit=100", { method: "GET" });
+            const body = await res.json();
+            if (!res.ok) throw new Error(body?.message || "Failed to fetch visits");
+            setVisits(body?.data?.visits || body?.visits || []);
             setPage(1);
-        } catch (fetchError) {
-            console.error(
-                "Latest visits error:",
-                fetchError
-            );
-
-            setError(
-                fetchError?.message ||
-                "Failed to load visits"
-            );
-
+        } catch (err) {
+            setError(err?.message || "Failed to load visit records");
             setVisits([]);
         } finally {
             setLoading(false);
         }
     };
 
-
     useEffect(() => {
         fetchVisits();
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        fetchActiveChecklist();
     }, []);
 
-
-    /* =========================================================
-       FILTER OPTIONS
-       ========================================================= */
-
-    const regions = useMemo(() => {
-        return [
-            "ALL",
-            ...new Set(
-                visits
-                    .map(
-                        (item) =>
-                            item.region
-                    )
-                    .filter(Boolean)
-            ),
-        ];
-    }, [visits]);
-
-
-    const branches = useMemo(() => {
-        return [
-            "ALL",
-            ...new Set(
-                visits
-                    .map(
-                        (item) =>
-                            item.branch ||
-                            item.site?.city
-                    )
-                    .filter(Boolean)
-            ),
-        ];
-    }, [visits]);
-
-
-    const clients = useMemo(() => {
-        return [
-            "ALL",
-            ...new Set(
-                visits
-                    .map(
-                        (item) =>
-                            item.clientName
-                    )
-                    .filter(Boolean)
-            ),
-        ];
-    }, [visits]);
-
-
-    /* =========================================================
-       FILTER DATA
-       ========================================================= */
-
-    const filteredData = useMemo(() => {
-        const query =
-            searchText
-                .trim()
-                .toLowerCase();
-
-        return visits.filter((item) => {
-            const searchable = [
-                item.user?.name,
-                item.user?.email,
-                item.site?.name,
-                item.site?.siteCode,
-                item.site?.state,
-                item.clientName,
-                item.branch,
-                item.region,
-                item.reportType,
-                item.status,
-            ]
-                .filter(Boolean)
-                .join(" ")
-                .toLowerCase();
-
-            const matchSearch =
-                !query ||
-                searchable.includes(
-                    query
-                );
-
-            const itemRegion =
-                item.region || "";
-
-            const itemBranch =
-                item.branch ||
-                item.site?.city ||
-                "";
-
-            const itemClient =
-                item.clientName ||
-                "";
-
-            const matchRegion =
-                region === "ALL" ||
-                itemRegion === region;
-
-            const matchBranch =
-                branch === "ALL" ||
-                itemBranch === branch;
-
-            const matchClient =
-                client === "ALL" ||
-                itemClient === client;
-
-            let matchFrom = true;
-            let matchTo = true;
-
-            if (fromDate) {
-                const from =
-                    new Date(
-                        `${fromDate}T00:00:00`
-                    );
-
-                const visitDate =
-                    new Date(
-                        item.visitAt
-                    );
-
-                matchFrom =
-                    visitDate >= from;
-            }
-
-            if (toDate) {
-                const to =
-                    new Date(
-                        `${toDate}T23:59:59`
-                    );
-
-                const visitDate =
-                    new Date(
-                        item.visitAt
-                    );
-
-                matchTo =
-                    visitDate <= to;
-            }
-
-            return (
-                matchSearch &&
-                matchRegion &&
-                matchBranch &&
-                matchClient &&
-                matchFrom &&
-                matchTo
-            );
-        });
-    }, [
-        visits,
-        searchText,
-        region,
-        branch,
-        client,
-        fromDate,
-        toDate,
-    ]);
-
-
-    /* =========================================================
-       PAGINATION
-       ========================================================= */
-
-    const totalPages = Math.max(
-        1,
-        Math.ceil(
-            filteredData.length /
-            PAGE_SIZE
-        )
-    );
-
-
-    const paginatedData = useMemo(() => {
-        const start =
-            (page - 1) *
-            PAGE_SIZE;
-
-        return filteredData.slice(
-            start,
-            start + PAGE_SIZE
-        );
-    }, [
-        filteredData,
-        page,
-    ]);
-
-
-    useEffect(() => {
-        if (page > totalPages) {
-            setPage(totalPages);
-        }
-    }, [
-        page,
-        totalPages,
-    ]);
-
-
-    /* =========================================================
-       HELPERS
-       ========================================================= */
-
-    const formatDate = (value) => {
-        if (!value) {
-            return "NA";
-        }
-
-        const d = new Date(value);
-
-        if (
-            Number.isNaN(
-                d.getTime()
-            )
-        ) {
-            return "NA";
-        }
-
-        return d.toLocaleDateString(
-            "en-IN",
-            {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-            }
-        );
-    };
-
-
-    const formatTime = (value) => {
-        if (!value) {
-            return "NA";
-        }
-
-        const d = new Date(value);
-
-        if (
-            Number.isNaN(
-                d.getTime()
-            )
-        ) {
-            return "NA";
-        }
-
-        return d.toLocaleTimeString(
-            "en-IN",
-            {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hour12: false,
-            }
-        );
-    };
-
-
-    /* =========================================================
-       PHOTO ID
-       ========================================================= */
-
-    const getPhotoId = (visit) => {
-        const storedId =
-            String(
-                visit?.photoFileId ||
-                ""
-            ).trim();
-
-        if (storedId) {
-            return storedId;
-        }
-
-        const photoUrl =
-            String(
-                visit?.photoUrl ||
-                ""
-            ).trim();
-
-        if (!photoUrl) {
-            return "";
-        }
-
-        const queryMatch =
-            photoUrl.match(
-                /[?&]id=([^&]+)/i
-            );
-
-        if (queryMatch) {
-            return queryMatch[1];
-        }
-
-        const pathMatch =
-            photoUrl.match(
-                /\/d\/([^/]+)/i
-            );
-
-        return pathMatch
-            ? pathMatch[1]
-            : "";
-    };
-
-
-    /* =========================================================
-       PHOTO PREVIEW
-       ========================================================= */
-
-    const getPhotoPreviewUrl = (
-        visit
-    ) => {
-        const id =
-            getPhotoId(visit);
-
-        if (!id) {
-            return "";
-        }
-
-        return (
-            `https://drive.google.com/file/d/${encodeURIComponent(
-                id
-            )}/preview`
-        );
-    };
-
-
-    const getDownloadUrl = (
-        visit
-    ) => {
-        const id =
-            getPhotoId(visit);
-
-        if (id) {
-            return (
-                `https://drive.google.com/uc?export=download&id=${encodeURIComponent(
-                    id
-                )}`
-            );
-        }
-
-        return String(
-            visit?.photoUrl ||
-            ""
-        ).trim();
-    };
-
-
-    const hasPhoto = (visit) => {
-        return Boolean(
-            getPhotoId(visit)
-        );
-    };
-
-
-    /* =========================================================
-       OPEN PHOTO
-       ========================================================= */
-
-    const openPhoto = async (
-        visit
-    ) => {
-        try {
-            let target = visit;
-
-            if (!hasPhoto(target)) {
-                const response =
-                    await apiFetch(
-                        `/api/visits/${visit.id}`,
-                        {
-                            method: "GET",
-                        }
-                    );
-
-                const body =
-                    await response.json();
-
-                if (!response.ok) {
-                    throw new Error(
-                        body?.message ||
-                        "Unable to load photo"
-                    );
+    const handleOpenAuditModal = async (visit) => {
+        setSelectedAuditVisit(visit);
+        if (!visit?.auditSubmission?.answers?.length && visit?.id) {
+            try {
+                const res = await apiFetch(`/api/audit/visits/${visit.id}/submission`, { method: "GET" });
+                if (res.ok) {
+                    const sub = (await res.json())?.data?.submission;
+                    if (sub?.answers?.length) {
+                        setSelectedAuditVisit((p) => (p?.id === visit.id ? { ...p, auditSubmission: sub } : p));
+                        setVisits((p) => p.map((it) => (it.id === visit.id ? { ...it, auditSubmission: sub } : it)));
+                    }
                 }
-
-                target =
-                    body?.data?.visit ||
-                    body?.visit ||
-                    visit;
-            }
-
-            if (!hasPhoto(target)) {
-                alert(
-                    "No photo uploaded for this visit."
-                );
-
-                return;
-            }
-
-            setPhotoModal(target);
-        } catch (photoError) {
-            console.error(
-                "Photo preview error:",
-                photoError
-            );
-
-            setError(
-                photoError?.message ||
-                "Unable to load photo"
-            );
+            } catch { }
         }
     };
 
-
-    /* =========================================================
-       DOWNLOAD
-       ========================================================= */
-
-    const downloadPhoto = async (
-        visit
-    ) => {
+    const updateStatus = async (visit, nextStatus) => {
+        if (!visit?.id) return;
         try {
-            let target = visit;
-
-            if (!hasPhoto(target)) {
-                const response =
-                    await apiFetch(
-                        `/api/visits/${visit.id}`,
-                        {
-                            method: "GET",
-                        }
-                    );
-
-                const body =
-                    await response.json();
-
-                if (!response.ok) {
-                    throw new Error(
-                        body?.message ||
-                        "Unable to load photo"
-                    );
-                }
-
-                target =
-                    body?.data?.visit ||
-                    body?.visit ||
-                    visit;
+            setUpdatingId(visit.id);
+            setError("");
+            const res = await apiFetch(`/api/visits/${visit.id}/status`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: nextStatus }),
+            });
+            const body = await res.json();
+            if (!res.ok) throw new Error(body?.message || "Failed to update visit status");
+            setVisits((p) => p.map((it) => (it.id === visit.id ? { ...it, status: nextStatus } : it)));
+            if (selectedAuditVisit?.id === visit.id) {
+                setSelectedAuditVisit((p) => (p ? { ...p, status: nextStatus } : null));
             }
-
-            const url =
-                getDownloadUrl(target);
-
-            if (!url) {
-                alert(
-                    "No photo available."
-                );
-
-                return;
-            }
-
-            window.open(
-                url,
-                "_blank",
-                "noopener,noreferrer"
-            );
-        } catch (downloadError) {
-            setError(
-                downloadError?.message ||
-                "Unable to download photo"
-            );
+        } catch (err) {
+            setError(err?.message || "Failed to update verification status");
+        } finally {
+            setUpdatingId(null);
         }
     };
-
-
-    /* =========================================================
-       MAP
-       ========================================================= */
 
     const openMap = (visit) => {
-        const latitude =
-            visit?.latitude;
+        const userId = visit.user?.id || visit.userId;
+        if (!userId) return alert("No user ID available for this visit.");
+        const dateStr = (visit.visitAt ? new Date(visit.visitAt) : new Date()).toISOString().split("T")[0];
+        navigate(`/distance-report?userId=${userId}&date=${dateStr}`);
+    };
 
-        const longitude =
-            visit?.longitude;
-
-        if (
-            latitude === null ||
-            latitude === undefined ||
-            longitude === null ||
-            longitude === undefined
-        ) {
-            alert(
-                "No GPS location is available."
-            );
-
-            return;
-        }
-
-        window.open(
-            `https://www.google.com/maps?q=${latitude},${longitude}`,
-            "_blank",
-            "noopener,noreferrer"
+    const counts = useMemo(() => {
+        return visits.reduce(
+            (acc, curr) => {
+                acc.ALL += 1;
+                const s = String(curr.status || "PENDING").toUpperCase();
+                if (s === "VERIFIED") acc.VERIFIED += 1;
+                else if (s === "REJECTED") acc.REJECTED += 1;
+                else if (s === "UNVERIFIED") acc.UNVERIFIED += 1;
+                else acc.PENDING += 1;
+                return acc;
+            },
+            { ALL: 0, PENDING: 0, VERIFIED: 0, UNVERIFIED: 0, REJECTED: 0 }
         );
+    }, [visits]);
+
+    const filteredVisits = useMemo(() => {
+        return visits.filter((it) => {
+            if (statusFilter !== "ALL" && String(it.status || "PENDING").toUpperCase() !== statusFilter) return false;
+            if (fromDate && new Date(it.visitAt).getTime() < new Date(`${fromDate}T00:00:00.000Z`).getTime()) return false;
+            if (toDate && new Date(it.visitAt).getTime() > new Date(`${toDate}T23:59:59.999Z`).getTime()) return false;
+            if (searchText.trim()) {
+                const q = searchText.trim().toLowerCase();
+                return [it.user?.name, it.user?.email, it.site?.name, it.site?.siteCode, it.clientName].some((v) =>
+                    v?.toLowerCase().includes(q)
+                );
+            }
+            return true;
+        });
+    }, [visits, statusFilter, fromDate, toDate, searchText]);
+
+    const paginatedData = useMemo(
+        () => filteredVisits.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+        [filteredVisits, page]
+    );
+    const totalPages = Math.ceil(filteredVisits.length / PAGE_SIZE) || 1;
+
+    const handleExportExcel = () => {
+        if (!filteredVisits.length) return;
+        const rows = filteredVisits.map((it, idx) => ({
+            "#": idx + 1,
+            "Supervisor Name": it.user?.name || "N/A",
+            Contact: it.user?.phone || it.user?.email || "N/A",
+            "Site Name": it.site?.name || "N/A",
+            "Site Code": it.site?.siteCode || "—",
+            "Client / Branch": it.clientName || it.branch || "—",
+            "Visit Date": formatDate(it.visitAt),
+            "Visit Time": formatTime(it.visitAt),
+            Status: it.status || "PENDING",
+            "GPS Latitude": it.latitude ?? "—",
+            "GPS Longitude": it.longitude ?? "—",
+        }));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Visits");
+        XLSX.writeFile(wb, `Visits_${new Date().toISOString().split("T")[0]}.xlsx`);
     };
 
-
-    /* =========================================================
-       TOGGLE ROW
-       ========================================================= */
-
-    const toggleRow = (id) => {
-        setExpandedRows(
-            (current) =>
-                current.includes(id)
-                    ? current.filter(
-                        (rowId) =>
-                            rowId !== id
-                    )
-                    : [
-                        ...current,
-                        id,
-                    ]
+    const printAuditReport = (visit) => {
+        if (!visit) return;
+        const pw = window.open("", "_blank", "width=1000,height=900");
+        if (!pw) return alert("Please allow popups to print the audit report.");
+        const qs = extractAuditQuestions(visit, activeChecklist);
+        const passed = qs.filter((q) => q.booleanValue === true).length;
+        const pct = qs.length > 0 ? Math.round((passed / qs.length) * 100) : 100;
+        const siteName = visit.site?.name || visit.clientName || "Client Site";
+        const rowsHtml = qs
+            .map(
+                (q) =>
+                    `<tr><td style="text-align:center;font-weight:bold;">#${q.no}</td><td><strong>${q.text}</strong>${q.photos?.length ? `<div style="font-size:11px;color:#059669;">📷 ${q.photos.length} Photo(s) Attached</div>` : ""
+                    }</td><td style="text-align:center;font-weight:bold;color:${q.booleanValue === false ? "#dc2626" : "#15803d"
+                    };">${q.ans}</td></tr>`
+            )
+            .join("");
+        pw.document.write(
+            `<!DOCTYPE html><html><head><title>Audit Report - ${siteName}</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#0f172a;font-size:12px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #cbd5e1;padding:7px 10px;text-align:left;}th{background:#1e3a8a;color:#fff;}</style></head><body><h2>${siteName.toUpperCase()} — SITE AUDIT REPORT</h2><p>Auditor: <strong>${visit.user?.name || "Supervisor"
+            }</strong> | Date: ${formatDate(visit.visitAt)} ${formatTime(visit.visitAt)} | Status: <strong>${visit.status || "PENDING"
+            }</strong> | Compliance: <strong>${pct}% (${passed}/${qs.length})</strong></p><table><thead><tr><th style="width:45px;text-align:center;">#</th><th>Audit Checklist Question</th><th style="width:120px;text-align:center;">Response</th></tr></thead><tbody>${rowsHtml}</tbody></table></body></html>`
         );
+        pw.document.close();
+        pw.focus();
+        setTimeout(() => pw.print(), 400);
     };
 
-
-    /* =========================================================
-       RESET FILTERS
-       ========================================================= */
-
-    const resetFilters = () => {
-        setFromDate("");
-        setToDate("");
-        setRegion("ALL");
-        setBranch("ALL");
-        setClient("ALL");
-        setSearchText("");
-        setPage(1);
-    };
-
-
-    /* =========================================================
-       EXCEL
-       ========================================================= */
-
-    const exportExcel = () => {
-        const rows =
-            filteredData.map(
-                (item) => ({
-                    Supervisor:
-                        item.user?.name ||
-                        "NA",
-
-                    VisitDate:
-                        formatDate(
-                            item.visitAt
-                        ),
-
-                    VisitTime:
-                        formatTime(
-                            item.visitAt
-                        ),
-
-                    ReportType:
-                        item.reportType ||
-                        "NA",
-
-                    SiteID:
-                        item.site
-                            ?.siteCode ||
-                        "NA",
-
-                    SiteName:
-                        item.site
-                            ?.name ||
-                        "NA",
-
-                    Client:
-                        item.clientName ||
-                        "NA",
-
-                    State:
-                        item.site
-                            ?.state ||
-                        "NA",
-
-                    Branch:
-                        item.branch ||
-                        item.site
-                            ?.city ||
-                        "NA",
-
-                    Region:
-                        item.region ||
-                        "NA",
-
-                    Latitude:
-                        item.latitude ??
-                        "NA",
-
-                    Longitude:
-                        item.longitude ??
-                        "NA",
-
-                    Photo:
-                        hasPhoto(item)
-                            ? "Available"
-                            : "Not Available",
-
-                    PhotoFileID:
-                        item.photoFileId ||
-                        "NA",
-
-                    Status:
-                        item.status ||
-                        "PENDING",
-                })
-            );
-
-        const worksheet =
-            XLSX.utils.json_to_sheet(
-                rows
-            );
-
-        const workbook =
-            XLSX.utils.book_new();
-
-        XLSX.utils.book_append_sheet(
-            workbook,
-            worksheet,
-            "Latest Visits"
+    const printTable = () => {
+        if (!filteredVisits.length) return alert("No visits available to print.");
+        const pw = window.open("", "_blank", "width=1100,height=800");
+        if (!pw) return;
+        const rows = filteredVisits
+            .map(
+                (it, idx) =>
+                    `<tr><td>${idx + 1}</td><td>${it.user?.name || "N/A"}</td><td>${it.site?.name || "N/A"} (${it.site?.siteCode || "—"
+                    })</td><td>${formatDate(it.visitAt)} ${formatTime(it.visitAt)}</td><td>${it.status || "PENDING"}</td><td>${it.latitude ? `${it.latitude},${it.longitude}` : "No GPS"
+                    }</td></tr>`
+            )
+            .join("");
+        pw.document.write(
+            `<!DOCTYPE html><html><head><title>Visits Report</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #cbd5e1;padding:8px;text-align:left;}th{background:#f1f5f9;}</style></head><body><h2>Supervisor Site Visits Report</h2><table><thead><tr><th>#</th><th>Supervisor</th><th>Site</th><th>Date & Time</th><th>Status</th><th>GPS</th></tr></thead><tbody>${rows}</tbody></table></body></html>`
         );
-
-        XLSX.writeFile(
-            workbook,
-            "latest-visits.xlsx"
-        );
+        pw.document.close();
+        pw.focus();
+        setTimeout(() => pw.print(), 400);
     };
 
-
-    /* =========================================================
-       PRINT
-       ========================================================= */
-
-    const printVisits = () => {
-        const popup =
-            window.open(
-                "",
-                "_blank",
-                "width=1500,height=900"
-            );
-
-        if (!popup) {
-            alert(
-                "Please allow popups."
-            );
-
-            return;
-        }
-
-        const rows =
-            filteredData
-                .map(
-                    (item) => `
-                        <tr>
-                            <td>${item.user?.name || "NA"}</td>
-                            <td>${formatDate(item.visitAt)}</td>
-                            <td>${formatTime(item.visitAt)}</td>
-                            <td>${item.reportType || "NA"}</td>
-                            <td>${item.site?.siteCode || "NA"}</td>
-                            <td>${item.site?.name || "NA"}</td>
-                            <td>${item.clientName || "NA"}</td>
-                            <td>${item.site?.state || "NA"}</td>
-                            <td>${item.latitude ?? "NA"}</td>
-                            <td>${item.longitude ?? "NA"}</td>
-                            <td>${hasPhoto(item) ? "Available" : "Not Available"}</td>
-                            <td>${item.status || "PENDING"}</td>
-                        </tr>
-                    `
-                )
-                .join("");
-
-        popup.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Latest Supervisor Visits</title>
-
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        padding: 20px;
-                        color: #111827;
-                    }
-
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                    }
-
-                    th,
-                    td {
-                        border: 1px solid #d1d5db;
-                        padding: 7px;
-                        font-size: 10px;
-                        text-align: left;
-                    }
-
-                    th {
-                        background: #f3f4f6;
-                    }
-
-                    @page {
-                        size: landscape;
-                        margin: 8mm;
-                    }
-                </style>
-            </head>
-
-            <body>
-
-                <h2>
-                    Latest Supervisor Visits
-                </h2>
-
-                <p>
-                    Generated:
-                    ${new Date().toLocaleString("en-IN")}
-                </p>
-
-                <table>
-
-                    <thead>
-                        <tr>
-                            <th>Supervisor</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Type</th>
-                            <th>Site ID</th>
-                            <th>Site</th>
-                            <th>Client</th>
-                            <th>State</th>
-                            <th>Latitude</th>
-                            <th>Longitude</th>
-                            <th>Photo</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        ${rows}
-                    </tbody>
-
-                </table>
-
-            </body>
-            </html>
-        `);
-
-        popup.document.close();
-
-        setTimeout(() => {
-            popup.focus();
-            popup.print();
-        }, 400);
-    };
-
+    const v = selectedAuditVisit;
+    const realQuestions = v ? extractAuditQuestions(v, activeChecklist) : [];
+    const siteEvidencePhotos = v ? extractSiteEvidencePhotos(v) : [];
+    const totalQ = realQuestions.length;
+    const passedQ = realQuestions.filter((q) => q.booleanValue === true).length;
+    const scorePct = totalQ > 0 ? Math.round((passedQ / totalQ) * 100) : 100;
+    const currentSite = v?.site?.name || v?.clientName || "Site";
 
     return (
-        <div className="latest-visits-page">
-
-            <div className="latest-visits-card">
-
-                {/* HEADER */}
-
-                <div className="latest-filter-header">
-
+        <div className="verification-page">
+            <div className="verification-card">
+                <div className="verification-header">
                     <div>
-                        <h2>
-                            Latest Visits
-                        </h2>
-
+                        <h2>{showVerificationTabs ? "Visit Verification & Audit Review" : "Latest Visits & Site Audit Stream"}</h2>
                         <p>
-                            Supervisor site visit history
+                            Real-time supervisor site inspections, site evidence photos, GPS records, and submitted audit checklist reports.
                         </p>
                     </div>
-
-                    <button
-                        type="button"
-                        className="latest-filter-toggle"
-                        onClick={() =>
-                            setShowFilters(
-                                (current) =>
-                                    !current
-                            )
-                        }
-                    >
-                        <CalendarDays
-                            size={15}
-                        />
-
-                        {showFilters
-                            ? "Hide Filters"
-                            : "Filters"}
+                    <button type="button" className="verification-refresh" onClick={fetchVisits} disabled={loading}>
+                        <RefreshCw size={14} className={loading ? "btn-spinner" : ""} /> Refresh
                     </button>
-
                 </div>
 
-
-                {/* FILTER PANEL */}
-
-                {showFilters && (
-                    <div className="latest-filter-panel">
-
-                        <div>
-                            <label>
-                                From Date
-                            </label>
-
-                            <input
-                                type="date"
-                                value={fromDate}
-                                onChange={(e) => {
-                                    setFromDate(
-                                        e.target.value
-                                    );
-                                    setPage(1);
-                                }}
-                            />
-                        </div>
-
-
-                        <div>
-                            <label>
-                                To Date
-                            </label>
-
-                            <input
-                                type="date"
-                                value={toDate}
-                                onChange={(e) => {
-                                    setToDate(
-                                        e.target.value
-                                    );
-                                    setPage(1);
-                                }}
-                            />
-                        </div>
-
-
-                        <div>
-                            <label>
-                                Region
-                            </label>
-
-                            <select
-                                value={region}
-                                onChange={(e) => {
-                                    setRegion(
-                                        e.target.value
-                                    );
-                                    setPage(1);
-                                }}
-                            >
-                                {regions.map(
-                                    (value) => (
-                                        <option
-                                            key={
-                                                value
-                                            }
-                                            value={
-                                                value
-                                            }
-                                        >
-                                            {value}
-                                        </option>
-                                    )
-                                )}
-                            </select>
-                        </div>
-
-
-                        <div>
-                            <label>
-                                Branch
-                            </label>
-
-                            <select
-                                value={branch}
-                                onChange={(e) => {
-                                    setBranch(
-                                        e.target.value
-                                    );
-                                    setPage(1);
-                                }}
-                            >
-                                {branches.map(
-                                    (value) => (
-                                        <option
-                                            key={
-                                                value
-                                            }
-                                            value={
-                                                value
-                                            }
-                                        >
-                                            {value}
-                                        </option>
-                                    )
-                                )}
-                            </select>
-                        </div>
-
-
-                        <div>
-                            <label>
-                                Client
-                            </label>
-
-                            <select
-                                value={client}
-                                onChange={(e) => {
-                                    setClient(
-                                        e.target.value
-                                    );
-                                    setPage(1);
-                                }}
-                            >
-                                {clients.map(
-                                    (value) => (
-                                        <option
-                                            key={
-                                                value
-                                            }
-                                            value={
-                                                value
-                                            }
-                                        >
-                                            {value}
-                                        </option>
-                                    )
-                                )}
-                            </select>
-                        </div>
-
-
-                        <div className="latest-filter-buttons">
-
+                {showVerificationTabs && (
+                    <div className="verification-tabs">
+                        {[
+                            { key: "ALL", label: "All Visits", count: counts.ALL },
+                            { key: "PENDING", label: "Pending Verification", count: counts.PENDING },
+                            { key: "VERIFIED", label: "Verified Visits", count: counts.VERIFIED },
+                            { key: "UNVERIFIED", label: "Unverified", count: counts.UNVERIFIED },
+                            { key: "REJECTED", label: "Rejected Visits", count: counts.REJECTED },
+                        ].map((tab) => (
                             <button
+                                key={tab.key}
                                 type="button"
-                                onClick={() =>
-                                    setPage(1)
-                                }
+                                className={`tab-pill ${statusFilter === tab.key ? "active" : ""}`}
+                                onClick={() => {
+                                    setStatusFilter(tab.key);
+                                    setPage(1);
+                                }}
                             >
-                                Apply
+                                <span>{tab.label}</span>
+                                <span className="tab-count-badge">{tab.count}</span>
                             </button>
-
-                            <button
-                                type="button"
-                                onClick={
-                                    resetFilters
-                                }
-                            >
-                                Reset
-                            </button>
-
-                        </div>
-
+                        ))}
                     </div>
                 )}
 
-
-                {/* TOOLBAR */}
-
-                <div className="latest-toolbar">
-
-                    <div className="latest-search">
-
-                        <Search
-                            size={17}
-                        />
-
-                        <input
-                            type="text"
-                            placeholder="Search supervisor, site, client..."
-                            value={searchText}
-                            onChange={(e) => {
-                                setSearchText(
-                                    e.target.value
-                                );
-                                setPage(1);
-                            }}
-                        />
-
+                <div className="verification-toolbar">
+                    <div className="toolbar-left">
+                        <div className="search-box-wrap">
+                            <Search size={15} />
+                            <input
+                                type="text"
+                                placeholder="Search supervisor, site, or client..."
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                            />
+                        </div>
+                        <div className="date-filter-group">
+                            <CalendarDays size={14} color="#64748b" />
+                            <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} title="From Date" />
+                            <span>to</span>
+                            <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} title="To Date" />
+                        </div>
+                        {!showVerificationTabs && (
+                            <select
+                                style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px", color: "#334155" }}
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                            >
+                                <option value="ALL">All Statuses</option>
+                                <option value="PENDING">Pending / Unverified</option>
+                                <option value="VERIFIED">Verified</option>
+                                <option value="REJECTED">Rejected</option>
+                            </select>
+                        )}
                     </div>
-
-
-                    <div className="latest-toolbar-actions">
-
-                        <button
-                            type="button"
-                            title="Refresh"
-                            onClick={
-                                fetchVisits
-                            }
-                        >
-                            <RefreshCw
-                                size={17}
-                            />
+                    <div className="toolbar-right">
+                        <button type="button" className="btn-export-excel" onClick={handleExportExcel}>
+                            <FileSpreadsheet size={15} /> Export Excel
                         </button>
-
-
-                        <button
-                            type="button"
-                            title="Export Excel"
-                            onClick={
-                                exportExcel
-                            }
-                        >
-                            <FileSpreadsheet
-                                size={17}
-                            />
+                        <button type="button" className="btn-print" onClick={printTable}>
+                            <Printer size={15} /> Print
                         </button>
-
-
-                        <button
-                            type="button"
-                            title="Print / PDF"
-                            onClick={
-                                printVisits
-                            }
-                        >
-                            <Printer
-                                size={17}
-                            />
-                        </button>
-
                     </div>
-
                 </div>
 
+                {error && <div className="verification-error-banner">{error}</div>}
 
-                {error && (
-                    <div className="latest-error">
-                        {error}
-                    </div>
-                )}
-
-
-                {/* TABLE */}
-
-                <div className="latest-table-wrap">
-
-                    <table className="latest-table">
-
+                <div className="verification-table-wrap">
+                    <table className="verification-table">
                         <thead>
-
                             <tr>
-                                <th>
-                                    Evidence
-                                </th>
-
-                                <th>
-                                    Report
-                                </th>
-
-                                <th>
-                                    Supervisor
-                                </th>
-
-                                <th>
-                                    Visit Date
-                                </th>
-
-                                <th>
-                                    Visit Time
-                                </th>
-
-                                <th>
-                                    Report Type
-                                </th>
-
-                                <th>
-                                    Site ID
-                                </th>
-
-                                <th>
-                                    Site Name
-                                </th>
-
-                                <th>
-                                    Client
-                                </th>
-
-                                <th>
-                                    State
-                                </th>
-
-                                <th>
-                                    Status
-                                </th>
+                                <th style={{ width: "45px" }}>#</th>
+                                <th style={{ width: "160px" }}>Audit Report</th>
+                                <th>Supervisor</th>
+                                <th>Site Details</th>
+                                <th>Visit Date & Time</th>
+                                <th>Status</th>
+                                <th>GPS Location</th>
+                                {showVerificationTabs && <th style={{ width: "230px" }}>Verification Actions</th>}
                             </tr>
-
                         </thead>
-
-
                         <tbody>
-
                             {loading ? (
                                 <tr>
-                                    <td
-                                        colSpan="11"
-                                        className="latest-empty"
-                                    >
-                                        Loading visits...
+                                    <td colSpan={showVerificationTabs ? "8" : "7"} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                                        <Loader2 size={24} className="btn-spinner" style={{ margin: "0 auto 8px" }} /> Loading visits...
                                     </td>
                                 </tr>
-                            ) : paginatedData.length ===
-                                0 ? (
+                            ) : paginatedData.length === 0 ? (
                                 <tr>
-                                    <td
-                                        colSpan="11"
-                                        className="latest-empty"
-                                    >
-                                        No Supervisor visits found.
+                                    <td colSpan={showVerificationTabs ? "8" : "7"} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                                        No visit records found.
                                     </td>
                                 </tr>
                             ) : (
-                                paginatedData.map(
-                                    (item) => {
-                                        const expanded =
-                                            expandedRows.includes(
-                                                item.id
-                                            );
-
-                                        const photo =
-                                            hasPhoto(
-                                                item
-                                            );
-
-                                        return (
-                                            <Fragment
-                                                key={
-                                                    item.id
-                                                }
-                                            >
-
-                                                <tr
-                                                    className={
-                                                        expanded
-                                                            ? "latest-row expanded"
-                                                            : "latest-row"
-                                                    }
-                                                >
-
-                                                    <td>
-
-                                                        <div className="latest-evidence">
-
-                                                            <button
-                                                                type="button"
-                                                                className="latest-expand"
-                                                                onClick={() =>
-                                                                    toggleRow(
-                                                                        item.id
-                                                                    )
-                                                                }
-                                                            >
-                                                                {expanded ? (
-                                                                    <Minus
-                                                                        size={
-                                                                            13
-                                                                        }
-                                                                    />
-                                                                ) : (
-                                                                    <Plus
-                                                                        size={
-                                                                            13
-                                                                        }
-                                                                    />
-                                                                )}
-                                                            </button>
-
-
-                                                            {photo ? (
-                                                                <>
-                                                                    <button
-                                                                        type="button"
-                                                                        className="latest-photo-btn"
-                                                                        title="View Photo"
-                                                                        onClick={() =>
-                                                                            openPhoto(
-                                                                                item
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <ImageIcon
-                                                                            size={
-                                                                                16
-                                                                            }
-                                                                        />
-                                                                    </button>
-
-                                                                    <button
-                                                                        type="button"
-                                                                        className="latest-download-btn"
-                                                                        title="Download Photo"
-                                                                        onClick={() =>
-                                                                            downloadPhoto(
-                                                                                item
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <Download
-                                                                            size={
-                                                                                15
-                                                                            }
-                                                                        />
-                                                                    </button>
-                                                                </>
-                                                            ) : (
-                                                                <span className="latest-no-photo">
-                                                                    No Photo
-                                                                </span>
-                                                            )}
-
-                                                        </div>
-
-                                                    </td>
-
-
-                                                    <td>
-
-                                                        <button
-                                                            type="button"
-                                                            className="latest-report-btn"
-                                                            title="View Report"
-                                                            onClick={() =>
-                                                                alert(
-                                                                    [
-                                                                        `Supervisor: ${item.user?.name || "NA"}`,
-                                                                        `Site: ${item.site?.name || "NA"}`,
-                                                                        `Client: ${item.clientName || "NA"}`,
-                                                                        `Report Type: ${item.reportType || "NA"}`,
-                                                                        `Status: ${item.status || "PENDING"}`,
-                                                                        `Notes: ${item.notes || "NA"}`,
-                                                                    ].join(
-                                                                        "\n"
-                                                                    )
-                                                                )
-                                                            }
-                                                        >
-                                                            <File
-                                                                size={
-                                                                    17
-                                                                }
-                                                            />
-                                                        </button>
-
-                                                    </td>
-
-
-                                                    <td>
-                                                        <strong>
-                                                            {
-                                                                item
-                                                                    .user
-                                                                    ?.name ||
-                                                                "NA"
-                                                            }
-                                                        </strong>
-                                                    </td>
-
-
-                                                    <td>
-                                                        {
-                                                            formatDate(
-                                                                item.visitAt
-                                                            )
-                                                        }
-                                                    </td>
-
-
-                                                    <td>
-                                                        {
-                                                            formatTime(
-                                                                item.visitAt
-                                                            )
-                                                        }
-                                                    </td>
-
-
-                                                    <td>
-                                                        {
-                                                            item.reportType ||
-                                                            "NA"
-                                                        }
-                                                    </td>
-
-
-                                                    <td>
-                                                        {
-                                                            item.site
-                                                                ?.siteCode ||
-                                                            "NA"
-                                                        }
-                                                    </td>
-
-
-                                                    <td>
-                                                        {
-                                                            item.site
-                                                                ?.name ||
-                                                            "NA"
-                                                        }
-                                                    </td>
-
-
-                                                    <td>
-                                                        {
-                                                            item.clientName ||
-                                                            "NA"
-                                                        }
-                                                    </td>
-
-
-                                                    <td>
-                                                        {
-                                                            item.site
-                                                                ?.state ||
-                                                            "NA"
-                                                        }
-                                                    </td>
-
-
-                                                    <td>
-                                                        <span
-                                                            className={`latest-status latest-status-${String(
-                                                                item.status ||
-                                                                "PENDING"
-                                                            ).toLowerCase()}`}
-                                                        >
-                                                            {
-                                                                item.status ||
-                                                                "PENDING"
-                                                            }
-                                                        </span>
-                                                    </td>
-
-                                                </tr>
-
-
-                                                {expanded && (
-                                                    <tr className="latest-expanded-row">
-
-                                                        <td
-                                                            colSpan="11"
-                                                        >
-
-                                                            <div className="latest-expanded-content">
-
-                                                                <div className="latest-detail-block">
-
-                                                                    <span>
-                                                                        GPS
-                                                                    </span>
-
-                                                                    <strong>
-                                                                        {item.latitude !==
-                                                                            null &&
-                                                                            item.latitude !==
-                                                                            undefined &&
-                                                                            item.longitude !==
-                                                                            null &&
-                                                                            item.longitude !==
-                                                                            undefined
-                                                                            ? `${Number(
-                                                                                item.latitude
-                                                                            ).toFixed(
-                                                                                6
-                                                                            )}, ${Number(
-                                                                                item.longitude
-                                                                            ).toFixed(
-                                                                                6
-                                                                            )}`
-                                                                            : "No GPS"}
-                                                                    </strong>
-
-                                                                    {item.latitude !==
-                                                                        null &&
-                                                                        item.longitude !==
-                                                                        null && (
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() =>
-                                                                                    openMap(
-                                                                                        item
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                <MapPin
-                                                                                    size={
-                                                                                        14
-                                                                                    }
-                                                                                />
-                                                                                View Map
-                                                                            </button>
-                                                                        )}
-
-                                                                </div>
-
-
-                                                                <div className="latest-detail-block">
-
-                                                                    <span>
-                                                                        Photo
-                                                                    </span>
-
-                                                                    {photo ? (
-                                                                        <div className="latest-photo-actions">
-
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() =>
-                                                                                    openPhoto(
-                                                                                        item
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                <ImageIcon
-                                                                                    size={
-                                                                                        14
-                                                                                    }
-                                                                                />
-                                                                                View Photo
-                                                                            </button>
-
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() =>
-                                                                                    downloadPhoto(
-                                                                                        item
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                <Download
-                                                                                    size={
-                                                                                        14
-                                                                                    }
-                                                                                />
-                                                                                Download
-                                                                            </button>
-
-                                                                        </div>
-                                                                    ) : (
-                                                                        <strong>
-                                                                            No Photo
-                                                                        </strong>
-                                                                    )}
-
-                                                                </div>
-
-
-                                                                <div className="latest-detail-block">
-
-                                                                    <span>
-                                                                        Photo File ID
-                                                                    </span>
-
-                                                                    <strong>
-                                                                        {
-                                                                            item.photoFileId ||
-                                                                            "NA"
-                                                                        }
-                                                                    </strong>
-
-                                                                </div>
-
-                                                            </div>
-
-                                                        </td>
-
-                                                    </tr>
+                                paginatedData.map((item, idx) => {
+                                    const st = String(item.status || "PENDING").toUpperCase();
+                                    const isUpdating = updatingId === item.id;
+                                    return (
+                                        <tr key={item.id}>
+                                            <td><strong>{(page - 1) * PAGE_SIZE + idx + 1}</strong></td>
+                                            <td>
+                                                <button type="button" className="btn-review-audit" onClick={() => handleOpenAuditModal(item)}>
+                                                    <FileText size={15} /> <span>Review Audit</span>
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <div style={{ display: "flex", flexDirection: "column" }}>
+                                                    <strong style={{ color: "#0f172a", fontSize: "13px" }}>{item.user?.name || "N/A"}</strong>
+                                                    <span style={{ color: "#64748b", fontSize: "11px" }}>{item.user?.phone || item.user?.email || "No contact"}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div style={{ display: "flex", flexDirection: "column" }}>
+                                                    <strong style={{ color: "#334155", fontSize: "13px" }}>{item.site?.name || item.clientName || "Client Site"}</strong>
+                                                    <span style={{ color: "#64748b", fontSize: "11px" }}>
+                                                        Code: {item.site?.siteCode || "N/A"} • {item.site?.city || item.site?.state || "—"}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div style={{ display: "flex", flexDirection: "column" }}>
+                                                    <span style={{ fontWeight: 600, color: "#1e293b" }}>{formatDate(item.visitAt)}</span>
+                                                    <span style={{ color: "#64748b", fontSize: "11px" }}>{formatTime(item.visitAt)}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className={`status-pill status-${st.toLowerCase()}`}>
+                                                    {st === "VERIFIED" && <CheckCircle2 size={12} />}
+                                                    {st === "REJECTED" && <XCircle size={12} />}
+                                                    {st === "PENDING" && <RotateCcw size={12} />}
+                                                    {st}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {item.latitude !== null && item.longitude !== null ? (
+                                                    <button type="button" className="btn-table-map" onClick={() => openMap(item)}>
+                                                        <MapPin size={13} /> GPS Map
+                                                    </button>
+                                                ) : (
+                                                    <span style={{ fontSize: "11px", color: "#94a3b8" }}>No GPS</span>
                                                 )}
-
-                                            </Fragment>
-                                        );
-                                    }
-                                )
+                                            </td>
+                                            {showVerificationTabs && (
+                                                <td>
+                                                    <div style={{ display: "flex", gap: "6px" }}>
+                                                        {st !== "VERIFIED" && (
+                                                            <button type="button" className="btn-action-verify" disabled={isUpdating} onClick={() => updateStatus(item, "VERIFIED")}>
+                                                                {isUpdating ? <Loader2 size={13} className="btn-spinner" /> : <Check size={13} />} Verify
+                                                            </button>
+                                                        )}
+                                                        {st !== "REJECTED" && (
+                                                            <button type="button" className="btn-action-reject" disabled={isUpdating} onClick={() => updateStatus(item, "REJECTED")}>
+                                                                <X size={13} /> Reject
+                                                            </button>
+                                                        )}
+                                                        {st !== "PENDING" && st !== "UNVERIFIED" && (
+                                                            <button type="button" className="btn-action-unverify" disabled={isUpdating} onClick={() => updateStatus(item, "UNVERIFIED")}>
+                                                                <RotateCcw size={13} />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            )}
+                                        </tr>
+                                    );
+                                })
                             )}
-
                         </tbody>
-
                     </table>
-
                 </div>
 
-
-                {/* PAGINATION */}
-
-                <div className="latest-pagination-footer">
-
+                <div className="verification-pagination-footer">
                     <span>
-                        Showing{" "}
-                        {filteredData.length ===
-                            0
-                            ? 0
-                            : (page - 1) *
-                            PAGE_SIZE +
-                            1}
-                        {" "}to{" "}
-                        {Math.min(
-                            page *
-                            PAGE_SIZE,
-                            filteredData.length
-                        )}
-                        {" "}of{" "}
-                        {
-                            filteredData.length
-                        }
-                        {" "}entries
+                        Showing {paginatedData.length > 0 ? (page - 1) * PAGE_SIZE + 1 : 0} to{" "}
+                        {Math.min(page * PAGE_SIZE, filteredVisits.length)} of {filteredVisits.length} entries
                     </span>
-
-
-                    <div className="latest-pagination">
-
-                        <button
-                            type="button"
-                            disabled={
-                                page <= 1
-                            }
-                            onClick={() =>
-                                setPage(
-                                    (current) =>
-                                        current - 1
-                                )
-                            }
-                        >
-                            Previous
-                        </button>
-
-
-                        <button
-                            type="button"
-                            className="active"
-                        >
-                            {page}
-                        </button>
-
-
-                        <button
-                            type="button"
-                            disabled={
-                                page >=
-                                totalPages
-                            }
-                            onClick={() =>
-                                setPage(
-                                    (current) =>
-                                        current + 1
-                                )
-                            }
-                        >
-                            Next
-                        </button>
-
+                    <div className="pagination-buttons">
+                        <button type="button" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Previous</button>
+                        <span className="page-indicator">Page {page} of {totalPages}</span>
+                        <button type="button" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next</button>
                     </div>
-
                 </div>
-
             </div>
 
-
-            {/* PHOTO MODAL */}
-
-            {photoModal && (
-                <div
-                    className="latest-photo-modal-backdrop"
-                    onClick={() =>
-                        setPhotoModal(null)
-                    }
-                >
-
-                    <div
-                        className="latest-photo-modal"
-                        onClick={(e) =>
-                            e.stopPropagation()
-                        }
-                    >
-
-                        <div className="latest-photo-modal-header">
-
+            {/* DYNAMIC AUDIT REPORT MODAL */}
+            {v && (
+                <div className="audit-modal-overlay" onClick={() => setSelectedAuditVisit(null)}>
+                    <div className="audit-modal-dialog" onClick={(e) => e.stopPropagation()}>
+                        <div className="audit-modal-top-header">
                             <div>
-                                <strong>
-                                    Site Visit Photo
-                                </strong>
+                                <h3>{currentSite} — Audit & Visit Verification Details</h3>
+                                <p>{currentSite} ({v.site?.siteCode || "N/A"}) • {formatDate(v.visitAt)}, {formatTime(v.visitAt)}</p>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                <span className={`status-pill status-${String(v.status || "PENDING").toLowerCase()}`}>{v.status || "PENDING"}</span>
+                                <button type="button" className="btn-close-modal" onClick={() => setSelectedAuditVisit(null)}>✕</button>
+                            </div>
+                        </div>
 
-                                <span>
-                                    {
-                                        photoModal
-                                            .site
-                                            ?.name ||
-                                        "Site"
-                                    }
-                                </span>
+                        <div className="audit-modal-scrollable-body">
+                            <div className="audit-score-banner">
+                                <div className="score-badge-circle"><span className="score-num">{scorePct}</span><span className="score-max">/100</span></div>
+                                <div className="score-info">
+                                    <h4>{currentSite.toUpperCase()} — SITE AUDIT CHECKLIST</h4>
+                                    <p>{totalQ > 0 ? `${passedQ} of ${totalQ} Audited Checkpoints Passed` : "Site Operations & Security Compliance Audit"}</p>
+                                    <div className="score-meta">
+                                        <span className="badge-pass"><ShieldCheck size={14} /> COMPLIANCE: {scorePct}%</span>
+                                        <span>Status: <strong>{v.status || "PENDING"}</strong></span>
+                                        <span>Auditor: <strong>{v.user?.name || "Supervisor"}</strong></span>
+                                    </div>
+                                </div>
                             </div>
 
-
-                            <div>
-
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        downloadPhoto(
-                                            photoModal
-                                        )
-                                    }
-                                    title="Download"
-                                >
-                                    <Download
-                                        size={16}
-                                    />
-                                </button>
-
-
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        window.open(
-                                            getPhotoPreviewUrl(
-                                                photoModal
-                                            ),
-                                            "_blank",
-                                            "noopener,noreferrer"
-                                        )
-                                    }
-                                    title="Open"
-                                >
-                                    <ExternalLink
-                                        size={16}
-                                    />
-                                </button>
-
-
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setPhotoModal(
-                                            null
-                                        )
-                                    }
-                                    title="Close"
-                                >
-                                    <X
-                                        size={17}
-                                    />
-                                </button>
-
+                            <div className="audit-details-grid">
+                                <div className="audit-detail-cell"><label>Visit / Task ID</label><p>{v.id}</p></div>
+                                <div className="audit-detail-cell"><label>Site Code & Name</label><p>{currentSite} ({v.site?.siteCode || "N/A"})</p></div>
+                                <div className="audit-detail-cell"><label>Auditor Name & Contact</label><p>{v.user?.name || "Supervisor"} ({v.user?.phone || v.user?.email || "N/A"})</p></div>
+                                <div className="audit-detail-cell"><label>Date & Time</label><p>{formatDate(v.visitAt)} at {formatTime(v.visitAt)}</p></div>
+                                <div className="audit-detail-cell" style={{ gridColumn: "1 / -1" }}>
+                                    <label>Site Address & GPS Coordinates</label>
+                                    <p>{v.site?.address || "—"}, {v.site?.city || ""} {v.site?.state || ""} • Coordinates: [{v.latitude ?? "N/A"}, {v.longitude ?? "N/A"}]</p>
+                                </div>
                             </div>
 
+                            {siteEvidencePhotos.length > 0 && (
+                                <div className="audit-photo-section">
+                                    <h4 style={{ margin: "0 0 10px", fontSize: "14px", color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>
+                                        <span>Site Evidence & Turnout Photos</span>
+                                        <span style={{ fontSize: "11px", fontWeight: 600, color: "#2563eb" }}>(Click any photo to enlarge)</span>
+                                    </h4>
+                                    <div style={{ display: "flex", gap: "14px", flexWrap: "wrap" }}>
+                                        {siteEvidencePhotos.map((photo, idx) => (
+                                            <div
+                                                key={idx}
+                                                className="evidence-photo-box"
+                                                style={{ cursor: "pointer", position: "relative", width: "160px", height: "115px", borderRadius: "10px", overflow: "hidden", border: "2px solid #cbd5e1" }}
+                                                onClick={() => setPreviewPhoto({ url: photo.url, title: photo.label })}
+                                                title="Click to view full size photo"
+                                            >
+                                                <img src={photo.url} alt={photo.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                                <span className="photo-tag">{photo.label}</span>
+                                                <div style={{ position: "absolute", top: "6px", right: "6px", background: "rgba(15,23,42,0.78)", color: "#fff", borderRadius: "6px", padding: "3px 6px", display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: 600 }}>
+                                                    <ZoomIn size={12} /> Zoom
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="audit-questions-section">
+                                <h4 style={{ margin: "0 0 12px", fontSize: "15px", color: "#0f172a" }}>Audit Checklist Responses ({realQuestions.length} Questions)</h4>
+                                <div className="audit-cards-grid">
+                                    {realQuestions.length === 0 ? (
+                                        <p style={{ color: "#64748b", padding: "16px" }}>No checklist answers submitted for this visit.</p>
+                                    ) : (
+                                        realQuestions.map((q) => (
+                                            <div key={q.no} className="audit-question-card">
+                                                <div className="q-card-header">
+                                                    <span className="q-badge">#{q.no}</span>
+                                                    <strong className="q-text">{q.text}</strong>
+                                                    <span style={{ background: q.booleanValue === false ? "#fee2e2" : q.booleanValue === true ? "#dcfce7" : "#f1f5f9", color: q.booleanValue === false ? "#b91c1c" : q.booleanValue === true ? "#15803d" : "#475569", padding: "3px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "bold" }}>{q.ans}</span>
+                                                </div>
+                                                {q.photos && q.photos.length > 0 ? (
+                                                    <div style={{ marginTop: "10px" }}>
+                                                        <div style={{ fontSize: "11px", fontWeight: "700", color: "#059669", marginBottom: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
+                                                            <Camera size={13} /> {q.photos.length} Photo(s) Attached (Click to enlarge):
+                                                        </div>
+                                                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                                                            {q.photos.map((imgSrc, pIdx) => (
+                                                                <div
+                                                                    key={pIdx}
+                                                                    style={{ width: "96px", height: "74px", borderRadius: "8px", overflow: "hidden", border: "1.5px solid #cbd5e1", cursor: "pointer", position: "relative" }}
+                                                                    onClick={() => setPreviewPhoto({ url: imgSrc, title: `Q#${q.no}: ${q.text} (Photo ${pIdx + 1})` })}
+                                                                    title="Click to enlarge photo"
+                                                                >
+                                                                    <img src={imgSrc} alt={`Q${q.no} photo ${pIdx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                                                    <div style={{ position: "absolute", bottom: "4px", right: "4px", background: "rgba(15,23,42,0.78)", color: "#fff", borderRadius: "4px", padding: "2px 4px", display: "flex" }}>
+                                                                        <ZoomIn size={11} />
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "8px" }}>No Photo Attached</div>
+                                                )}
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
-
-                        <div className="latest-photo-modal-body">
-
-                            <iframe
-                                src={getPhotoPreviewUrl(
-                                    photoModal
-                                )}
-                                title="Site Visit Photo Preview"
-                                className="latest-photo-iframe"
-                                allow="autoplay"
-                            />
-
+                        <div className="audit-modal-footer-bar">
+                            <div className="footer-status-info">
+                                <span>Current Status:</span>
+                                <span className={`status-pill status-${String(v.status || "PENDING").toLowerCase()}`}>{v.status || "PENDING"}</span>
+                            </div>
+                            <div className="footer-action-buttons">
+                                <button type="button" className="btn-modal-print" onClick={() => printAuditReport(v)}><Printer size={15} /> Print Report</button>
+                                <button type="button" className="btn-modal-reject" disabled={updatingId === v.id} onClick={() => updateStatus(v, "REJECTED")}><XCircle size={16} /> Reject Visit</button>
+                                <button type="button" className="btn-modal-unverify" disabled={updatingId === v.id} onClick={() => updateStatus(v, "UNVERIFIED")}><RotateCcw size={16} /> Mark Unverified</button>
+                                <button type="button" className="btn-modal-verify" disabled={updatingId === v.id} onClick={() => updateStatus(v, "VERIFIED")}>
+                                    {updatingId === v.id ? <Loader2 size={16} className="btn-spinner" /> : <CheckCircle2 size={16} />} Verify Visit
+                                </button>
+                            </div>
                         </div>
-
-
-                        <div className="latest-photo-modal-footer">
-
-                            <span>
-                                GPS:{" "}
-                                {
-                                    photoModal
-                                        .latitude ??
-                                    "NA"
-                                }
-                                {" , "}
-                                {
-                                    photoModal
-                                        .longitude ??
-                                    "NA"
-                                }
-                            </span>
-
-                            <span>
-                                {
-                                    photoModal
-                                        .status ||
-                                    "PENDING"
-                                }
-                            </span>
-
-                        </div>
-
                     </div>
-
                 </div>
             )}
 
+            {/* FULL-SCREEN PHOTO LIGHTBOX MODAL */}
+            {previewPhoto && (
+                <div
+                    style={{ position: "fixed", inset: 0, backgroundColor: "rgba(15, 23, 42, 0.92)", zIndex: 99999, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px" }}
+                    onClick={() => setPreviewPhoto(null)}
+                >
+                    <div
+                        style={{ maxWidth: "92vw", maxHeight: "90vh", background: "#0f172a", borderRadius: "14px", padding: "16px", border: "1px solid #334155", display: "flex", flexDirection: "column", alignItems: "center", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.7)" }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", marginBottom: "12px", paddingBottom: "10px", borderBottom: "1px solid #334155" }}>
+                            <strong style={{ color: "#f8fafc", fontSize: "15px" }}>{previewPhoto.title || "Evidence Photo Preview"}</strong>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                <a href={previewPhoto.url} download={`evidence-photo-${Date.now()}.jpg`} style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#2563eb", color: "#fff", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: 600, textDecoration: "none" }}>
+                                    <Download size={14} /> Download
+                                </a>
+                                <button type="button" onClick={() => setPreviewPhoto(null)} style={{ background: "#dc2626", color: "#fff", border: "none", borderRadius: "6px", padding: "6px 10px", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", fontWeight: 700, fontSize: "12px" }}>
+                                    <X size={16} /> Close
+                                </button>
+                            </div>
+                        </div>
+                        <img src={previewPhoto.url} alt={previewPhoto.title || "Full Preview"} style={{ maxWidth: "86vw", maxHeight: "76vh", objectFit: "contain", borderRadius: "8px", background: "#000" }} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
-
 
 export default LatestVisits;

@@ -1,9 +1,4 @@
-import {
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
-
+import { useEffect, useMemo, useState } from "react";
 import {
     AlertCircle,
     CheckCircle2,
@@ -14,3591 +9,1292 @@ import {
     RefreshCw,
     Trash2,
     XCircle,
+    Camera,
+    Zap,
 } from "lucide-react";
-
 import { apiFetch } from "../../utils/api";
-
 import "./AuditManagement.css";
 
+// 45 HDFC / MSF Audit Questions from aud.pdf
+export const HDFC_45_QUESTIONS = [
+    { questionNo: 1, question: "NUMBER OF EMPLOYEES", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 2, question: "ENTER GUARD DETAILS", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 3, question: "GROOMING & TURNOUT", type: "YES_NO", score: "3/ 3", photo: true, photoCount: 2, photoLabel: "Guard uniform & turnout photos", isRequired: true },
+    { questionNo: 4, question: "ESS APP LOGIN STATUS", type: "YES_NO", score: "3/ 3", photo: true, photoCount: 1, photoLabel: "ESS App login screen photo", isRequired: true },
+    { questionNo: 5, question: "UAN/ PF STATUS", type: "TEXT", score: "5/ 5", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 6, question: "ESIC", type: "TEXT", score: "5/ 5", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 7, question: "LAST MONTH SALARY RECEIVED", type: "YES_NO", score: "3/ 3", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 8, question: "KIT RECEIVED", type: "YES_NO", score: "2/ 2", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 9, question: "RENEWAL KIT RECEIVED", type: "YES_NO", score: "2/ 2", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 10, question: "SITE HOUSEKEEPING QUALITY", type: "YES_NO", score: "5/ 5", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 11, question: "LOBBY AREA", type: "YES_NO", score: "5/ 5", photo: true, photoCount: 1, photoLabel: "Lobby area photo", isRequired: true },
+    { questionNo: 12, question: "MEETING ROOM", type: "YES_NO", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "Meeting room photo", isRequired: true },
+    { questionNo: 13, question: "PANTRY", type: "YES_NO", score: "5/ 5", photo: true, photoCount: 1, photoLabel: "Pantry photo", isRequired: true },
+    { questionNo: 14, question: "WASH ROOM", type: "YES_NO", score: "5/ 5", photo: true, photoCount: 1, photoLabel: "Wash room photo", isRequired: true },
+    { questionNo: 15, question: "CABINS", type: "YES_NO", score: "5/ 5", photo: true, photoCount: 1, photoLabel: "Cabins photo", isRequired: true },
+    { questionNo: 16, question: "WORK STATIONS", type: "YES_NO", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "Work stations photo", isRequired: true },
+    { questionNo: 17, question: "COMMON AREA", type: "YES_NO", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "Common area photo", isRequired: true },
+    { questionNo: 18, question: "STORE ROOM", type: "YES_NO", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "Store room photo", isRequired: true },
+    { questionNo: 19, question: "ATTENDANCE REGISTER", type: "YES_NO", score: "3/ 3", photo: true, photoCount: 1, photoLabel: "Attendance register page photo", isRequired: true },
+    { questionNo: 20, question: "HK WASHROOM CHECKLIST", type: "YES_NO", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "HK washroom checklist photo", isRequired: true },
+    { questionNo: 21, question: "HK KYC DOCUMENT", type: "YES_NO", score: "2/ 2", photo: true, photoCount: 1, photoLabel: "HK KYC document photo", isRequired: true },
+    { questionNo: 22, question: "OTHER", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: false },
+    { questionNo: 23, question: "KNOWLEDGE OF DUTY POST", type: "YES_NO", score: "2/ 2", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 24, question: "KNOWLEDGE OF DOCUMENTATION", type: "YES_NO", score: "2/ 2", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 25, question: "KNOWLEDGE OF FIRE SAFETY AND EMERGENCY SITUATION", type: "YES_NO", score: "5/ 5", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 26, question: "OTHER TRAINING", type: "YES_NO", score: "0/ 0", photo: false, photoCount: 0, photoLabel: "", isRequired: false },
+    { questionNo: 27, question: "TRAINING TOPICS", type: "YES_NO", score: "10/ 10", photo: true, photoCount: 2, photoLabel: "Training session photos", isRequired: true },
+    { questionNo: 28, question: "POST ORDER", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 29, question: "FED", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 30, question: "MEDICAL EMERGENCY", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 31, question: "FIRST AID AND CPR", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 32, question: "HANDING/TAKING OVER", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 33, question: "POSH", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 34, question: "OPEN SESSION", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 35, question: "DAILY USE EQUIPMENTS / CLEANING CHEMICAL", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 36, question: "PPE TRAINING", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 37, question: "DEEP CLEANING", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 38, question: "CLIENT MET", type: "YES_NO", score: "3/ 3", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 39, question: "NAME", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: false },
+    { questionNo: 40, question: "DESIGNATION", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: false },
+    { questionNo: 41, question: "CLIENT FEEDBACK", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: false },
+    { questionNo: 42, question: "OBSERVATIONS", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: false },
+    { questionNo: 43, question: "ANY R & M WORK REQUIRED", type: "YES_NO", score: "3/ 3", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 44, question: "ANY OTHER OBSERVATIONS", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: false },
+    { questionNo: 45, question: "INCIDENT RESPONSE", type: "YES_NO", score: "2/ 2", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+];
+
+const STORAGE_KEY = "audit_custom_questions_v6";
+const DELETED_EXTRAS_KEY = "audit_deleted_extra_questions_v6";
+const DELETED_STANDARDS_KEY = "audit_deleted_standard_questions_v6";
+
+// Auto-renumber questions sequentially 1, 2, 3...
+const renumberList = (list) => {
+    return list.map((item, index) => ({
+        ...item,
+        questionNo: index + 1,
+    }));
+};
+
+const saveToStorage = (list) => {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    } catch (e) {
+        console.error("Error saving to localStorage", e);
+    }
+};
+
+const getFromStorage = () => {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch (e) {
+        console.error("Error reading localStorage", e);
+    }
+    return null;
+};
+
+const saveDeletedExtras = (list) => {
+    try {
+        localStorage.setItem(DELETED_EXTRAS_KEY, JSON.stringify(list));
+    } catch (e) {
+        console.error("Error saving deleted extras", e);
+    }
+};
+
+const getDeletedExtras = () => {
+    try {
+        const raw = localStorage.getItem(DELETED_EXTRAS_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch (e) {
+        console.error("Error reading deleted extras", e);
+    }
+    return [];
+};
+
+const saveDeletedStandards = (list) => {
+    try {
+        localStorage.setItem(DELETED_STANDARDS_KEY, JSON.stringify(list));
+    } catch (e) {
+        console.error("Error saving deleted standards", e);
+    }
+};
+
+const getDeletedStandards = () => {
+    try {
+        const raw = localStorage.getItem(DELETED_STANDARDS_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch (e) {
+        console.error("Error reading deleted standards", e);
+    }
+    return [];
+};
 
 const EMPTY_FORM = {
     questionNo: "",
     question: "",
+    type: "YES_NO",
+    score: "",
+    requiresPhoto: false,
+    photoCount: 1,
+    photoLabel: "",
     isRequired: true,
 };
 
-
 const AuditManagement = () => {
+    // Initialize questions from local storage or HDFC defaults, always ensuring sequential numbering
+    const [questions, setQuestions] = useState(() => {
+        const deletedStandards = getDeletedStandards();
+        const deletedExtras = getDeletedExtras();
+        const localSaved = getFromStorage();
 
-    // =====================================================
-    // EXISTING CHECKLIST STATE
-    // =====================================================
+        if (Array.isArray(localSaved) && localSaved.length > 0) {
+            const filtered = localSaved.filter((q) => {
+                const no = Number(q.originalNo || q.questionNo);
+                if (no <= 45 && deletedStandards.includes(no)) return false;
+                if (no > 45 && deletedExtras.includes(no)) return false;
+                return true;
+            });
+            return renumberList(filtered);
+        }
 
-    const [questions, setQuestions] = useState([]);
+        const base = HDFC_45_QUESTIONS
+            .filter((q) => !deletedStandards.includes(q.questionNo))
+            .map((q) => ({
+                ...q,
+                originalNo: q.questionNo,
+                requiresPhoto: q.photo,
+                isActive: true,
+                isStandard: true,
+                inDb: false,
+            }));
+        return renumberList(base);
+    });
 
-    const [loading, setLoading] = useState(true);
+    const [templateId, setTemplateId] = useState(() => {
+        return localStorage.getItem("audit_template_id") || null;
+    });
 
+    // Delete choice modal state
+    const [deleteTarget, setDeleteTarget] = useState(null);
+
+    const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
-
-    // =====================================================
-    // EXISTING ALERT STATE
-    // =====================================================
-
+    // Alerts
     const [error, setError] = useState("");
-
     const [success, setSuccess] = useState("");
 
-
-    // =====================================================
-    // EXISTING QUESTION MODAL STATE
-    // =====================================================
-
+    // Modal State
     const [showModal, setShowModal] = useState(false);
-
-    const [editingQuestion, setEditingQuestion] =
-        useState(null);
-
-    const [form, setForm] =
-        useState(EMPTY_FORM);
-
-
-    // =====================================================
-    // NEW AUDIT REGISTER STATE
-    // =====================================================
-
-    const [activeSection, setActiveSection] =
-        useState("checklist");
-
-    const [submittedAudits, setSubmittedAudits] =
-        useState([]);
-
-    const [auditLoading, setAuditLoading] =
-        useState(false);
-
-    const [auditStatusFilter, setAuditStatusFilter] =
-        useState("ALL");
-
-
-    // =====================================================
-    // NEW AUDIT DETAIL MODAL
-    // =====================================================
-
-    const [selectedAudit, setSelectedAudit] =
-        useState(null);
-
-    const [auditDetails, setAuditDetails] =
-        useState(null);
-
-    const [auditDetailLoading, setAuditDetailLoading] =
-        useState(false);
-
-    const [auditActionLoading, setAuditActionLoading] =
-        useState(false);
-
-
-    // =====================================================
-    // SHOW ERROR
-    // =====================================================
+    const [editingQuestion, setEditingQuestion] = useState(null);
+    const [form, setForm] = useState(EMPTY_FORM);
 
     const showError = (message) => {
-
-        setError(
-            message ||
-            "Something went wrong."
-        );
-
+        setError(message || "Something went wrong.");
         setSuccess("");
     };
 
-
-    // =====================================================
-    // SHOW SUCCESS
-    // =====================================================
-
     const showSuccess = (message) => {
-
-        setSuccess(
-            message ||
-            "Operation completed."
-        );
-
+        setSuccess(message || "Action successful.");
         setError("");
-
-        window.setTimeout(() => {
-
-            setSuccess("");
-
-        }, 3000);
     };
 
-
-    // =====================================================
-    // COMMON RESPONSE HANDLER
-    // =====================================================
-
-    const handleResponse = async (response) => {
-
-        const body =
-            await response
-                .json()
-                .catch(() => ({}));
-
-
-        if (response.status === 401) {
-
-            localStorage.removeItem(
-                "token"
-            );
-
-            localStorage.removeItem(
-                "user"
-            );
-
-            window.location.href =
-                "/login";
-
-            return null;
-        }
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                body?.message ||
-                body?.error ||
-                `Request failed with status ${response.status}`
-            );
-        }
-
-
-        return body;
+    const clearAlerts = () => {
+        setError("");
+        setSuccess("");
     };
 
-
-    // =====================================================
-    // LOAD AUDIT QUESTIONS
-    // =====================================================
-
-    const loadQuestions = async () => {
-
+    // Helper to get active template ID
+    const getOrFetchTemplateId = async () => {
+        if (templateId) return templateId;
+        const cached = localStorage.getItem("audit_template_id");
+        if (cached) {
+            setTemplateId(cached);
+            return cached;
+        }
         try {
+            const res = await apiFetch("/api/audit/checklist");
+            if (res.ok) {
+                const b = await res.json();
+                const tid = b?.data?.checklist?.id;
+                if (tid) {
+                    setTemplateId(tid);
+                    localStorage.setItem("audit_template_id", tid);
+                    return tid;
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to get template id", e);
+        }
+        return null;
+    };
 
+    // Load Audit Checklist Questions from backend without dropping extra questions
+    const loadQuestions = async () => {
+        try {
             setLoading(true);
+            const response = await apiFetch("/api/audit/checklist");
+            let serverQuestions = [];
 
-            setError("");
-
-
-            const response =
-                await apiFetch(
-                    "/api/audit/checklist"
-                );
-
-
-            const body =
-                await handleResponse(
-                    response
-                );
-
-
-            if (!body) {
-                return;
+            if (response.ok) {
+                const body = await response.json();
+                const tId = body?.data?.checklist?.id;
+                if (tId) {
+                    setTemplateId(tId);
+                    localStorage.setItem("audit_template_id", tId);
+                }
+                serverQuestions = body?.data?.checklist?.questions || [];
             }
 
+            const serverMap = {};
+            serverQuestions.forEach((q) => {
+                serverMap[Number(q.questionNo)] = q;
+            });
 
-            const checklist =
-                body?.data?.checklist ||
-                body?.checklist ||
-                null;
+            const deletedStandards = getDeletedStandards();
+            const deletedExtras = getDeletedExtras();
+            const localSaved = getFromStorage();
 
+            let allQuestions = [];
 
-            const questionList =
-                checklist?.questions ||
-                [];
+            if (Array.isArray(localSaved) && localSaved.length > 0) {
+                allQuestions = localSaved
+                    .filter((q) => {
+                        const origNo = Number(q.originalNo || q.questionNo);
+                        if (origNo <= 45 && deletedStandards.includes(origNo)) return false;
+                        if (origNo > 45 && deletedExtras.includes(origNo)) return false;
+                        return true;
+                    })
+                    .map((q) => {
+                        const origNo = Number(q.originalNo || q.questionNo);
+                        const sQ = serverMap[origNo];
+                        return {
+                            ...q,
+                            originalNo: origNo,
+                            id: sQ?.id || q.id || (origNo <= 45 ? `hdfc-${origNo}` : `custom-${origNo}`),
+                            inDb: Boolean(sQ?.id),
+                        };
+                    });
+            } else {
+                allQuestions = HDFC_45_QUESTIONS
+                    .filter((base) => !deletedStandards.includes(base.questionNo))
+                    .map((base) => {
+                        const sQ = serverMap[base.questionNo];
+                        return {
+                            ...base,
+                            originalNo: base.questionNo,
+                            id: sQ?.id || `hdfc-${base.questionNo}`,
+                            requiresPhoto: base.photo,
+                            isActive: true,
+                            isStandard: true,
+                            inDb: Boolean(sQ?.id),
+                        };
+                    });
+            }
 
+            // Also capture server questions with questionNo > 45
+            serverQuestions.forEach((sQ) => {
+                const no = Number(sQ.questionNo);
+                if (no > 45 && !deletedExtras.includes(no) && !allQuestions.some((q) => Number(q.originalNo || q.questionNo) === no)) {
+                    allQuestions.push({
+                        id: sQ.id,
+                        originalNo: no,
+                        questionNo: no,
+                        question: sQ.question,
+                        type: sQ.type || "YES_NO",
+                        score: null,
+                        requiresPhoto: false,
+                        photo: false,
+                        photoCount: 0,
+                        photoLabel: "",
+                        isRequired: sQ.isRequired !== false,
+                        isActive: sQ.isActive !== false,
+                        isStandard: false,
+                        inDb: true,
+                    });
+                }
+            });
 
-            setQuestions(
-                [...questionList].sort(
-                    (a, b) =>
-                        Number(
-                            a.questionNo || 0
-                        ) -
-                        Number(
-                            b.questionNo || 0
-                        )
-                )
-            );
-
+            // Ensure sequential numbering without gaps (e.g. 1, 2, 3, 4...)
+            const renumbered = renumberList(allQuestions);
+            setQuestions(renumbered);
+            saveToStorage(renumbered);
         } catch (err) {
-
-            console.error(
-                "Load audit questions error:",
-                err
-            );
-
-
-            showError(
-                err?.message ||
-                "Failed to load audit questions."
-            );
-
+            console.error("Load questions error:", err);
         } finally {
-
             setLoading(false);
         }
     };
 
+    // Restore ONLY the 45 standard questions to default; deleted extra questions are NOT restored
+    const handleSync45 = async () => {
+        const confirmed = window.confirm(
+            "⚡ RESTORE 45 STANDARD QUESTIONS:\n\nKya aap sabhi 45 Standard HDFC questions ko unke default roop me restore/sync karna chahte hain?\n\n• Standard 1 se 45 questions unke default form me restore ho jayenge (1 se 45 numbering ke sath).\n• Extra questions jo aapne delete kiye the wo KABHI restore nahi honge.\n• Active extra questions safe rahenge."
+        );
+        if (!confirmed) return;
 
-    // =====================================================
-    // LOAD SUBMITTED AUDITS
-    //
-    // IMPORTANT:
-    // The Audit Register uses the existing Visit API.
-    //
-    // Every Visit having auditSubmission is treated
-    // as one submitted audit.
-    // =====================================================
-
-    const loadSubmittedAudits = async () => {
         try {
-            setAuditLoading(true);
-            setError("");
+            setSaving(true);
+            clearAlerts();
 
-            const query =
-                auditStatusFilter !== "ALL"
-                    ? `?status=${encodeURIComponent(
-                        auditStatusFilter
-                    )}&page=1&limit=100`
-                    : "?page=1&limit=100";
+            // Clear deleted standards list so all 1..45 come back to default
+            saveDeletedStandards([]);
 
-            const response =
-                await apiFetch(
-                    `/api/audit/submissions${query}`,
-                    {
-                        method: "GET",
-                    }
-                );
+            const activeTemplateId = await getOrFetchTemplateId();
 
-            const body =
-                await handleResponse(
-                    response
-                );
+            // Keep any currently active extra questions that have not been deleted
+            const deletedExtras = getDeletedExtras();
+            const currentActiveExtras = questions.filter(
+                (q) => Number(q.originalNo || q.questionNo) > 45 && !deletedExtras.includes(Number(q.originalNo || q.questionNo))
+            );
 
-            if (!body) {
-                return;
+            // Reconstruct the 45 clean default questions
+            const default45 = HDFC_45_QUESTIONS.map((base) => ({
+                ...base,
+                originalNo: base.questionNo,
+                id: `hdfc-${base.questionNo}`,
+                requiresPhoto: base.photo,
+                isActive: true,
+                isStandard: true,
+                inDb: false,
+            }));
+
+            // Consolidated list: 45 standard defaults + any active extra questions
+            const combined = [...default45, ...currentActiveExtras];
+            const renumbered = renumberList(combined);
+
+            // Update UI & LocalStorage immediately
+            setQuestions(renumbered);
+            saveToStorage(renumbered);
+
+            // Sync 45 standard questions to backend database
+            let existingMap = {};
+            try {
+                const res = await apiFetch("/api/audit/checklist");
+                if (res.ok) {
+                    const b = await res.json();
+                    const sQuestions = b?.data?.checklist?.questions || [];
+                    sQuestions.forEach((sq) => {
+                        existingMap[Number(sq.questionNo)] = sq;
+                    });
+                }
+            } catch (e) {
+                console.warn(e);
             }
 
-            setSubmittedAudits(
-                body?.data?.audits || []
-            );
+            let syncedCount = 0;
+            for (const item of HDFC_45_QUESTIONS) {
+                const existing = existingMap[item.questionNo];
+                const payload = {
+                    questionNo: item.questionNo,
+                    question: item.question,
+                    type: item.type,
+                    isRequired: item.isRequired,
+                    isActive: true,
+                };
 
-        } catch (err) {
+                if (existing && existing.id) {
+                    let upRes = null;
+                    if (activeTemplateId) {
+                        try {
+                            upRes = await apiFetch(`/api/audit/${activeTemplateId}/questions/${existing.id}`, {
+                                method: "PUT",
+                                body: JSON.stringify(payload),
+                            });
+                        } catch (e) { }
+                    }
+                    if (!upRes || !upRes.ok) {
+                        await apiFetch(`/api/audit/checklist/questions/${existing.id}`, {
+                            method: "PUT",
+                            body: JSON.stringify(payload),
+                        });
+                    }
+                    syncedCount++;
+                } else {
+                    let createRes = null;
+                    if (activeTemplateId) {
+                        try {
+                            createRes = await apiFetch(`/api/audit/${activeTemplateId}/questions`, {
+                                method: "POST",
+                                body: JSON.stringify(payload),
+                            });
+                        } catch (e) { }
+                    }
+                    if (!createRes || !createRes.ok) {
+                        await apiFetch("/api/audit/checklist/questions", {
+                            method: "POST",
+                            body: JSON.stringify(payload),
+                        });
+                    }
+                    syncedCount++;
+                }
+            }
 
-            console.error(
-                "Load submitted audits error:",
-                err
-            );
-
-            showError(
-                err?.message ||
-                "Failed to load submitted audits."
-            );
-
-        } finally {
-
-            setAuditLoading(false);
-        }
-    };
-
-    // =====================================================
-    // INITIAL LOAD
-    // =====================================================
-
-    useEffect(() => {
-        loadQuestions();
-    }, []);
-
-
-    useEffect(() => {
-        if (
-            activeSection === "register"
-        ) {
-            loadSubmittedAudits();
-        }
-    }, [
-        auditStatusFilter,
-        activeSection,
-    ]);
-
-
-    // =====================================================
-    // REFRESH CURRENT SECTION
-    // =====================================================
-
-    const refreshCurrentSection = async () => {
-
-        if (
-            activeSection ===
-            "checklist"
-        ) {
-
+            showSuccess("🎉 Saare 45 Standard Questions default form me restore ho gaye! (Deleted extra questions restore nahi hue).");
             await loadQuestions();
-
-            return;
+        } catch (err) {
+            console.error("Sync error:", err);
+            showError("Failed to sync audit questions to server.");
+        } finally {
+            setSaving(false);
         }
-
-
-        await loadSubmittedAudits();
     };
 
 
-    // =====================================================
-    // OPEN ADD QUESTION
-    // =====================================================
+    // Top Refresh Button with user feedback
+    const refreshCurrentSection = async () => {
+        clearAlerts();
+        await loadQuestions();
+        showSuccess("Checklist refreshed successfully from server.");
+    };
 
-    const openAddQuestion = () => {
+    // TOGGLE QUESTION STATUS (Active / Inactive) DIRECTLY FROM STATUS BADGE
+    const toggleQuestionStatus = async (question) => {
+        clearAlerts();
+        const currentActive = question.isActive !== false;
+        const newActive = !currentActive;
 
-        const activeQuestions =
-            questions.filter(
-                (item) =>
-                    item.isActive !==
-                    false
+        // 1. Immediately update in UI state & localStorage
+        setQuestions((prev) => {
+            const next = prev.map((q) =>
+                q.questionNo === question.questionNo || q.id === question.id
+                    ? { ...q, isActive: newActive }
+                    : q
             );
+            saveToStorage(next);
+            return next;
+        });
 
+        showSuccess(`Question #${question.questionNo} status changed to ${newActive ? "ACTIVE" : "INACTIVE"}.`);
 
-        const nextQuestionNo =
-            activeQuestions.length > 0
-                ? Math.max(
-                    ...activeQuestions.map(
-                        (item) =>
-                            Number(
-                                item.questionNo
-                            ) || 0
-                    )
-                ) + 1
-                : 1;
+        // 2. Sync to backend asynchronously
+        if (question.id && !String(question.id).startsWith("local-") && !String(question.id).startsWith("hdfc-") && !String(question.id).startsWith("custom-")) {
+            try {
+                const activeTemplateId = await getOrFetchTemplateId();
+                const payload = {
+                    questionNo: question.questionNo,
+                    question: question.question,
+                    type: question.type,
+                    isRequired: question.isRequired,
+                    isActive: newActive,
+                };
+                if (activeTemplateId) {
+                    await apiFetch(`/api/audit/${activeTemplateId}/questions/${question.id}`, {
+                        method: "PUT",
+                        body: JSON.stringify(payload),
+                    });
+                }
+            } catch (e) {
+                console.warn("Backend status update error:", e);
+            }
+        }
+    };
 
+    // Open Delete Choice Modal
+    const openDeleteChoiceModal = (question) => {
+        clearAlerts();
+        setDeleteTarget(question);
+    };
 
-        setEditingQuestion(
-            null
-        );
+    // ACTION 1 FROM MODAL: SET INACTIVE
+    const handleSetInactive = async (question) => {
+        clearAlerts();
+        setDeleteTarget(null);
 
+        setQuestions((prev) => {
+            const next = prev.map((q) =>
+                q.questionNo === question.questionNo || q.id === question.id
+                    ? { ...q, isActive: false }
+                    : q
+            );
+            saveToStorage(next);
+            return next;
+        });
 
+        showSuccess(`Question #${question.questionNo} is now set to INACTIVE.`);
+
+        if (question.id && !String(question.id).startsWith("local-") && !String(question.id).startsWith("hdfc-") && !String(question.id).startsWith("custom-")) {
+            try {
+                const activeTemplateId = await getOrFetchTemplateId();
+                if (activeTemplateId) {
+                    await apiFetch(`/api/audit/${activeTemplateId}/questions/${question.id}`, {
+                        method: "PUT",
+                        body: JSON.stringify({
+                            questionNo: question.questionNo,
+                            question: question.question,
+                            type: question.type,
+                            isRequired: question.isRequired,
+                            isActive: false,
+                        }),
+                    });
+                }
+            } catch (e) {
+                console.warn("Backend inactive error:", e);
+            }
+        }
+    };
+
+    // ACTION 2 FROM MODAL: PERMANENT DELETE (REMOVES & AUTO-RENUMBERS REMAINING QUESTIONS)
+    const handlePermanentDelete = async (question) => {
+        clearAlerts();
+        setDeleteTarget(null);
+        const origNo = Number(question.originalNo || question.questionNo);
+        const isStd = origNo <= 45;
+
+        // 1. Remove from list and AUTOMATICALLY RENUMBER all remaining questions sequentially (e.g. 2 becomes 1)
+        setQuestions((prev) => {
+            const filtered = prev.filter((q) => q.id !== question.id && Number(q.questionNo) !== Number(question.questionNo));
+            const renumbered = renumberList(filtered);
+            saveToStorage(renumbered);
+            return renumbered;
+        });
+
+        // 2. Track deletion: standard vs extra
+        if (isStd) {
+            const delStd = getDeletedStandards();
+            if (!delStd.includes(origNo)) {
+                delStd.push(origNo);
+                saveDeletedStandards(delStd);
+            }
+        } else {
+            const delExt = getDeletedExtras();
+            if (!delExt.includes(origNo)) {
+                delExt.push(origNo);
+                saveDeletedExtras(delExt);
+            }
+        }
+
+        showSuccess(`Question #${question.questionNo} permanently deleted & remaining questions automatically renumbered!`);
+
+        // 3. Call backend delete if has valid DB id
+        if (question.id && !String(question.id).startsWith("local-") && !String(question.id).startsWith("hdfc-") && !String(question.id).startsWith("custom-")) {
+            try {
+                const activeTemplateId = await getOrFetchTemplateId();
+                if (activeTemplateId) {
+                    await apiFetch(`/api/audit/${activeTemplateId}/questions/${question.id}`, {
+                        method: "DELETE",
+                    });
+                }
+            } catch (err) {
+                console.warn("Backend delete notice:", err);
+            }
+        }
+    };
+
+    // Open Add Modal
+    const openAddQuestion = () => {
+        clearAlerts();
+        // Next sequential number
+        const nextQuestionNo = questions.length + 1;
+
+        setEditingQuestion(null);
         setForm({
-            questionNo:
-                String(
-                    nextQuestionNo
-                ),
-
+            questionNo: String(nextQuestionNo),
             question: "",
-
+            type: "YES_NO",
+            score: "",
+            requiresPhoto: false,
+            photoCount: 1,
+            photoLabel: "",
             isRequired: true,
         });
-
-
         setShowModal(true);
     };
 
-
-    // =====================================================
-    // OPEN EDIT QUESTION
-    // =====================================================
-
-    const openEditQuestion = (
-        question
-    ) => {
-
-        setEditingQuestion(
-            question
-        );
-
+    // Open Edit Modal
+    const openEditQuestion = (question) => {
+        clearAlerts();
+        setEditingQuestion(question);
 
         setForm({
-
-            questionNo:
-                String(
-                    question?.questionNo ||
-                    ""
-                ),
-
-            question:
-                question?.question ||
-                "",
-
-            isRequired:
-                question?.isRequired !==
-                false,
+            questionNo: String(question.questionNo || ""),
+            question: question.question || "",
+            type: question.type || "YES_NO",
+            score: question.score || "",
+            requiresPhoto: Boolean(question.requiresPhoto || question.photo),
+            photoCount: question.photoCount || 1,
+            photoLabel: question.photoLabel || "",
+            isRequired: question.isRequired !== false,
         });
-
-
         setShowModal(true);
     };
 
-
-    // =====================================================
-    // CLOSE QUESTION MODAL
-    // =====================================================
-
     const closeModal = () => {
-
-        if (saving) {
-            return;
-        }
-
-
+        if (saving) return;
         setShowModal(false);
-
-        setEditingQuestion(
-            null
-        );
-
-        setForm(
-            EMPTY_FORM
-        );
+        setEditingQuestion(null);
+        setForm(EMPTY_FORM);
     };
 
-
-    // =====================================================
-    // SAVE QUESTION
-    // =====================================================
-
-    const saveQuestion = async (
-        event
-    ) => {
-
+    // Save Question (Create or Edit)
+    const saveQuestion = async (event) => {
         event.preventDefault();
+        clearAlerts();
 
+        const trimmedQuestion = form.question.trim();
+        const numericQuestionNo = Number(form.questionNo);
 
-        const questionNo =
-            Number(
-                form.questionNo
-            );
-
-
-        const question =
-            form.question.trim();
-
-
-        if (
-            !Number.isInteger(
-                questionNo
-            ) ||
-            questionNo <= 0
-        ) {
-
-            showError(
-                "Question number must be a positive integer."
-            );
-
+        if (!numericQuestionNo || numericQuestionNo <= 0) {
+            showError("Question number must be a valid positive integer.");
             return;
         }
 
-
-        if (!question) {
-
-            showError(
-                "Question text is required."
-            );
-
+        if (!trimmedQuestion) {
+            showError("Question text cannot be empty.");
             return;
         }
 
+        const isEdit = Boolean(editingQuestion);
+        const targetId = editingQuestion?.id;
 
+        const updatedItem = {
+            id: targetId || `custom-${Date.now()}`,
+            originalNo: editingQuestion?.originalNo || (numericQuestionNo > 45 ? numericQuestionNo : Date.now()),
+            questionNo: numericQuestionNo,
+            question: trimmedQuestion,
+            type: form.type,
+            score: form.score ? form.score.trim() : null,
+            requiresPhoto: Boolean(form.requiresPhoto),
+            photo: Boolean(form.requiresPhoto),
+            photoCount: form.requiresPhoto ? Number(form.photoCount) || 1 : 0,
+            photoLabel: form.requiresPhoto ? (form.photoLabel || "").trim() : "",
+            isRequired: Boolean(form.isRequired),
+            isActive: true,
+            isStandard: editingQuestion?.isStandard !== undefined ? editingQuestion.isStandard : (numericQuestionNo <= 45),
+            inDb: editingQuestion?.inDb || false,
+        };
+
+        // 1. INSTANTLY update state & localStorage in frontend
+        setQuestions((prevQuestions) => {
+            let nextList;
+            if (isEdit) {
+                nextList = prevQuestions.map((q) =>
+                    q.questionNo === editingQuestion.questionNo || q.id === targetId
+                        ? { ...q, ...updatedItem }
+                        : q
+                );
+            } else {
+                nextList = [...prevQuestions.filter((q) => q.questionNo !== numericQuestionNo), updatedItem];
+            }
+            nextList.sort((a, b) => a.questionNo - b.questionNo);
+            saveToStorage(nextList);
+            return nextList;
+        });
+
+        showSuccess(isEdit ? `Question #${numericQuestionNo} updated successfully!` : `Question #${numericQuestionNo} added successfully!`);
+        closeModal();
+
+        // 2. Sync to backend asynchronously
         try {
-
             setSaving(true);
+            const activeTemplateId = await getOrFetchTemplateId();
+            const backendPayload = {
+                questionNo: numericQuestionNo,
+                question: trimmedQuestion,
+                type: form.type,
+                isRequired: form.isRequired,
+            };
 
-            setError("");
-
-
-            const isEdit =
-                Boolean(
-                    editingQuestion?.id
-                );
-
-
-            const url =
-                isEdit
-                    ? `/api/audit/checklist/questions/${editingQuestion.id}`
-                    : "/api/audit/checklist/questions";
-
-
-            const response =
-                await apiFetch(
-                    url,
-                    {
-                        method:
-                            isEdit
-                                ? "PUT"
-                                : "POST",
-
-                        body:
-                            JSON.stringify({
-                                questionNo,
-
-                                question,
-
-                                type:
-                                    "YES_NO",
-
-                                isRequired:
-                                    Boolean(
-                                        form.isRequired
-                                    ),
-                            }),
+            let response = null;
+            if (isEdit && targetId && !String(targetId).startsWith("local-") && !String(targetId).startsWith("hdfc-") && !String(targetId).startsWith("custom-")) {
+                if (activeTemplateId) {
+                    try {
+                        response = await apiFetch(`/api/audit/${activeTemplateId}/questions/${targetId}`, {
+                            method: "PUT",
+                            body: JSON.stringify(backendPayload),
+                        });
+                    } catch (e) {
+                        console.warn(e);
                     }
-                );
-
-
-            const body =
-                await handleResponse(
-                    response
-                );
-
-
-            if (!body) {
-                return;
+                }
+                if (!response || !response.ok) {
+                    try {
+                        response = await apiFetch(`/api/audit/checklist/questions/${targetId}`, {
+                            method: "PUT",
+                            body: JSON.stringify(backendPayload),
+                        });
+                    } catch (e) {
+                        console.warn(e);
+                    }
+                }
+            } else {
+                if (activeTemplateId) {
+                    try {
+                        response = await apiFetch(`/api/audit/${activeTemplateId}/questions`, {
+                            method: "POST",
+                            body: JSON.stringify(backendPayload),
+                        });
+                    } catch (e) {
+                        console.warn(e);
+                    }
+                }
+                if (!response || !response.ok) {
+                    try {
+                        response = await apiFetch("/api/audit/checklist/questions", {
+                            method: "POST",
+                            body: JSON.stringify(backendPayload),
+                        });
+                    } catch (e) {
+                        console.warn(e);
+                    }
+                }
             }
 
-
-            showSuccess(
-                isEdit
-                    ? "Audit question updated successfully."
-                    : "Audit question created successfully."
-            );
-
-
-            closeModal();
-
-
-            await loadQuestions();
-
+            if (response && response.ok) {
+                const body = await response.json();
+                const serverQ = body?.data?.question;
+                if (serverQ?.id) {
+                    setQuestions((prev) => {
+                        const updated = prev.map((q) =>
+                            q.questionNo === numericQuestionNo ? { ...q, id: serverQ.id, inDb: true } : q
+                        );
+                        saveToStorage(updated);
+                        return updated;
+                    });
+                }
+            }
         } catch (err) {
-
-            console.error(
-                "Save audit question error:",
-                err
-            );
-
-
-            showError(
-                err?.message ||
-                "Failed to save audit question."
-            );
-
+            console.warn("Backend save notice:", err);
         } finally {
-
             setSaving(false);
         }
     };
 
-
-    // =====================================================
-    // DELETE QUESTION
-    // =====================================================
-
-    const deleteQuestion = async (
-        question
-    ) => {
-
-        if (!question?.id) {
-            return;
-        }
-
-
-        const confirmed =
-            window.confirm(
-                `Delete question ${question.questionNo}?`
-            );
-
-
-        if (!confirmed) {
-            return;
-        }
-
+    // Open Audit Details Modal
+    const openAuditDetails = async (audit) => {
+        clearAlerts();
+        setSelectedAudit(audit);
+        setAuditDetails(null);
 
         try {
-
-            setSaving(true);
-
-            setError("");
-
-
-            const response =
-                await apiFetch(
-                    `/api/audit/checklist/questions/${question.id}`,
-                    {
-                        method:
-                            "DELETE",
-                    }
-                );
-
-
-            const body =
-                await handleResponse(
-                    response
-                );
-
-
-            if (!body) {
-                return;
-            }
-
-
-            showSuccess(
-                `Question ${question.questionNo} deleted successfully.`
-            );
-
-
-            await loadQuestions();
-
-        } catch (err) {
-
-            console.error(
-                "Delete audit question error:",
-                err
-            );
-
-
-            showError(
-                err?.message ||
-                "Failed to delete audit question."
-            );
-
-        } finally {
-
-            setSaving(false);
-        }
-    };
-
-
-    // =====================================================
-    // RESTORE QUESTION
-    // =====================================================
-
-    const restoreQuestion = async (
-        question
-    ) => {
-
-        if (!question?.id) {
-            return;
-        }
-
-
-        try {
-
-            setSaving(true);
-
-            setError("");
-
-
-            const response =
-                await apiFetch(
-                    `/api/audit/checklist/questions/${question.id}`,
-                    {
-                        method:
-                            "PUT",
-
-                        body:
-                            JSON.stringify({
-                                questionNo:
-                                    Number(
-                                        question.questionNo
-                                    ),
-
-                                question:
-                                    question.question,
-
-                                type:
-                                    "YES_NO",
-
-                                isRequired:
-                                    question.isRequired !==
-                                    false,
-
-                                isActive:
-                                    true,
-                            }),
-                    }
-                );
-
-
-            const body =
-                await handleResponse(
-                    response
-                );
-
-
-            if (!body) {
-                return;
-            }
-
-
-            showSuccess(
-                `Question ${question.questionNo} restored.`
-            );
-
-
-            await loadQuestions();
-
-        } catch (err) {
-
-            console.error(
-                "Restore audit question error:",
-                err
-            );
-
-
-            showError(
-                err?.message ||
-                "Failed to restore question."
-            );
-
-        } finally {
-
-            setSaving(false);
-        }
-    };
-
-
-    // =====================================================
-    // OPEN AUDIT DETAILS
-    // =====================================================
-
-    const openAuditDetails = async (
-        audit
-    ) => {
-        if (!audit?.id) {
-            return;
-        }
-
-        try {
-            setSelectedAudit(audit);
-
-            setAuditDetails(null);
-
             setAuditDetailLoading(true);
+            const response = await apiFetch(`/api/audit/submissions/${audit.id}`);
+            if (!response.ok) return;
 
-            setError("");
-
-            const response =
-                await apiFetch(
-                    `/api/audit/submissions/${audit.id}`,
-                    {
-                        method: "GET",
-                    }
-                );
-
-            const body =
-                await handleResponse(
-                    response
-                );
-
-            if (!body) {
-                return;
-            }
-
-            const auditData =
-                body?.data?.audit ||
-                null;
-
-            setAuditDetails(
-                auditData
-            );
-
+            const body = await response.json();
+            setAuditDetails(body?.data?.submission || body?.data?.audit || audit);
         } catch (err) {
-
-            console.error(
-                "Open audit details error:",
-                err
-            );
-
-            showError(
-                err?.message ||
-                "Failed to load audit details."
-            );
-
-            setSelectedAudit(null);
-
+            console.error("Open audit details error:", err);
+            showError("Failed to fetch audit details.");
         } finally {
-
             setAuditDetailLoading(false);
         }
     };
 
-    // =====================================================
-    // CLOSE AUDIT DETAILS
-    // =====================================================
-
     const closeAuditDetails = () => {
-
-        if (
-            auditActionLoading
-        ) {
-            return;
-        }
-
-
-        setSelectedAudit(
-            null
-        );
-
-        setAuditDetails(
-            null
-        );
-
-        setAuditDetailLoading(
-            false
-        );
+        setSelectedAudit(null);
+        setAuditDetails(null);
     };
 
-
-    // =====================================================
-    // UPDATE AUDIT STATUS
-    //
-    // EXISTING VISIT STATUS API:
-    //
-    // VERIFIED
-    // REJECTED
-    //
-    // This keeps audit verification tied to the same
-    // audit/visit record.
-    // =====================================================
-
-    const updateAuditStatus = async (
-        nextStatus
-    ) => {
-
-        const auditId =
-            auditDetails?.id ||
-            selectedAudit?.id;
-
-
-        if (!auditId) {
-            return;
-        }
-
-
-        const normalizedStatus =
-            String(
-                nextStatus || ""
-            )
-                .trim()
-                .toUpperCase();
-
-
-        if (
-            ![
-                "VERIFIED",
-                "REJECTED",
-            ].includes(
-                normalizedStatus
-            )
-        ) {
-
-            showError(
-                "Invalid audit status."
-            );
-
-            return;
-        }
-
-
-        const statusLabel =
-            normalizedStatus ===
-                "VERIFIED"
-                ? "verify"
-                : "reject";
-
-
-        const confirmed =
-            window.confirm(
-                `Are you sure you want to ${statusLabel} this audit?`
-            );
-
-
-        if (!confirmed) {
-            return;
-        }
-
-
+    // Verify / Reject Audit
+    const updateAuditStatus = async (auditId, status) => {
+        clearAlerts();
         try {
+            setAuditActionLoading(true);
+            const response = await apiFetch(`/api/audit/submissions/${auditId}/status`, {
+                method: "PATCH",
+                body: JSON.stringify({ status }),
+            });
+            if (!response.ok) return;
 
-            setAuditActionLoading(
-                true
-            );
-
-            setError("");
-
-
-            /*
-             * IMPORTANT:
-             * Content-Type is required because
-             * the backend expects JSON in req.body.
-             */
-
-            const response =
-                await apiFetch(
-                    `/api/audit/submissions/${auditId}/status`,
-                    {
-                        method:
-                            "PATCH",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json",
-                        },
-
-                        body:
-                            JSON.stringify({
-                                status:
-                                    normalizedStatus,
-                            }),
-                    }
-                );
-
-
-            const body =
-                await handleResponse(
-                    response
-                );
-
-
-            if (!body) {
-                return;
-            }
-
-
-            /*
-             * ----------------------------------------------------
-             * SUCCESS MESSAGE
-             * ----------------------------------------------------
-             */
-
-            showSuccess(
-                normalizedStatus ===
-                    "VERIFIED"
-
-                    ? "Audit verified successfully."
-
-                    : "Audit rejected successfully."
-            );
-
-
-            /*
-             * ----------------------------------------------------
-             * UPDATE MODAL IMMEDIATELY
-             * ----------------------------------------------------
-             */
-
-            setAuditDetails(
-                (current) => {
-
-                    if (!current) {
-                        return current;
-                    }
-
-
-                    return {
-
-                        ...current,
-
-                        status:
-                            normalizedStatus,
-
-
-                        visit: {
-
-                            ...current.visit,
-
-                            status:
-                                normalizedStatus,
-
-                        },
-
-                    };
-
-                }
-            );
-
-
-            /*
-             * ----------------------------------------------------
-             * UPDATE SELECTED AUDIT
-             * ----------------------------------------------------
-             */
-
-            setSelectedAudit(
-                (current) => {
-
-                    if (!current) {
-                        return current;
-                    }
-
-
-                    return {
-
-                        ...current,
-
-                        status:
-                            normalizedStatus,
-
-
-                        visit: {
-
-                            ...current.visit,
-
-                            status:
-                                normalizedStatus,
-
-                        },
-
-                    };
-
-                }
-            );
-
-
-            /*
-             * ----------------------------------------------------
-             * REFRESH REGISTER
-             * ----------------------------------------------------
-             */
-
+            showSuccess(`Audit status updated to ${status}.`);
+            closeAuditDetails();
             await loadSubmittedAudits();
-
-
         } catch (err) {
-
-            console.error(
-                "Update audit status error:",
-                err
-            );
-
-
-            showError(
-                err?.message ||
-                "Failed to update audit verification status."
-            );
-
-
+            console.error("Update audit status error:", err);
+            showError("Failed to update audit status.");
         } finally {
-
-            setAuditActionLoading(
-                false
-            );
-
+            setAuditActionLoading(false);
         }
-
     };
-
-    // =====================================================
-    // AUDIT STATUS
-    // =====================================================
-
-    const getAuditStatus = (
-        audit
-    ) => {
-
-        return (
-            audit?.status ||
-            "PENDING"
-        )
-            .toString()
-            .toUpperCase();
-    };
-
-
-    // =====================================================
-    // STATUS FILTER
-    // =====================================================
-
-    const filteredAudits =
-        useMemo(
-            () => {
-
-                if (
-                    auditStatusFilter ===
-                    "ALL"
-                ) {
-                    return submittedAudits;
-                }
-
-
-                return submittedAudits.filter(
-                    (audit) =>
-                        getAuditStatus(
-                            audit
-                        ) ===
-                        auditStatusFilter
-                );
-
-            },
-            [
-                submittedAudits,
-                auditStatusFilter,
-            ]
-        );
-
-
-    // =====================================================
-    // AUDIT COUNTS
-    // =====================================================
-
-    const auditCounts =
-        useMemo(
-            () => {
-
-                let pending = 0;
-
-                let verified = 0;
-
-                let rejected = 0;
-
-
-                submittedAudits.forEach(
-                    (audit) => {
-
-                        const status =
-                            getAuditStatus(
-                                audit
-                            );
-
-
-                        if (
-                            status ===
-                            "VERIFIED"
-                        ) {
-                            verified += 1;
-                        }
-
-
-                        if (
-                            status ===
-                            "REJECTED"
-                        ) {
-                            rejected += 1;
-                        }
-
-
-                        if (
-                            status ===
-                            "PENDING"
-                        ) {
-                            pending += 1;
-                        }
-                    }
-                );
-
-
-                return {
-
-                    total:
-                        submittedAudits.length,
-
-                    pending,
-
-                    verified,
-
-                    rejected,
-                };
-
-            },
-            [
-                submittedAudits,
-            ]
-        );
-
-
-    // =====================================================
-    // FORMAT DATE
-    // =====================================================
-
-    const formatDate = (
-        value
-    ) => {
-
-        if (!value) {
-            return "NA";
-        }
-
-
-        const date =
-            new Date(value);
-
-
-        if (
-            Number.isNaN(
-                date.getTime()
-            )
-        ) {
-            return "NA";
-        }
-
-
-        return date.toLocaleDateString(
-            "en-IN",
-            {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-            }
-        );
-    };
-
-
-    // =====================================================
-    // FORMAT TIME
-    // =====================================================
-
-    const formatTime = (
-        value
-    ) => {
-
-        if (!value) {
-            return "NA";
-        }
-
-
-        const date =
-            new Date(value);
-
-
-        if (
-            Number.isNaN(
-                date.getTime()
-            )
-        ) {
-            return "NA";
-        }
-
-
-        return date.toLocaleTimeString(
-            "en-IN",
-            {
-                hour:
-                    "2-digit",
-
-                minute:
-                    "2-digit",
-
-                hour12:
-                    true,
-            }
-        );
-    };
-
-
-    // =====================================================
-    // ANSWER DISPLAY
-    // =====================================================
-
-    const getAnswerText = (
-        answer
-    ) => {
-
-        if (
-            typeof answer?.booleanValue ===
-            "boolean"
-        ) {
-
-            return answer.booleanValue
-                ? "YES"
-                : "NO";
-        }
-
-
-        if (
-            answer?.textValue !==
-            null &&
-            answer?.textValue !==
-            undefined &&
-            String(
-                answer.textValue
-            ).trim()
-        ) {
-
-            return String(
-                answer.textValue
-            );
-        }
-
-
-        return "NOT ANSWERED";
-    };
-
-
-    // =====================================================
-    // STATUS BADGE
-    // =====================================================
-
-    const getStatusBadgeStyle = (
-        status
-    ) => {
-
-        const normalized =
-            (
-                status ||
-                "PENDING"
-            )
-                .toString()
-                .toUpperCase();
-
-
-        if (
-            normalized ===
-            "VERIFIED"
-        ) {
-
-            return {
-                background:
-                    "#DCFCE7",
-
-                color:
-                    "#166534",
-
-                border:
-                    "1px solid #86EFAC",
-            };
-        }
-
-
-        if (
-            normalized ===
-            "REJECTED"
-        ) {
-
-            return {
-                background:
-                    "#FEE2E2",
-
-                color:
-                    "#991B1B",
-
-                border:
-                    "1px solid #FCA5A5",
-            };
-        }
-
-
-        return {
-
-            background:
-                "#FEF3C7",
-
-            color:
-                "#92400E",
-
-            border:
-                "1px solid #FCD34D",
-        };
-    };
-
-
-    // =====================================================
-    // RENDER
-    // =====================================================
 
     return (
-
         <div className="audit-management-page">
-
-
-            {/* =================================================
-                HEADER
-            ================================================= */}
-
+            {/* Header */}
             <section className="audit-page-header">
-
                 <div className="audit-page-title">
-
                     <div className="audit-page-icon">
                         <ClipboardCheck size={24} />
                     </div>
-
-
                     <div>
-
-                        <h1>
-                            Audit Management
-                        </h1>
-
-
-                        <p>
-                            Manage audit checklist questions
-                            and review submitted audits.
-                        </p>
-
+                        <h1>Audit Management</h1>
+                        <p>Manage site audit checklist questions & review submitted supervisor audits</p>
                     </div>
-
                 </div>
 
-
                 <div className="audit-header-actions">
-
                     <button
                         type="button"
                         className="audit-secondary-btn"
-                        onClick={
-                            refreshCurrentSection
-                        }
-                        disabled={
-                            loading ||
-                            auditLoading ||
-                            saving
-                        }
+                        onClick={refreshCurrentSection}
+                        disabled={loading || saving}
+                        title="Reload questions from server"
                     >
-
-                        <RefreshCw
-                            size={16}
-                        />
-
-                        Refresh
-
+                        <RefreshCw size={16} />
+                        {loading ? "Refreshing..." : "Refresh"}
                     </button>
 
+                    <button
+                        type="button"
+                        className="audit-primary-btn"
+                        style={{ background: "#15803D", borderColor: "#15803D" }}
+                        onClick={handleSync45}
+                        disabled={saving || loading}
+                        title="Reset 45 standard HDFC Questions to default (extra deleted questions will NOT be restored)"
+                    >
+                        <Zap size={16} />
+                        {saving ? "Restoring..." : "⚡ Sync / Reset 45 Questions"}
+                    </button>
 
-                    {activeSection ===
-                        "checklist" && (
-
-                            <button
-                                type="button"
-                                className="audit-primary-btn"
-                                onClick={
-                                    openAddQuestion
-                                }
-                                disabled={
-                                    saving
-                                }
-                            >
-
-                                <Plus
-                                    size={17}
-                                />
-
-                                Add Question
-
-                            </button>
-                        )}
-
+                    <button
+                        type="button"
+                        className="audit-primary-btn"
+                        onClick={openAddQuestion}
+                        disabled={saving}
+                    >
+                        <Plus size={17} /> Add Question
+                    </button>
                 </div>
-
             </section>
 
-
-            {/* =================================================
-                ALERTS
-            ================================================= */}
-
-            {error && (
-
-                <div className="audit-alert audit-alert-error">
-
-                    {error}
-
-                </div>
-            )}
-
-
-            {success && (
-
-                <div className="audit-alert audit-alert-success">
-
-                    {success}
-
-                </div>
-            )}
-
-
-            {/* =================================================
-                NEW SECTION TABS
-            ================================================= */}
-
-            <div
-                style={{
-                    display:
-                        "flex",
-
-                    gap:
-                        "8px",
-
-                    marginBottom:
-                        "18px",
-
-                    flexWrap:
-                        "wrap",
-                }}
-            >
-
-                <button
-                    type="button"
-                    onClick={() =>
-                        setActiveSection(
-                            "checklist"
-                        )
-                    }
-                    style={{
-                        display:
-                            "inline-flex",
-
-                        alignItems:
-                            "center",
-
-                        gap:
-                            "8px",
-
-                        padding:
-                            "10px 16px",
-
-                        borderRadius:
-                            "8px",
-
-                        border:
-                            activeSection ===
-                                "checklist"
-                                ? "1px solid #2563eb"
-                                : "1px solid #d1d5db",
-
-                        background:
-                            activeSection ===
-                                "checklist"
-                                ? "#2563eb"
-                                : "#ffffff",
-
-                        color:
-                            activeSection ===
-                                "checklist"
-                                ? "#ffffff"
-                                : "#374151",
-
-                        fontWeight:
-                            600,
-
-                        cursor:
-                            "pointer",
-                    }}
-                >
-
-                    <ClipboardCheck
-                        size={17}
-                    />
-
-                    Checklist Questions
-
-                </button>
-
-
-                <button
-                    type="button"
-                    onClick={() => {
-
-                        setActiveSection(
-                            "register"
-                        );
-
-                        loadSubmittedAudits();
-
-                    }}
-                    style={{
-                        display:
-                            "inline-flex",
-
-                        alignItems:
-                            "center",
-
-                        gap:
-                            "8px",
-
-                        padding:
-                            "10px 16px",
-
-                        borderRadius:
-                            "8px",
-
-                        border:
-                            activeSection ===
-                                "register"
-                                ? "1px solid #2563eb"
-                                : "1px solid #d1d5db",
-
-                        background:
-                            activeSection ===
-                                "register"
-                                ? "#2563eb"
-                                : "#ffffff",
-
-                        color:
-                            activeSection ===
-                                "register"
-                                ? "#ffffff"
-                                : "#374151",
-
-                        fontWeight:
-                            600,
-
-                        cursor:
-                            "pointer",
-                    }}
-                >
-
-                    <Eye
-                        size={17}
-                    />
-
-                    Audit Register
-
-                    <span
-                        style={{
-                            minWidth:
-                                "22px",
-
-                            height:
-                                "22px",
-
-                            padding:
-                                "0 6px",
-
-                            borderRadius:
-                                "999px",
-
-                            display:
-                                "inline-flex",
-
-                            alignItems:
-                                "center",
-
-                            justifyContent:
-                                "center",
-
-                            fontSize:
-                                "12px",
-
-                            background:
-                                activeSection ===
-                                    "register"
-                                    ? "rgba(255,255,255,0.2)"
-                                    : "#EEF2FF",
-
-                            color:
-                                activeSection ===
-                                    "register"
-                                    ? "#ffffff"
-                                    : "#3730A3",
-                        }}
-                    >
-                        {
-                            auditCounts.total
-                        }
-                    </span>
-
-                </button>
-
-            </div>
-
-
-            {/* =================================================
-                CHECKLIST SECTION
-            ================================================= */}
-
-            {activeSection ===
-                "checklist" && (
-
-                    <section className="audit-checklist-card">
-
-                        <div className="audit-card-header">
-
-                            <div>
-
-                                <h2>
-                                    Audit Checklist
-                                </h2>
-
-
-                                <span>
-
-                                    {
-                                        questions.filter(
-                                            (item) =>
-                                                item.isActive !==
-                                                false
-                                        ).length
-                                    }{" "}
-
-                                    active questions
-
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-                        <div className="audit-info-box">
-
-                            <ClipboardCheck
-                                size={18}
-                            />
-
-
-                            <div>
-
-                                <strong>
-                                    Yes / No Audit
-                                </strong>
-
-
-                                <p>
-                                    These questions are shown
-                                    to supervisors during the audit.
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <div className="audit-question-table-wrap">
-
-                            <table className="audit-question-table">
-
-                                <thead>
-
-                                    <tr>
-
-                                        <th>
-                                            #
-                                        </th>
-
-                                        <th>
-                                            Question
-                                        </th>
-
-                                        <th>
-                                            Answer Type
-                                        </th>
-
-                                        <th>
-                                            Required
-                                        </th>
-
-                                        <th>
-                                            Status
-                                        </th>
-
-                                        <th>
-                                            Actions
-                                        </th>
-
-                                    </tr>
-
-                                </thead>
-
-
-                                <tbody>
-
-                                    {loading ? (
-
-                                        <tr>
-
-                                            <td
-                                                colSpan="6"
-                                                className="audit-empty-cell"
-                                            >
-                                                Loading audit questions...
-                                            </td>
-
-                                        </tr>
-
-                                    ) : questions.length ===
-                                        0 ? (
-
-                                        <tr>
-
-                                            <td
-                                                colSpan="6"
-                                                className="audit-empty-cell"
-                                            >
-                                                No audit questions
-                                                created yet.
-                                            </td>
-
-                                        </tr>
-
-                                    ) : (
-
-                                        questions.map(
-                                            (
-                                                question
-                                            ) => (
-
-                                                <tr
-                                                    key={
-                                                        question.id
-                                                    }
-                                                    className={
-                                                        question.isActive ===
-                                                            false
-                                                            ? "question-inactive"
-                                                            : ""
-                                                    }
-                                                >
-
-                                                    <td>
-
-                                                        <strong>
-                                                            {
-                                                                question.questionNo
-                                                            }
-                                                        </strong>
-
-                                                    </td>
-
-
-                                                    <td className="audit-question-text">
-
-                                                        {
-                                                            question.question
-                                                        }
-
-                                                    </td>
-
-
-                                                    <td>
-
-                                                        <span className="audit-type-badge">
-
-                                                            YES / NO
-
-                                                        </span>
-
-                                                    </td>
-
-
-                                                    <td>
-
-                                                        {
-                                                            question.isRequired
-                                                                ? "Yes"
-                                                                : "No"
-                                                        }
-
-                                                    </td>
-
-
-                                                    <td>
-
-                                                        <span
-                                                            className={`audit-status ${question.isActive ===
-                                                                    false
-                                                                    ? "inactive"
-                                                                    : "active"
-                                                                }`}
-                                                        >
-
-                                                            {
-                                                                question.isActive ===
-                                                                    false
-                                                                    ? "DELETED"
-                                                                    : "ACTIVE"
-                                                            }
-
-                                                        </span>
-
-                                                    </td>
-
-
-                                                    <td>
-
-                                                        <div className="audit-action-buttons">
-
-                                                            {question.isActive !==
-                                                                false ? (
-
-                                                                <>
-
-                                                                    <button
-                                                                        type="button"
-                                                                        className="audit-icon-btn"
-                                                                        title="Edit question"
-                                                                        onClick={() =>
-                                                                            openEditQuestion(
-                                                                                question
-                                                                            )
-                                                                        }
-                                                                        disabled={
-                                                                            saving
-                                                                        }
-                                                                    >
-
-                                                                        <Edit3
-                                                                            size={
-                                                                                15
-                                                                            }
-                                                                        />
-
-                                                                    </button>
-
-
-                                                                    <button
-                                                                        type="button"
-                                                                        className="audit-icon-btn danger"
-                                                                        title="Delete question"
-                                                                        onClick={() =>
-                                                                            deleteQuestion(
-                                                                                question
-                                                                            )
-                                                                        }
-                                                                        disabled={
-                                                                            saving
-                                                                        }
-                                                                    >
-
-                                                                        <Trash2
-                                                                            size={
-                                                                                15
-                                                                            }
-                                                                        />
-
-                                                                    </button>
-
-                                                                </>
-
-                                                            ) : (
-
-                                                                <button
-                                                                    type="button"
-                                                                    className="audit-restore-btn"
-                                                                    onClick={() =>
-                                                                        restoreQuestion(
-                                                                            question
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        saving
-                                                                    }
-                                                                >
-                                                                    Restore
-                                                                </button>
-
-                                                            )}
-
-                                                        </div>
-
-                                                    </td>
-
-                                                </tr>
-                                            )
-                                        )
-
-                                    )}
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                    </section>
-                )}
-
-
-            {/* =================================================
-                AUDIT REGISTER SECTION
-            ================================================= */}
-
-            {activeSection ===
-                "register" && (
-
-                    <section className="audit-checklist-card">
-
-                        <div
-                            className="audit-card-header"
-                            style={{
-                                display:
-                                    "flex",
-
-                                justifyContent:
-                                    "space-between",
-
-                                alignItems:
-                                    "center",
-
-                                gap:
-                                    "15px",
-
-                                flexWrap:
-                                    "wrap",
-                            }}
-                        >
-
-                            <div>
-
-                                <h2>
-                                    Audit Register
-                                </h2>
-
-
-                                <span>
-                                    All submitted audits
-                                    are shown here.
-                                </span>
-
-                            </div>
-
-
-                            <div
-                                style={{
-                                    display:
-                                        "flex",
-
-                                    gap:
-                                        "8px",
-
-                                    flexWrap:
-                                        "wrap",
-                                }}
-                            >
-
-                                <span
-                                    style={{
-                                        padding:
-                                            "6px 10px",
-
-                                        borderRadius:
-                                            "999px",
-
-                                        background:
-                                            "#FEF3C7",
-
-                                        color:
-                                            "#92400E",
-
-                                        fontSize:
-                                            "12px",
-
-                                        fontWeight:
-                                            600,
-                                    }}
-                                >
-                                    Pending:{" "}
-                                    {
-                                        auditCounts.pending
-                                    }
-                                </span>
-
-
-                                <span
-                                    style={{
-                                        padding:
-                                            "6px 10px",
-
-                                        borderRadius:
-                                            "999px",
-
-                                        background:
-                                            "#DCFCE7",
-
-                                        color:
-                                            "#166534",
-
-                                        fontSize:
-                                            "12px",
-
-                                        fontWeight:
-                                            600,
-                                    }}
-                                >
-                                    Verified:{" "}
-                                    {
-                                        auditCounts.verified
-                                    }
-                                </span>
-
-
-                                <span
-                                    style={{
-                                        padding:
-                                            "6px 10px",
-
-                                        borderRadius:
-                                            "999px",
-
-                                        background:
-                                            "#FEE2E2",
-
-                                        color:
-                                            "#991B1B",
-
-                                        fontSize:
-                                            "12px",
-
-                                        fontWeight:
-                                            600,
-                                    }}
-                                >
-                                    Rejected:{" "}
-                                    {
-                                        auditCounts.rejected
-                                    }
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-                        {/* =========================================
-                        STATUS FILTER
-                    ========================================= */}
-
-                        <div
-                            style={{
-                                display:
-                                    "flex",
-
-                                alignItems:
-                                    "center",
-
-                                gap:
-                                    "10px",
-
-                                margin:
-                                    "16px 0",
-
-                                flexWrap:
-                                    "wrap",
-                            }}
-                        >
-
-                            <label
-                                htmlFor="audit-status-filter"
-                                style={{
-                                    fontWeight:
-                                        600,
-
-                                    fontSize:
-                                        "14px",
-                                }}
-                            >
-                                Status:
-                            </label>
-
-
-                            <select
-                                id="audit-status-filter"
-                                value={
-                                    auditStatusFilter
-                                }
-                                onChange={(event) =>
-                                    setAuditStatusFilter(
-                                        event.target.value
-                                    )
-                                }
-                                style={{
-                                    minWidth:
-                                        "180px",
-
-                                    padding:
-                                        "9px 12px",
-
-                                    border:
-                                        "1px solid #D1D5DB",
-
-                                    borderRadius:
-                                        "7px",
-
-                                    background:
-                                        "#ffffff",
-
-                                    outline:
-                                        "none",
-                                }}
-                            >
-
-                                <option value="ALL">
-                                    All Audits (
-                                    {
-                                        auditCounts.total
-                                    }
-                                    )
-                                </option>
-
-                                <option value="PENDING">
-                                    Pending Verification (
-                                    {
-                                        auditCounts.pending
-                                    }
-                                    )
-                                </option>
-
-                                <option value="VERIFIED">
-                                    Verified (
-                                    {
-                                        auditCounts.verified
-                                    }
-                                    )
-                                </option>
-
-                                <option value="REJECTED">
-                                    Rejected (
-                                    {
-                                        auditCounts.rejected
-                                    }
-                                    )
-                                </option>
-
-                                <option value="UNVERIFIED">
-                                    Unverified
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        {/* =========================================
-                        REGISTER TABLE
-                    ========================================= */}
-
-                        <div className="audit-question-table-wrap">
-
-                            <table className="audit-question-table">
-
-                                <thead>
-
-                                    <tr>
-
-                                        <th>
-                                            #
-                                        </th>
-
-                                        <th>
-                                            Supervisor
-                                        </th>
-
-                                        <th>
-                                            Site
-                                        </th>
-
-                                        <th>
-                                            Audit Date
-                                        </th>
-
-                                        <th>
-                                            Audit Time
-                                        </th>
-
-                                        <th>
-                                            Status
-                                        </th>
-
-                                        <th>
-                                            Action
-                                        </th>
-
-                                    </tr>
-
-                                </thead>
-
-
-                                <tbody>
-
-                                    {auditLoading ? (
-
-                                        <tr>
-
-                                            <td
-                                                colSpan="7"
-                                                className="audit-empty-cell"
-                                            >
-                                                Loading submitted audits...
-                                            </td>
-
-                                        </tr>
-
-                                    ) : filteredAudits.length ===
-                                        0 ? (
-
-                                        <tr>
-
-                                            <td
-                                                colSpan="7"
-                                                className="audit-empty-cell"
-                                            >
-                                                No submitted audits
-                                                found for this filter.
-                                            </td>
-
-                                        </tr>
-
-                                    ) : (
-
-                                        filteredAudits.map(
-                                            (
-                                                audit,
-                                                index
-                                            ) => {
-
-                                                const status =
-                                                    getAuditStatus(
-                                                        audit
-                                                    );
-
-
-                                                return (
-
-                                                    <tr
-                                                        key={
-                                                            audit.id
-                                                        }
-                                                    >
-
-                                                        <td>
-
-                                                            {
-                                                                index +
-                                                                1
-                                                            }
-
-                                                        </td>
-
-
-                                                        <td>
-
-                                                            <strong>
-
-                                                                {
-                                                                    audit
-                                                                        ?.user
-                                                                        ?.name ||
-                                                                    "NA"
-                                                                }
-
-                                                            </strong>
-
-
-                                                            <div
-                                                                style={{
-                                                                    fontSize:
-                                                                        "12px",
-
-                                                                    color:
-                                                                        "#6B7280",
-
-                                                                    marginTop:
-                                                                        "3px",
-                                                                }}
-                                                            >
-
-                                                                {
-                                                                    audit
-                                                                        ?.user
-                                                                        ?.email ||
-                                                                    ""
-                                                                }
-
-                                                            </div>
-
-                                                        </td>
-
-
-                                                        <td>
-
-                                                            <strong>
-
-                                                                {
-                                                                    audit
-                                                                        ?.site
-                                                                        ?.name ||
-                                                                    "NA"
-                                                                }
-
-                                                            </strong>
-
-
-                                                            <div
-                                                                style={{
-                                                                    fontSize:
-                                                                        "12px",
-
-                                                                    color:
-                                                                        "#6B7280",
-
-                                                                    marginTop:
-                                                                        "3px",
-                                                                }}
-                                                            >
-
-                                                                {
-                                                                    audit
-                                                                        ?.site
-                                                                        ?.siteCode ||
-                                                                    "NA"
-                                                                }
-
-                                                            </div>
-
-                                                        </td>
-
-
-                                                        <td>
-
-                                                            {
-                                                                formatDate(
-                                                                    audit
-                                                                        ?.auditSubmission
-                                                                        ?.submittedAt ||
-                                                                    audit?.visitAt
-                                                                )
-                                                            }
-
-                                                        </td>
-
-
-                                                        <td>
-
-                                                            {
-                                                                formatTime(
-                                                                    audit
-                                                                        ?.auditSubmission
-                                                                        ?.submittedAt ||
-                                                                    audit?.visitAt
-                                                                )
-                                                            }
-
-                                                        </td>
-
-
-                                                        <td>
-
-                                                            <span
-                                                                style={{
-                                                                    display:
-                                                                        "inline-flex",
-
-                                                                    alignItems:
-                                                                        "center",
-
-                                                                    gap:
-                                                                        "5px",
-
-                                                                    padding:
-                                                                        "5px 9px",
-
-                                                                    borderRadius:
-                                                                        "999px",
-
-                                                                    fontSize:
-                                                                        "12px",
-
-                                                                    fontWeight:
-                                                                        700,
-
-                                                                    ...getStatusBadgeStyle(
-                                                                        status
-                                                                    ),
-                                                                }}
-                                                            >
-
-                                                                {status ===
-                                                                    "VERIFIED" && (
-                                                                        <CheckCircle2
-                                                                            size={
-                                                                                13
-                                                                            }
-                                                                        />
-                                                                    )}
-
-
-                                                                {status ===
-                                                                    "REJECTED" && (
-                                                                        <XCircle
-                                                                            size={
-                                                                                13
-                                                                            }
-                                                                        />
-                                                                    )}
-
-
-                                                                {status !==
-                                                                    "VERIFIED" &&
-                                                                    status !==
-                                                                    "REJECTED" && (
-                                                                        <AlertCircle
-                                                                            size={
-                                                                                13
-                                                                            }
-                                                                        />
-                                                                    )}
-
-
-                                                                {
-                                                                    status
-                                                                }
-
-                                                            </span>
-
-                                                        </td>
-
-
-                                                        <td>
-
-                                                            <button
-                                                                type="button"
-                                                                className="audit-secondary-btn"
-                                                                onClick={() =>
-                                                                    openAuditDetails(
-                                                                        audit
-                                                                    )
-                                                                }
-                                                                style={{
-                                                                    display:
-                                                                        "inline-flex",
-
-                                                                    alignItems:
-                                                                        "center",
-
-                                                                    gap:
-                                                                        "6px",
-                                                                }}
-                                                            >
-
-                                                                <Eye
-                                                                    size={
-                                                                        15
-                                                                    }
-                                                                />
-
-                                                                View
-
-                                                            </button>
-
-                                                        </td>
-
-                                                    </tr>
-                                                );
-                                            }
-                                        )
-
-                                    )}
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                    </section>
-                )}
-
-
-            {/* =================================================
-                ADD / EDIT QUESTION MODAL
-            ================================================= */}
-
-            {showModal && (
-
-                <div className="audit-modal-backdrop">
-
-                    <div className="audit-modal">
-
-                        <div className="audit-modal-header">
-
-                            <div>
-
-                                <h2>
-
-                                    {editingQuestion
-                                        ? "Edit Audit Question"
-                                        : "Add Audit Question"}
-
-                                </h2>
-
-
-                                <p>
-                                    Only Yes / No answers are
-                                    used in the audit.
-                                </p>
-
-                            </div>
-
-
-                            <button
-                                type="button"
-                                className="audit-modal-close"
-                                onClick={
-                                    closeModal
-                                }
-                                disabled={
-                                    saving
-                                }
-                            >
-                                ×
-                            </button>
-
-                        </div>
-
-
-                        <form
-                            className="audit-form"
-                            onSubmit={
-                                saveQuestion
-                            }
-                        >
-
-                            <div className="audit-form-grid">
-
-                                <div className="audit-form-field">
-
-                                    <label>
-                                        Question No.
-                                    </label>
-
-
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={
-                                            form.questionNo
-                                        }
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            setForm(
-                                                (
-                                                    current
-                                                ) => ({
-                                                    ...current,
-
-                                                    questionNo:
-                                                        event
-                                                            .target
-                                                            .value,
-                                                })
-                                            )
-                                        }
-                                    />
-
-                                </div>
-
-
-                                <div className="audit-form-field">
-
-                                    <label>
-                                        Answer Type
-                                    </label>
-
-
-                                    <input
-                                        type="text"
-                                        value="YES / NO"
-                                        disabled
-                                    />
-
-                                </div>
-
-                            </div>
-
-
-                            <div className="audit-form-field">
-
-                                <label>
-                                    Question
-                                </label>
-
-
-                                <textarea
-                                    rows="4"
-                                    value={
-                                        form.question
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        setForm(
-                                            (
-                                                current
-                                            ) => ({
-                                                ...current,
-
-                                                question:
-                                                    event
-                                                        .target
-                                                        .value,
-                                            })
-                                        )
-                                    }
-                                    placeholder="Enter audit question..."
-                                    autoFocus
-                                />
-
-                            </div>
-
-
-                            <label className="audit-checkbox-row">
-
-                                <input
-                                    type="checkbox"
-                                    checked={
-                                        form.isRequired
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        setForm(
-                                            (
-                                                current
-                                            ) => ({
-                                                ...current,
-
-                                                isRequired:
-                                                    event
-                                                        .target
-                                                        .checked,
-                                            })
-                                        )
-                                    }
-                                />
-
-
-                                <span>
-                                    Required question
-                                </span>
-
-                            </label>
-
-
-                            <div className="audit-modal-footer">
-
-                                <button
-                                    type="button"
-                                    className="audit-secondary-btn"
-                                    onClick={
-                                        closeModal
-                                    }
-                                    disabled={
-                                        saving
-                                    }
-                                >
-                                    Cancel
-                                </button>
-
-
-                                <button
-                                    type="submit"
-                                    className="audit-primary-btn"
-                                    disabled={
-                                        saving
-                                    }
-                                >
-
-                                    {saving
-                                        ? "Saving..."
-                                        : editingQuestion
-                                            ? "Update Question"
-                                            : "Create Question"}
-
-                                </button>
-
-                            </div>
-
-                        </form>
-
+            {/* Alerts */}
+            {error && <div className="audit-alert audit-alert-error">{error}</div>}
+            {success && <div className="audit-alert audit-alert-success">{success}</div>}
+            {/* CHECKLIST SECTION */}
+
+            <section className="audit-checklist-card">
+                <div className="audit-card-header">
+                    <div>
+                        <h2>Audit Questions Checklist</h2>
+                        <span>{questions.length} questions in checklist (Sequential 1 to {questions.length})</span>
                     </div>
-
                 </div>
-            )}
 
+                <div className="audit-info-box">
+                    <ClipboardCheck size={18} />
+                    <div>
+                        <strong>Questions shown to supervisors during site audits</strong>
+                        <p>
+                            <strong>Status Toggle:</strong> Kisi bhi question ka <code>ACTIVE / INACTIVE</code> status badalne ke liye Status badge par click karein.<br />
+                            <strong>Auto-Renumbering:</strong> Kisi question ko permanent delete karne par baaki questions automatically renumber (jaise 2 banega 1) ho jayenge.
+                        </p>
+                    </div>
+                </div>
 
-            {/* =================================================
-                AUDIT DETAILS / VERIFY MODAL
-            ================================================= */}
+                <div className="audit-question-table-wrap">
+                    <table className="audit-question-table">
+                        <thead>
+                            <tr>
+                                <th style={{ width: "50px" }}>#</th>
+                                <th>Question</th>
+                                <th style={{ width: "110px" }}>Answer Type</th>
+                                <th style={{ width: "110px" }}>Score</th>
+                                <th style={{ width: "230px" }}>Photo Required on 'Yes'</th>
+                                <th style={{ width: "90px" }}>Required</th>
+                                <th style={{ width: "110px" }}>Status (Click to Toggle)</th>
+                                <th style={{ width: "100px" }}>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading && questions.length === 0 ? (
+                                <tr>
+                                    <td colSpan="8" className="audit-empty-cell">
+                                        Loading audit questions...
+                                    </td>
+                                </tr>
+                            ) : questions.length === 0 ? (
+                                <tr>
+                                    <td colSpan="8" className="audit-empty-cell">
+                                        No audit questions found. Click 'Add Question' or '⚡ Sync / Reset 45 Questions'.
+                                    </td>
+                                </tr>
+                            ) : (
+                                questions.map((question) => {
+                                    const isText = question.type === "TEXT";
+                                    const hasPhoto = Boolean(question.requiresPhoto || question.photo);
+                                    const photoCount = question.photoCount || 1;
+                                    const photoLabel = question.photoLabel || "";
+                                    const scoreVal = question.score;
+                                    const isActive = question.isActive !== false;
 
-            {selectedAudit && (
+                                    return (
+                                        <tr
+                                            key={question.id || question.questionNo}
+                                            style={{ opacity: isActive ? 1 : 0.65 }}
+                                        >
+                                            <td>
+                                                <strong>{question.questionNo}</strong>
+                                            </td>
 
-                <div
-                    className="audit-modal-backdrop"
-                    onClick={closeAuditDetails}
-                >
+                                            <td className="audit-question-text" style={{ textDecoration: isActive ? "none" : "line-through" }}>
+                                                {question.question}
+                                            </td>
 
-                    <div
-                        className="audit-modal"
-                        style={{
-                            maxWidth:
-                                "1050px",
+                                            <td>
+                                                <span
+                                                    className="audit-type-badge"
+                                                    style={{
+                                                        background: isText ? "#F3E8FF" : "#EEF2FF",
+                                                        color: isText ? "#6B21A8" : "#3730A3",
+                                                    }}
+                                                >
+                                                    {isText ? "TEXT" : "YES / NO"}
+                                                </span>
+                                            </td>
 
-                            width:
-                                "95%",
+                                            <td>
+                                                {scoreVal ? (
+                                                    <span
+                                                        style={{
+                                                            display: "inline-block",
+                                                            padding: "3px 8px",
+                                                            borderRadius: "6px",
+                                                            fontSize: "11px",
+                                                            fontWeight: 700,
+                                                            background: "#DCFCE7",
+                                                            color: "#15803D",
+                                                        }}
+                                                    >
+                                                        {scoreVal}
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ color: "#9CA3AF" }}>—</span>
+                                                )}
+                                            </td>
 
-                            maxHeight:
-                                "90vh",
+                                            <td>
+                                                {hasPhoto ? (
+                                                    <span
+                                                        style={{
+                                                            display: "inline-flex",
+                                                            alignItems: "center",
+                                                            gap: "5px",
+                                                            padding: "3px 8px",
+                                                            borderRadius: "6px",
+                                                            fontSize: "11px",
+                                                            fontWeight: 600,
+                                                            background: "#FEF3C7",
+                                                            color: "#92400E",
+                                                            border: "1px solid #FDE68A",
+                                                        }}
+                                                    >
+                                                        <Camera size={13} />
+                                                        {photoCount} Photo{photoCount > 1 ? "s" : ""}: {photoLabel || "Required"}
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ color: "#9CA3AF" }}>No</span>
+                                                )}
+                                            </td>
 
-                            overflowY:
-                                "auto",
-                        }}
-                        onClick={(event) =>
-                            event.stopPropagation()
-                        }
-                    >
+                                            <td>
+                                                {question.isRequired ? "Yes" : "No"}
+                                            </td>
 
+                                            {/* INTERACTIVE STATUS BADGE (CLICK TO TOGGLE ACTIVE / INACTIVE) */}
+                                            <td>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => toggleQuestionStatus(question)}
+                                                    title="Click to toggle ACTIVE / INACTIVE"
+                                                    style={{
+                                                        cursor: "pointer",
+                                                        border: "none",
+                                                        padding: "5px 12px",
+                                                        borderRadius: "999px",
+                                                        fontWeight: 700,
+                                                        fontSize: "11px",
+                                                        letterSpacing: "0.5px",
+                                                        display: "inline-flex",
+                                                        alignItems: "center",
+                                                        gap: "6px",
+                                                        background: isActive ? "#DCFCE7" : "#FEE2E2",
+                                                        color: isActive ? "#15803D" : "#B91C1C",
+                                                        transition: "all 0.15s ease",
+                                                    }}
+                                                >
+                                                    <span
+                                                        style={{
+                                                            width: "7px",
+                                                            height: "7px",
+                                                            borderRadius: "50%",
+                                                            background: isActive ? "#16A34A" : "#DC2626",
+                                                        }}
+                                                    />
+                                                    {isActive ? "ACTIVE" : "INACTIVE"}
+                                                </button>
+                                            </td>
+
+                                            <td>
+                                                <div className="audit-action-buttons">
+                                                    <button
+                                                        type="button"
+                                                        className="audit-icon-btn"
+                                                        title="Edit question"
+                                                        onClick={() => openEditQuestion(question)}
+                                                        disabled={saving}
+                                                    >
+                                                        <Edit3 size={15} />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="audit-icon-btn danger"
+                                                        title="Delete / Deactivate question"
+                                                        onClick={() => openDeleteChoiceModal(question)}
+                                                        disabled={saving}
+                                                    >
+                                                        <Trash2 size={15} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {/* DELETE CHOICE MODAL (Set Inactive vs Permanently Delete) */}
+            {deleteTarget && (
+                <div className="audit-modal-backdrop" onClick={() => setDeleteTarget(null)}>
+                    <div className="audit-modal" style={{ maxWidth: "500px" }} onClick={(e) => e.stopPropagation()}>
                         <div className="audit-modal-header">
-
                             <div>
-
-                                <h2>
-                                    Audit Review
-                                </h2>
-
-
-                                <p>
-                                    Review submitted answers
-                                    before verification.
+                                <h2>Question #{deleteTarget.questionNo} Action</h2>
+                                <p style={{ marginTop: "4px", color: "#334155", fontWeight: 600 }}>
+                                    "{deleteTarget.question}"
                                 </p>
-
                             </div>
-
-
-                            <button
-                                type="button"
-                                className="audit-modal-close"
-                                onClick={
-                                    closeAuditDetails
-                                }
-                                disabled={
-                                    auditActionLoading
-                                }
-                            >
+                            <button type="button" className="audit-modal-close" onClick={() => setDeleteTarget(null)}>
                                 ×
                             </button>
-
                         </div>
 
+                        <div style={{ padding: "20px" }}>
+                            <p style={{ margin: "0 0 16px 0", fontSize: "14px", color: "#475569" }}>
+                                Aap is question ke sath kya karna chahte hain?
+                            </p>
 
-                        {auditDetailLoading ? (
-
-                            <div
-                                style={{
-                                    padding:
-                                        "40px",
-
-                                    textAlign:
-                                        "center",
-
-                                    color:
-                                        "#6B7280",
-                                }}
-                            >
-
-                                Loading audit details...
-
-                            </div>
-
-                        ) : auditDetails ? (
-
-                            <div
-                                style={{
-                                    padding:
-                                        "0 4px 10px",
-                                }}
-                            >
-
-                                {/* ==================================
-                                    AUDIT INFORMATION
-                                ================================== */}
-
+                            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                {/* Option 1: Set Inactive */}
                                 <div
+                                    onClick={() => handleSetInactive(deleteTarget)}
                                     style={{
-                                        display:
-                                            "grid",
-
-                                        gridTemplateColumns:
-                                            "repeat(auto-fit, minmax(220px, 1fr))",
-
-                                        gap:
-                                            "12px",
-
-                                        marginBottom:
-                                            "18px",
+                                        padding: "14px 16px",
+                                        borderRadius: "8px",
+                                        border: "1px solid #FCD34D",
+                                        background: "#FEFCE8",
+                                        cursor: "pointer",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        gap: "12px",
                                     }}
                                 >
-
-                                    <div
-                                        style={{
-                                            padding:
-                                                "12px",
-
-                                            border:
-                                                "1px solid #E5E7EB",
-
-                                            borderRadius:
-                                                "8px",
-
-                                            background:
-                                                "#F9FAFB",
-                                        }}
-                                    >
-
-                                        <div
-                                            style={{
-                                                fontSize:
-                                                    "12px",
-
-                                                color:
-                                                    "#6B7280",
-
-                                                marginBottom:
-                                                    "4px",
-                                            }}
-                                        >
-                                            Supervisor
-                                        </div>
-
-
-                                        <strong>
-
-                                            {
-                                                auditDetails
-                                                    ?.visit
-                                                    ?.user
-                                                    ?.name ||
-                                                "NA"
-                                            }
-
+                                    <div>
+                                        <strong style={{ fontSize: "13px", color: "#92400E", display: "block", marginBottom: "2px" }}>
+                                            🟡 Set as Inactive
                                         </strong>
-
-
-                                        <div
-                                            style={{
-                                                fontSize:
-                                                    "12px",
-
-                                                color:
-                                                    "#6B7280",
-
-                                                marginTop:
-                                                    "3px",
-                                            }}
-                                        >
-
-                                            {
-                                                auditDetails
-                                                    ?.visit
-                                                    ?.user
-                                                    ?.email ||
-                                                ""
-                                            }
-
-                                        </div>
-
-                                    </div>
-
-
-                                    <div
-                                        style={{
-                                            padding:
-                                                "12px",
-
-                                            border:
-                                                "1px solid #E5E7EB",
-
-                                            borderRadius:
-                                                "8px",
-
-                                            background:
-                                                "#F9FAFB",
-                                        }}
-                                    >
-
-                                        <div
-                                            style={{
-                                                fontSize:
-                                                    "12px",
-
-                                                color:
-                                                    "#6B7280",
-
-                                                marginBottom:
-                                                    "4px",
-                                            }}
-                                        >
-                                            Site
-                                        </div>
-
-
-                                        <strong>
-
-                                            {
-                                                auditDetails
-                                                    ?.visit
-                                                    ?.site
-                                                    ?.name ||
-                                                "NA"
-                                            }
-
-                                        </strong>
-
-
-                                        <div
-                                            style={{
-                                                fontSize:
-                                                    "12px",
-
-                                                color:
-                                                    "#6B7280",
-
-                                                marginTop:
-                                                    "3px",
-                                            }}
-                                        >
-
-                                            {
-                                                auditDetails
-                                                    ?.visit
-                                                    ?.site
-                                                    ?.siteCode ||
-                                                "NA"
-                                            }
-
-                                        </div>
-
-                                    </div>
-
-
-                                    <div
-                                        style={{
-                                            padding:
-                                                "12px",
-
-                                            border:
-                                                "1px solid #E5E7EB",
-
-                                            borderRadius:
-                                                "8px",
-
-                                            background:
-                                                "#F9FAFB",
-                                        }}
-                                    >
-
-                                        <div
-                                            style={{
-                                                fontSize:
-                                                    "12px",
-
-                                                color:
-                                                    "#6B7280",
-
-                                                marginBottom:
-                                                    "4px",
-                                            }}
-                                        >
-                                            Submitted
-                                        </div>
-
-
-                                        <strong>
-
-                                            {
-                                                formatDate(
-                                                    auditDetails?.submittedAt
-                                                )
-                                            }
-
-                                        </strong>
-
-
-                                        <div
-                                            style={{
-                                                fontSize:
-                                                    "12px",
-
-                                                color:
-                                                    "#6B7280",
-
-                                                marginTop:
-                                                    "3px",
-                                            }}
-                                        >
-
-                                            {
-                                                formatTime(
-                                                    auditDetails?.submittedAt
-                                                )
-                                            }
-
-                                        </div>
-
-                                    </div>
-
-
-                                    <div
-                                        style={{
-                                            padding:
-                                                "12px",
-
-                                            border:
-                                                "1px solid #E5E7EB",
-
-                                            borderRadius:
-                                                "8px",
-
-                                            background:
-                                                "#F9FAFB",
-                                        }}
-                                    >
-
-                                        <div
-                                            style={{
-                                                fontSize:
-                                                    "12px",
-
-                                                color:
-                                                    "#6B7280",
-
-                                                marginBottom:
-                                                    "4px",
-                                            }}
-                                        >
-                                            Status
-                                        </div>
-
-
-                                        <span
-                                            style={{
-                                                display:
-                                                    "inline-flex",
-
-                                                alignItems:
-                                                    "center",
-
-                                                gap:
-                                                    "5px",
-
-                                                padding:
-                                                    "5px 9px",
-
-                                                borderRadius:
-                                                    "999px",
-
-                                                fontSize:
-                                                    "12px",
-
-                                                fontWeight:
-                                                    700,
-
-                                                ...getStatusBadgeStyle(
-                                                    auditDetails
-                                                        ?.visit
-                                                        ?.status
-                                                ),
-                                            }}
-                                        >
-
-                                            {
-                                                getAuditStatus(
-                                                    auditDetails
-                                                        ?.visit
-                                                )
-                                            }
-
+                                        <span style={{ fontSize: "12px", color: "#78350F" }}>
+                                            Question list me rahega par audit me supervisors ko nahi dikhega.
                                         </span>
-
                                     </div>
-
-                                </div>
-
-
-                                {/* ==================================
-                                    ANSWERS
-                                ================================== */}
-
-                                <div
-                                    style={{
-                                        border:
-                                            "1px solid #E5E7EB",
-
-                                        borderRadius:
-                                            "8px",
-
-                                        overflow:
-                                            "hidden",
-                                    }}
-                                >
-
-                                    <div
-                                        style={{
-                                            padding:
-                                                "12px 14px",
-
-                                            background:
-                                                "#F9FAFB",
-
-                                            borderBottom:
-                                                "1px solid #E5E7EB",
-
-                                            fontWeight:
-                                                700,
-                                        }}
-                                    >
-                                        Audit Answers
-                                    </div>
-
-
-                                    <div
-                                        style={{
-                                            overflowX:
-                                                "auto",
-                                        }}
-                                    >
-
-                                        <table
-                                            className="audit-question-table"
-                                            style={{
-                                                margin:
-                                                    0,
-                                            }}
-                                        >
-
-                                            <thead>
-
-                                                <tr>
-
-                                                    <th>
-                                                        #
-                                                    </th>
-
-                                                    <th>
-                                                        Question
-                                                    </th>
-
-                                                    <th>
-                                                        Answer
-                                                    </th>
-
-                                                </tr>
-
-                                            </thead>
-
-
-                                            <tbody>
-
-                                                {
-                                                    (
-                                                        auditDetails
-                                                            ?.answers ||
-                                                        []
-                                                    ).map(
-                                                        (
-                                                            answer
-                                                        ) => (
-
-                                                            <tr
-                                                                key={
-                                                                    answer.id
-                                                                }
-                                                            >
-
-                                                                <td>
-
-                                                                    <strong>
-
-                                                                        {
-                                                                            answer.questionNo
-                                                                        }
-
-                                                                    </strong>
-
-                                                                </td>
-
-
-                                                                <td>
-
-                                                                    {
-                                                                        answer.questionText ||
-                                                                        "NA"
-                                                                    }
-
-                                                                </td>
-
-
-                                                                <td>
-
-                                                                    <span
-                                                                        style={{
-                                                                            display:
-                                                                                "inline-flex",
-
-                                                                            alignItems:
-                                                                                "center",
-
-                                                                            justifyContent:
-                                                                                "center",
-
-                                                                            minWidth:
-                                                                                "70px",
-
-                                                                            padding:
-                                                                                "5px 10px",
-
-                                                                            borderRadius:
-                                                                                "999px",
-
-                                                                            background:
-                                                                                answer.booleanValue ===
-                                                                                    true
-                                                                                    ? "#DCFCE7"
-                                                                                    : answer.booleanValue ===
-                                                                                        false
-                                                                                        ? "#FEE2E2"
-                                                                                        : "#F3F4F6",
-
-                                                                            color:
-                                                                                answer.booleanValue ===
-                                                                                    true
-                                                                                    ? "#166534"
-                                                                                    : answer.booleanValue ===
-                                                                                        false
-                                                                                        ? "#991B1B"
-                                                                                        : "#4B5563",
-
-                                                                            fontWeight:
-                                                                                700,
-
-                                                                            fontSize:
-                                                                                "12px",
-                                                                        }}
-                                                                    >
-
-                                                                        {
-                                                                            getAnswerText(
-                                                                                answer
-                                                                            )
-                                                                        }
-
-                                                                    </span>
-
-                                                                </td>
-
-                                                            </tr>
-                                                        )
-                                                    )
-                                                }
-
-
-                                                {(
-                                                    auditDetails
-                                                        ?.answers ||
-                                                    []
-                                                ).length ===
-                                                    0 && (
-
-                                                        <tr>
-
-                                                            <td
-                                                                colSpan="3"
-                                                                className="audit-empty-cell"
-                                                            >
-                                                                No audit answers found.
-                                                            </td>
-
-                                                        </tr>
-
-                                                    )}
-
-                                            </tbody>
-
-                                        </table>
-
-                                    </div>
-
-                                </div>
-
-
-                                {/* ==================================
-                                    ACTION BUTTONS
-                                ================================== */}
-
-                                <div
-                                    style={{
-                                        display:
-                                            "flex",
-
-                                        justifyContent:
-                                            "space-between",
-
-                                        alignItems:
-                                            "center",
-
-                                        gap:
-                                            "12px",
-
-                                        marginTop:
-                                            "18px",
-
-                                        flexWrap:
-                                            "wrap",
-                                    }}
-                                >
-
                                     <button
                                         type="button"
                                         className="audit-secondary-btn"
-                                        onClick={
-                                            closeAuditDetails
-                                        }
-                                        disabled={
-                                            auditActionLoading
-                                        }
+                                        style={{ background: "#FEF3C7", borderColor: "#FDE68A", color: "#92400E", fontSize: "12px", minHeight: "32px", flexShrink: 0 }}
                                     >
-                                        Close
+                                        Set Inactive
                                     </button>
-
-
-                                    <div
-                                        style={{
-                                            display:
-                                                "flex",
-
-                                            gap:
-                                                "10px",
-
-                                            flexWrap:
-                                                "wrap",
-                                        }}
-                                    >
-
-                                        {getAuditStatus(
-                                            auditDetails?.visit
-                                        ) !==
-                                            "VERIFIED" && (
-
-                                                <button
-                                                    type="button"
-                                                    className="audit-primary-btn"
-                                                    onClick={() =>
-                                                        updateAuditStatus(
-                                                            "VERIFIED"
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        auditActionLoading
-                                                    }
-                                                    style={{
-                                                        display:
-                                                            "inline-flex",
-
-                                                        alignItems:
-                                                            "center",
-
-                                                        gap:
-                                                            "6px",
-
-                                                        background:
-                                                            "#16A34A",
-
-                                                        borderColor:
-                                                            "#16A34A",
-                                                    }}
-                                                >
-
-                                                    <CheckCircle2
-                                                        size={
-                                                            16
-                                                        }
-                                                    />
-
-                                                    {
-                                                        auditActionLoading
-                                                            ? "Updating..."
-                                                            : "Verify Audit"
-                                                    }
-
-                                                </button>
-                                            )}
-
-
-                                        {getAuditStatus(
-                                            auditDetails?.visit
-                                        ) !==
-                                            "REJECTED" && (
-
-                                                <button
-                                                    type="button"
-                                                    className="audit-primary-btn"
-                                                    onClick={() =>
-                                                        updateAuditStatus(
-                                                            "REJECTED"
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        auditActionLoading
-                                                    }
-                                                    style={{
-                                                        display:
-                                                            "inline-flex",
-
-                                                        alignItems:
-                                                            "center",
-
-                                                        gap:
-                                                            "6px",
-
-                                                        background:
-                                                            "#DC2626",
-
-                                                        borderColor:
-                                                            "#DC2626",
-                                                    }}
-                                                >
-
-                                                    <XCircle
-                                                        size={
-                                                            16
-                                                        }
-                                                    />
-
-                                                    {
-                                                        auditActionLoading
-                                                            ? "Updating..."
-                                                            : "Reject Audit"
-                                                    }
-
-                                                </button>
-                                            )}
-
-                                    </div>
-
                                 </div>
 
+                                {/* Option 2: Permanently Delete */}
+                                <div
+                                    onClick={() => handlePermanentDelete(deleteTarget)}
+                                    style={{
+                                        padding: "14px 16px",
+                                        borderRadius: "8px",
+                                        border: "1px solid #FECACA",
+                                        background: "#FEF2F2",
+                                        cursor: "pointer",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        gap: "12px",
+                                    }}
+                                >
+                                    <div>
+                                        <strong style={{ fontSize: "13px", color: "#B91C1C", display: "block", marginBottom: "2px" }}>
+                                            🔴 Permanently Delete (Auto-Renumber)
+                                        </strong>
+                                        <span style={{ fontSize: "12px", color: "#991B1B" }}>
+                                            List se bilkul hat jayega aur baaki questions automatically renumber ho jayenge (jaise 2 banega 1).
+                                        </span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="audit-primary-btn"
+                                        style={{ background: "#DC2626", borderColor: "#DC2626", fontSize: "12px", minHeight: "32px", flexShrink: 0 }}
+                                    >
+                                        Delete Forever
+                                    </button>
+                                </div>
                             </div>
 
-                        ) : (
-
-                            <div
-                                style={{
-                                    padding:
-                                        "40px",
-
-                                    textAlign:
-                                        "center",
-
-                                    color:
-                                        "#6B7280",
-                                }}
-                            >
-                                Audit details could not be loaded.
+                            <div className="audit-modal-footer" style={{ marginTop: "20px" }}>
+                                <button type="button" className="audit-secondary-btn" onClick={() => setDeleteTarget(null)}>
+                                    Cancel
+                                </button>
                             </div>
-
-                        )}
-
+                        </div>
                     </div>
-
                 </div>
             )}
 
+
+
+            {/* ADD / EDIT MODAL */}
+            {showModal && (
+                <div className="audit-modal-backdrop" onClick={closeModal}>
+                    <div className="audit-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="audit-modal-header">
+                            <div>
+                                <h2>{editingQuestion ? `Edit Question #${form.questionNo}` : "Add Audit Question"}</h2>
+                                <p>Set question number, title, answer type, score, and photo requirement on YES.</p>
+                            </div>
+                            <button type="button" className="audit-modal-close" onClick={closeModal} disabled={saving}>
+                                ×
+                            </button>
+                        </div>
+
+                        <form className="audit-form" onSubmit={saveQuestion}>
+                            <div className="audit-form-grid">
+                                <div className="audit-form-field">
+                                    <label>Question Number *</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={form.questionNo}
+                                        onChange={(e) => setForm({ ...form, questionNo: e.target.value })}
+                                        disabled={saving}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="audit-form-field">
+                                    <label>Answer Type</label>
+                                    <select
+                                        value={form.type}
+                                        onChange={(e) => setForm({ ...form, type: e.target.value })}
+                                        disabled={saving}
+                                        style={{
+                                            width: "100%",
+                                            padding: "10px 11px",
+                                            border: "1px solid var(--border-color, #d7dce5)",
+                                            borderRadius: "7px",
+                                            background: "var(--input-bg, #ffffff)",
+                                            color: "var(--text-primary, #172033)",
+                                            fontSize: "13px",
+                                            outline: "none",
+                                        }}
+                                    >
+                                        <option value="YES_NO">YES / NO</option>
+                                        <option value="TEXT">TEXT (Free input)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="audit-form-field">
+                                <label>Question Text *</label>
+                                <textarea
+                                    value={form.question}
+                                    onChange={(e) => setForm({ ...form, question: e.target.value })}
+                                    placeholder="e.g. GROOMING & TURNOUT or LOBBY AREA"
+                                    disabled={saving}
+                                    rows={3}
+                                    required
+                                />
+                            </div>
+
+                            <div className="audit-form-grid">
+                                <div className="audit-form-field">
+                                    <label>Max Score (optional)</label>
+                                    <input
+                                        type="text"
+                                        value={form.score}
+                                        onChange={(e) => setForm({ ...form, score: e.target.value })}
+                                        placeholder="e.g. 5/ 5, 3/ 3, 2/ 2"
+                                        disabled={saving}
+                                    />
+                                </div>
+
+                                <div className="audit-form-field">
+                                    <label>Photo Required on 'Yes'</label>
+                                    <label style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "10px", cursor: "pointer", fontWeight: "normal" }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={form.requiresPhoto}
+                                            onChange={(e) => setForm({ ...form, requiresPhoto: e.target.checked })}
+                                            disabled={saving}
+                                            style={{ width: "16px", height: "16px", accentColor: "#2563EB" }}
+                                        />
+                                        <span>Require Photo on YES</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {form.requiresPhoto && (
+                                <div className="audit-form-grid" style={{ background: "#F8FAFC", padding: "12px", borderRadius: "8px", marginBottom: "16px", border: "1px dashed #CBD5E1" }}>
+                                    <div className="audit-form-field" style={{ marginBottom: 0 }}>
+                                        <label>Number of Photos</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="5"
+                                            value={form.photoCount}
+                                            onChange={(e) => setForm({ ...form, photoCount: Number(e.target.value) || 1 })}
+                                            disabled={saving}
+                                        />
+                                    </div>
+                                    <div className="audit-form-field" style={{ marginBottom: 0 }}>
+                                        <label>Photo Label / Instructions</label>
+                                        <input
+                                            type="text"
+                                            value={form.photoLabel}
+                                            onChange={(e) => setForm({ ...form, photoLabel: e.target.value })}
+                                            placeholder="e.g. Guard uniform photos, Lobby photo"
+                                            disabled={saving}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            <label className="audit-checkbox-row">
+                                <input
+                                    type="checkbox"
+                                    checked={form.isRequired}
+                                    onChange={(e) => setForm({ ...form, isRequired: e.target.checked })}
+                                    disabled={saving}
+                                />
+                                <span>Is this question mandatory?</span>
+                            </label>
+
+                            <div className="audit-modal-footer">
+                                <button type="button" className="audit-secondary-btn" onClick={closeModal} disabled={saving}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="audit-primary-btn" disabled={saving}>
+                                    {saving ? "Saving..." : editingQuestion ? "Update Question" : "Create Question"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
-
 
 export default AuditManagement;

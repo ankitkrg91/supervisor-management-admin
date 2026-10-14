@@ -347,48 +347,6 @@
 }
 
 /* =========================================================
-   STATUS
-========================================================= */
-
-.audit-status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 5px 9px;
-
-    border-radius: 999px;
-
-    font-size: 10px;
-    font-weight: 800;
-
-    letter-spacing: 0.35px;
-}
-
-.audit-status.active {
-    background: #dcfce7;
-    color: #15803d;
-}
-
-.audit-status.inactive {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-/* =========================================================
-   INACTIVE / DELETED QUESTION
-========================================================= */
-
-.question-inactive {
-    opacity: 0.58;
-}
-
-.question-inactive .audit-question-text {
-    text-decoration: line-through;
-    text-decoration-color: rgba(100, 116, 139, 0.45);
-}
-
-/* =========================================================
    ACTION BUTTONS
 ========================================================= */
 
@@ -441,33 +399,6 @@
 }
 
 .audit-icon-btn:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
-
-.audit-restore-btn {
-    height: 32px;
-
-    padding: 0 11px;
-
-    border: 1px solid #bfdbfe;
-    border-radius: 6px;
-
-    background: #eff6ff;
-    color: #2563eb;
-
-    cursor: pointer;
-
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.audit-restore-btn:hover:not(:disabled) {
-    background: #dbeafe;
-}
-
-.audit-restore-btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
 }
@@ -980,15 +911,6 @@ body.dark .audit-empty-cell {
 body.dark .audit-modal {
     background: var(--card-bg);
     border-color: var(--border-color);
-}
-
-/* Question inactive */
-
-[data-color-scheme="dark"] .question-inactive,
-[data-theme="dark"] .question-inactive,
-.dark .question-inactive,
-body.dark .question-inactive {
-    background: #0d1422;
 }
 
 /* =========================================================

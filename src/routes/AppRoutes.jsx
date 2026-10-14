@@ -115,6 +115,14 @@ const TakeTour = lazy(
     () => import("../pages/TakeTour/TakeTour")
 );
 
+const PublicAuditView = lazy(
+    () => import("../pages/Public/PublicAuditView")
+);
+
+const PublicFeedback = lazy(
+    () => import("../pages/Public/PublicFeedback")
+);
+
 // Lightweight loading screen
 const RouteLoading = () => (
     <div

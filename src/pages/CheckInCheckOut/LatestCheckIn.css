@@ -61,7 +61,6 @@
     outline: none;
 }
 
-/* Native calendar icon inside date input */
 .date-input-wrapper input[type="date"] {
     color-scheme: dark;
 }
@@ -81,14 +80,11 @@
     top: 0;
     width: 40px;
     height: 44px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     background: rgba(37, 99, 235, 0.12);
     color: var(--text-secondary);
-
     pointer-events: none;
 }
 
@@ -99,26 +95,16 @@
 .filter-button {
     width: 46px;
     height: 46px;
-
     border: 1px solid var(--border-color);
     border-radius: 8px;
-
     background: var(--bg-tertiary);
     color: var(--text-primary);
-
     cursor: pointer;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     font-size: 15px;
-
-    transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .filter-button:hover {
@@ -139,106 +125,37 @@
 }
 
 /* =========================
-   ROLE
-========================= */
-
-.role-filter-row {
-    margin-top: 22px;
-
-    display: flex;
-    align-items: center;
-    gap: 24px;
-}
-
-.role-filter-group select {
-    width: 290px;
-    height: 46px;
-
-    padding: 0 16px;
-
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-
-    background: var(--input-bg);
-    color: var(--text-primary);
-
-    font-size: 14px;
-    outline: none;
-    cursor: pointer;
-}
-
-.role-filter-group select:focus {
-    border-color: var(--primary);
-}
-
-.search-button {
-    height: 46px;
-    padding: 0 20px;
-
-    border: none;
-    border-radius: 9px;
-
-    background: var(--primary);
-    color: #ffffff;
-
-    font-size: 14px;
-    font-weight: 700;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 7px 18px rgba(37,
-            99,
-            235,
-            0.2);
-}
-
-.search-button:hover {
-    background: var(--primary-hover);
-}
-
-/* =========================
    TABLE CONTROLS
 ========================= */
 
 .table-controls {
     margin-top: 8px;
     margin-bottom: 18px;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     gap: 20px;
 }
 
 .table-search {
     width: 240px;
     height: 35px;
-
     display: flex;
     align-items: center;
-
     border: 1px solid var(--border-color);
     border-radius: 5px;
-
     background: var(--input-bg);
-
     overflow: hidden;
 }
 
 .table-search input {
     flex: 1;
     height: 100%;
-
     border: none;
     outline: none;
-
     padding: 0 12px;
-
     background: transparent;
     color: var(--text-primary);
-
     font-size: 14px;
 }
 
@@ -254,31 +171,22 @@
 .export-buttons {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
 }
 
 .export-button {
-    width: 48px;
-    height: 46px;
-
+    width: 44px;
+    height: 40px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-
     background: var(--bg-tertiary);
     color: var(--text-primary);
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     cursor: pointer;
-
     box-shadow: var(--shadow);
-
-    transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        border-color 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .export-button:hover {
@@ -288,392 +196,58 @@
 }
 
 /* =========================
-   TABLE
-========================= */
-
-.checkin-table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-}
-
-.checkin-table {
-    width: 100%;
-    min-width: 1100px;
-
-    border-collapse: separate;
-    border-spacing: 0 1px;
-
-    color: var(--text-primary);
-}
-
-.checkin-table thead th {
-    height: 42px;
-
-    padding: 0 10px;
-
-    background: var(--card-bg);
-    color: var(--text-primary);
-
-    font-size: 14px;
-    font-weight: 700;
-
-    text-align: left;
-    white-space: nowrap;
-}
-
-.checkin-table thead th>span {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.checkin-table thead th small {
-    margin-left: 4px;
-
-    color: var(--text-muted);
-    font-size: 13px;
-}
-
-.checkin-table tbody tr {
-    background: var(--bg-tertiary);
-}
-
-.checkin-table tbody tr:nth-child(even) {
-    background: var(--card-bg);
-}
-
-.checkin-table tbody tr:hover {
-    background: var(--card-bg-hover);
-}
-
-.checkin-table tbody td {
-    min-height: 78px;
-
-    padding: 15px 10px;
-
-    color: var(--text-primary);
-
-    font-size: 14px;
-
-    vertical-align: middle;
-    white-space: nowrap;
-}
-
-.checkin-table tbody td.name-cell {
-    width: 170px;
-    max-width: 170px;
-
-    white-space: normal;
-    line-height: 23px;
-
-    font-weight: 500;
-}
-
-.view-column {
-    width: 90px;
-}
-
-.view-button {
-    width: 30px;
-    height: 30px;
-
-    border: none;
-
-    background: transparent;
-    color: var(--primary);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    cursor: pointer;
-}
-
-.view-button:hover {
-    color: var(--primary-hover);
-}
-
-.empty-state {
-    height: 120px;
-
-    text-align: center;
-
-    color: var(--text-muted) !important;
-}
-
-/* =========================
-   PAGINATION
-========================= */
-
-.checkin-pagination-footer {
-    margin-top: 18px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 20px;
-
-    color: var(--text-primary);
-
-    font-size: 14px;
-}
-
-.checkin-pagination {
-    display: flex;
-    align-items: center;
-
-    gap: 6px;
-}
-
-.checkin-pagination button {
-    min-width: 72px;
-    height: 36px;
-
-    padding: 0 12px;
-
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-
-    font-size: 13px;
-    font-weight: 500;
-
-    cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        border-color 0.2s ease;
-}
-
-.checkin-pagination button:hover:not(:disabled) {
-    background: var(--card-bg-hover);
-    color: var(--primary);
-    border-color: var(--primary);
-}
-
-.checkin-pagination button:disabled {
-    background: var(--bg-tertiary);
-    color: var(--text-muted);
-
-    border-color: var(--border-color);
-
-    opacity: 0.55;
-
-    cursor: not-allowed;
-}
-
-.checkin-pagination .checkin-pagination-active {
-    min-width: 38px;
-
-    background: var(--primary);
-    color: #ffffff;
-
-    border-color: var(--primary);
-
-    font-weight: 700;
-}
-
-.checkin-pagination .checkin-pagination-active:hover {
-    background: var(--primary-hover);
-    color: #ffffff;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 1200px) {
-    .checkin-filter-row {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .filter-button {
-        justify-self: end;
-    }
-
-    .date-filter-group label,
-    .role-filter-group label {
-        min-width: 120px;
-    }
-}
-
-@media (max-width: 800px) {
-    .latest-checkin-card {
-        padding: 15px;
-    }
-
-    .checkin-filter-row {
-        grid-template-columns: 1fr;
-    }
-
-    .date-filter-group,
-    .role-filter-group {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .date-filter-group label,
-    .role-filter-group label {
-        min-width: auto;
-    }
-
-    .date-input-wrapper,
-    .role-filter-group select {
-        width: 100%;
-    }
-
-    .filter-button {
-        justify-self: start;
-    }
-
-    .role-filter-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .search-button {
-        width: fit-content;
-    }
-
-    .table-controls {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .export-buttons {
-        align-self: flex-end;
-    }
-
-    .checkin-pagination-footer {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .checkin-pagination {
-        width: 100%;
-    }
-}
-
-/* =========================
-   LATEST CHECK-IN FILTER
-========================= */
-
-.checkin-filter-row-top {
-    min-height: 40px;
-
-    display: flex;
-    justify-content: flex-end;
-
-    border-bottom: 1px solid var(--border-color);
-}
-
-.checkin-filter-button {
-    width: 44px;
-    height: 44px;
-
-    margin-bottom: 12px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: none;
-    border-radius: 4px;
-
-    background: var(--primary);
-    color: #fff;
-
-    cursor: pointer;
-}
-
-.checkin-filter-button:hover,
-.checkin-filter-button.active {
-    background: var(--primary-hover);
-}
-
-/* =========================
    FILTER PANEL
 ========================= */
 
 .checkin-filter-panel {
     display: flex;
     align-items: flex-end;
-
     flex-wrap: wrap;
-
     gap: 16px;
-
     margin-top: 15px;
+    margin-bottom: 18px;
     padding: 16px;
-
     background: var(--bg-tertiary);
-
     border: 1px solid var(--border-color);
-
     border-radius: 6px;
 }
 
 .checkin-filter-field {
     display: flex;
     flex-direction: column;
-
     gap: 6px;
 }
 
 .checkin-filter-field label {
     color: var(--text-secondary);
-
     font-size: 12px;
 }
 
-.checkin-filter-field input,
-.checkin-filter-field select {
+.checkin-filter-field input {
     width: 190px;
     height: 38px;
-
     padding: 0 10px;
-
     border: 1px solid var(--border-color);
-
     border-radius: 5px;
-
     background: var(--input-bg);
-
     color: var(--text-primary);
-
     outline: none;
-
     box-sizing: border-box;
 }
 
-.checkin-filter-field input:focus,
-.checkin-filter-field select:focus {
+.checkin-filter-field input:focus {
     border-color: var(--primary);
 }
-
-/* =========================
-   APPLY / RESET
-========================= */
 
 .checkin-apply-button,
 .checkin-reset-button {
     height: 38px;
-
     padding: 0 18px;
-
     border: none;
     border-radius: 5px;
-
     color: #fff;
-
     font-size: 12px;
     font-weight: 700;
-
     cursor: pointer;
 }
 
@@ -694,79 +268,456 @@
 }
 
 /* =========================
+   TABLE
+========================= */
+
+.checkin-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.checkin-table {
+    width: 100%;
+    min-width: 1100px;
+    border-collapse: separate;
+    border-spacing: 0 1px;
+    color: var(--text-primary);
+}
+
+.checkin-table thead th {
+    height: 42px;
+    padding: 0 10px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.checkin-table thead th>span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkin-table tbody tr {
+    background: var(--bg-tertiary);
+}
+
+.checkin-table tbody tr:nth-child(even) {
+    background: var(--card-bg);
+}
+
+.checkin-table tbody tr:hover {
+    background: var(--card-bg-hover);
+}
+
+.checkin-table tbody td {
+    min-height: 70px;
+    padding: 14px 10px;
+    color: var(--text-primary);
+    font-size: 14px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.checkin-table tbody td.name-cell {
+    width: 170px;
+    max-width: 170px;
+    white-space: normal;
+    line-height: 22px;
+    font-weight: 500;
+}
+
+.status-pill {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--text-primary);
+}
+
+.status-pill.running {
+    background: rgba(22, 163, 74, 0.15);
+    color: #16a34a;
+}
+
+.view-column {
+    width: 90px;
+}
+
+.view-button {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.view-button:hover {
+    color: var(--primary-hover);
+}
+
+.empty-state {
+    height: 120px;
+    text-align: center;
+    color: var(--text-muted) !important;
+}
+
+/* =========================
    PAGINATION
 ========================= */
 
 .checkin-pagination-footer {
     min-height: 60px;
-
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
-
     gap: 15px;
-
     color: var(--text-secondary);
-
-    font-size: 12px;
+    font-size: 13px;
+    margin-top: 15px;
 }
 
 .checkin-pagination {
     display: flex;
     align-items: center;
+    gap: 4px;
 }
 
 .checkin-pagination button {
     height: 34px;
     min-width: 42px;
-
     padding: 0 12px;
-
     border: 1px solid var(--border-color);
-
-    border-right: none;
-
-    background: var(--card-bg);
-
+    border-radius: 5px;
+    background: var(--bg-tertiary);
     color: var(--text-secondary);
-
     cursor: pointer;
-}
-
-.checkin-pagination button:first-child {
-    border-radius: 5px 0 0 5px;
-}
-
-.checkin-pagination button:last-child {
-    border-right: 1px solid var(--border-color);
-
-    border-radius: 0 5px 5px 0;
+    font-size: 13px;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
 .checkin-pagination button.active {
     background: var(--primary);
-
     border-color: var(--primary);
-
     color: #fff;
+    font-weight: 700;
 }
 
 .checkin-pagination button:hover:not(:disabled) {
     background: var(--card-bg-hover);
-
     color: var(--text-primary);
-}
-
-.checkin-pagination button.active:hover {
-    background: var(--primary-hover);
-
-    color: #fff;
 }
 
 .checkin-pagination button:disabled {
     opacity: 0.55;
-
     cursor: not-allowed;
+}
+
+/* =========================================================
+   CHECKIN DETAILS MODAL (Clean Single Supervisor Selfie Card)
+========================================================= */
+
+.checkin-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.75);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.checkin-modal-card {
+    background: #ffffff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.checkin-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #1e3a8a;
+    color: #ffffff;
+}
+
+.checkin-modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+}
+
+.modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.checkin-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.checkin-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 18px;
+    margin-bottom: 20px;
+    font-size: 13px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.detail-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.detail-item span {
+    color: #0f172a;
+    font-weight: 500;
+}
+
+.dist-highlight {
+    color: #2563eb !important;
+    font-weight: 700 !important;
+}
+
+.selfies-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.selfie-card {
+    width: 320px;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.selfie-image-wrap {
+    width: 100%;
+    height: 220px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid #cbd5e1;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.selfie-image-wrap:hover {
+    border-color: #2563eb;
+}
+
+.selfie-img-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.selfie-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.selfie-hover-hint {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 23, 42, 0.75);
+    color: #ffffff;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.selfie-image-wrap:hover .selfie-hover-hint {
+    opacity: 1;
+}
+
+.selfie-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.selfie-caption {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* =========================================================
+   LIGHTBOX ENLARGED PHOTO
+========================================================= */
+
+.lightbox-overlay {
+    z-index: 10001;
+    background: rgba(0, 0, 0, 0.88);
+}
+
+.lightbox-card {
+    background: #0f172a;
+    border-radius: 12px;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: #1e293b;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.lightbox-body {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    max-height: calc(90vh - 60px);
+}
+
+.lightbox-body img {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+/* =========================================================
+   PRINT STYLES (@media print)
+   Hides sidebar, header, filters, pagination, and prints only table
+========================================================= */
+
+@media print {
+    @page {
+        size: A4 landscape;
+        margin: 10mm;
+    }
+
+    .sidebar,
+    .topbar,
+    .header,
+    header,
+    aside,
+    .table-controls,
+    .checkin-filter-panel,
+    .checkin-pagination-footer,
+    .view-column,
+    .export-buttons,
+    .checkin-modal-overlay {
+        display: none !important;
+    }
+
+    body,
+    html {
+        background: #ffffff !important;
+        color: #000000 !important;
+        overflow: visible !important;
+    }
+
+    .latest-checkin-page,
+    .latest-checkin-card {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        box-shadow: none !important;
+    }
+
+    .checkin-table-wrapper {
+        overflow: visible !important;
+        width: 100% !important;
+    }
+
+    .checkin-table {
+        min-width: 100% !important;
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 11px !important;
+    }
+
+    .checkin-table th,
+    .checkin-table td {
+        border: 1px solid #cbd5e1 !important;
+        padding: 6px 8px !important;
+        color: #000000 !important;
+        background: transparent !important;
+    }
+
+    .checkin-table tbody tr {
+        background: transparent !important;
+        page-break-inside: avoid;
+    }
 }

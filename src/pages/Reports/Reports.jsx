@@ -1200,8 +1200,117 @@ const Reports = () => {
         }
     };
 
+    /* =========================================================
+       PRINT REPORT TABLE ONLY (NO SIDEBAR / NO APPSHELL / CLEAN)
+       ========================================================= */
     const handlePrint = () => {
-        window.print();
+        if (!generated || rows.length === 0) {
+            alert("Please generate a report with records before printing.");
+            return;
+        }
+
+        const printWindow = window.open("", "_blank", "width=1200,height=800");
+        if (!printWindow) {
+            alert("Please allow popups to print the report.");
+            return;
+        }
+
+        const filters = [];
+        if (fromDate) filters.push(`From: ${fromDate}`);
+        if (toDate) filters.push(`To: ${toDate}`);
+        if (region) filters.push(`Region: ${region}`);
+        if (branch) filters.push(`Branch: ${branch}`);
+        if (client) filters.push(`Client: ${client}`);
+        if (user) filters.push(`Field Force: ${user}`);
+
+        const filterText = filters.length > 0 ? filters.join(" &nbsp;|&nbsp; ") : "All Records";
+
+        const tableRowsHtml = rows
+            .map(
+                (item, index) => `
+            <tr>
+                <td style="text-align: center;">${index + 1}</td>
+                <td>${item.date || "-"}</td>
+                <td><strong>${item.user || "-"}</strong></td>
+                <td>${item.client || "-"}</td>
+                <td style="font-size: 11px; color: #475569;">${getClientEmail(item)}</td>
+                <td>${item.site || "-"}</td>
+                <td>${item.type || "-"}</td>
+                <td><strong style="color: ${item.status === 'COMPLETED' || item.status === 'VERIFIED' ? '#15803d' : '#d97706'}">${item.status || "-"}</strong></td>
+                <td>${item.checkIn || "-"}</td>
+                <td>${item.checkOut || "-"}</td>
+                <td style="text-align: right; font-weight: bold;">${item.distance || "0.00"} KM</td>
+            </tr>
+        `
+            )
+            .join("");
+
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>${reportType} - Print</title>
+                <style>
+                    @page { size: A4 landscape; margin: 10mm 12mm; }
+                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #0f172a; margin: 0; padding: 0; font-size: 11.5px; }
+                    .header { border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; }
+                    .header h1 { margin: 0; font-size: 18px; color: #1e3a8a; }
+                    .header p { margin: 3px 0 0; color: #64748b; font-size: 11px; }
+                    .summary-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; margin-bottom: 14px; font-size: 11.5px; display: flex; justify-content: space-between; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; }
+                    th { background: #1e3a8a; color: #ffffff; padding: 7px 8px; text-align: left; font-weight: 600; border: 1px solid #1e3a8a; }
+                    td { padding: 6px 8px; border: 1px solid #cbd5e1; vertical-align: middle; }
+                    tr:nth-child(even) { background: #f8fafc; }
+                    tr { page-break-inside: avoid; break-inside: avoid; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <h1>${reportType.toUpperCase()}</h1>
+                        <p>Filters: ${filterText}</p>
+                    </div>
+                    <div style="text-align: right; font-size: 11px; color: #64748b;">
+                        <div>Generated: ${new Date().toLocaleString("en-IN")}</div>
+                        <div>Total Records: <strong>${summary.totalRecords}</strong></div>
+                    </div>
+                </div>
+
+                <div class="summary-box">
+                    <span>Completed / Verified: <strong>${summary.completed}</strong></span>
+                    <span>Pending: <strong>${summary.pending}</strong></span>
+                    <span>Missed: <strong>${summary.missed}</strong></span>
+                    <span>Total Distance: <strong>${formatDistance(summary.totalDistance)} KM</strong></span>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 35px; text-align: center;">#</th>
+                            <th>Date</th>
+                            <th>Field Force</th>
+                            <th>Client</th>
+                            <th>Client Email</th>
+                            <th>Site</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Check In</th>
+                            <th>Check Out</th>
+                            <th style="text-align: right;">Distance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRowsHtml}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(html);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => printWindow.print(), 400);
     };
 
     const getStatusClass = (

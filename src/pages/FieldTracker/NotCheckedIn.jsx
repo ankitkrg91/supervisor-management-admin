@@ -16,7 +16,7 @@ import {
     Printer,
 } from "lucide-react";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import * as XLSX from "xlsx";
 
@@ -25,6 +25,7 @@ import { apiFetch } from "../../utils/api";
 import "./NotCheckedIn.css";
 
 const NotCheckedIn = () => {
+    const navigate = useNavigate();
     const [notCheckedInData, setNotCheckedInData] = useState([]);
     const [latestLocations, setLatestLocations] = useState([]);
 
@@ -254,26 +255,12 @@ const NotCheckedIn = () => {
     };
 
     const openMap = (person) => {
-        const latitude =
-            person.location?.latitude;
-
-        const longitude =
-            person.location?.longitude;
-
-        if (
-            latitude === undefined ||
-            latitude === null ||
-            longitude === undefined ||
-            longitude === null
-        ) {
+        const userId = person?.user?.id || person?.user?.userId || person?.id;
+        if (!userId) {
             return;
         }
-
-        window.open(
-            `https://www.google.com/maps?q=${latitude},${longitude}`,
-            "_blank",
-            "noopener,noreferrer"
-        );
+        const today = new Date().toISOString().split("T")[0];
+        navigate(`/distance-report?userId=${userId}&date=${today}`);
     };
 
     /*
@@ -899,19 +886,9 @@ const NotCheckedIn = () => {
                                                 <button
                                                     type="button"
                                                     className="not-checked-in-map-button"
-                                                    title={
-                                                        person.location
-                                                            ? "View supervisor on map"
-                                                            : "No location available"
-                                                    }
-                                                    onClick={() =>
-                                                        openMap(
-                                                            person
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        !person.location
-                                                    }
+                                                    title={person.user?.id ? "View supervisor daily route & map" : "No supervisor available"}
+                                                    onClick={() => openMap(person)}
+                                                    disabled={!person.user?.id}
                                                 >
                                                     <Map
                                                         size={
