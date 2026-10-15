@@ -21,6 +21,10 @@ import {
     CheckCircle2,
     Car,
     FileText,
+    ZoomIn,
+    Download,
+    XCircle,
+    RotateCcw,
 } from "lucide-react";
 import {
     MapContainer,
@@ -39,55 +43,92 @@ import { apiFetch } from "../../utils/api";
 import "leaflet/dist/leaflet.css";
 import "./DistanceReport.css";
 import "../Visits/LatestVisits.css";
+import "../CheckInCheckOut/LatestCheckIn.css";
 
-// 45 HDFC Audit Questions matching aud.pdf
-const HDFC_45_QUESTIONS = [
-    { no: 1, text: "NUMBER OF EMPLOYEES", ans: "1", score: null },
-    { no: 2, text: "ENTER GUARD DETAILS", ans: "Santosh (Guard ID: 8941)", score: null },
-    { no: 3, text: "GROOMING & TURNOUT", ans: "Yes - Complete Uniform & Badge", score: "3/ 3", photo: true, photoCount: 2, photoLabel: "Guard uniform & turnout photos" },
-    { no: 4, text: "ESS APP LOGIN STATUS", ans: "Yes", score: "3/ 3", photo: true, photoCount: 1, photoLabel: "ESS App login screen photo" },
-    { no: 5, text: "UAN/ PF STATUS", ans: "Yes- 101705766775", score: "5/ 5" },
-    { no: 6, text: "ESIC", ans: "Yes- 2914015193", score: "5/ 5" },
-    { no: 7, text: "LAST MONTH SALARY RECEIVED", ans: "Yes", score: "3/ 3" },
-    { no: 8, text: "KIT RECEIVED", ans: "Yes", score: "2/ 2" },
-    { no: 9, text: "RENEWAL KIT RECEIVED", ans: "Yes", score: "2/ 2" },
-    { no: 10, text: "SITE HOUSEKEEPING QUALITY", ans: "Yes", score: "5/ 5" },
-    { no: 11, text: "LOBBY AREA", ans: "Yes", score: "5/ 5", photo: true, photoCount: 1, photoLabel: "Lobby area photo" },
-    { no: 12, text: "MEETING ROOM", ans: "Yes", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "Meeting room photo" },
-    { no: 13, text: "PANTRY", ans: "Yes", score: "5/ 5", photo: true, photoCount: 1, photoLabel: "Pantry photo" },
-    { no: 14, text: "WASH ROOM", ans: "Yes", score: "5/ 5", photo: true, photoCount: 1, photoLabel: "Wash room photo" },
-    { no: 15, text: "CABINS", ans: "Yes", score: "5/ 5", photo: true, photoCount: 1, photoLabel: "Cabins photo" },
-    { no: 16, text: "WORK STATIONS", ans: "Yes", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "Work stations photo" },
-    { no: 17, text: "COMMON AREA", ans: "Yes", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "Common area photo" },
-    { no: 18, text: "STORE ROOM", ans: "Yes", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "Store room photo" },
-    { no: 19, text: "ATTENDANCE REGISTER", ans: "Yes", score: "3/ 3", photo: true, photoCount: 1, photoLabel: "Attendance register page photo" },
-    { no: 20, text: "HK WASHROOM CHECKLIST", ans: "Yes", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "HK washroom checklist photo" },
-    { no: 21, text: "HK KYC DOCUMENT", ans: "Yes", score: "2/ 2", photo: true, photoCount: 1, photoLabel: "HK KYC document photo" },
-    { no: 22, text: "OTHER", ans: "all documents complete", score: null },
-    { no: 23, text: "KNOWLEDGE OF DUTY POST", ans: "Yes", score: "2/ 2" },
-    { no: 24, text: "KNOWLEDGE OF DOCUMENTATION", ans: "Yes", score: "2/ 2" },
-    { no: 25, text: "KNOWLEDGE OF FIRE SAFETY AND EMERGENCY SITUATION", ans: "Yes", score: "5/ 5" },
-    { no: 26, text: "OTHER TRAINING", ans: "Yes", score: "0/ 0" },
-    { no: 27, text: "TRAINING TOPICS", ans: "Yes", score: "10/ 10", photo: true, photoCount: 2, photoLabel: "Training session photos" },
-    { no: 28, text: "POST ORDER", ans: "YES", score: null },
-    { no: 29, text: "FED", ans: "YES", score: null },
-    { no: 30, text: "MEDICAL EMERGENCY", ans: "YES", score: null },
-    { no: 31, text: "FIRST AID AND CPR", ans: "YES", score: null },
-    { no: 32, text: "HANDING/TAKING OVER", ans: "YES", score: null },
-    { no: 33, text: "POSH", ans: "YES", score: null },
-    { no: 34, text: "OPEN SESSION", ans: "YES", score: null },
-    { no: 35, text: "DAILY USE EQUIPMENTS / CLEANING CHEMICAL", ans: "YES", score: null },
-    { no: 36, text: "PPE TRAINING", ans: "YES", score: null },
-    { no: 37, text: "DEEP CLEANING", ans: "YES", score: null },
-    { no: 38, text: "CLIENT MET", ans: "YES", score: "3/ 3" },
-    { no: 39, text: "NAME", ans: "Govind sir", score: null },
-    { no: 40, text: "DESIGNATION", ans: "Branch Manager", score: null },
-    { no: 41, text: "CLIENT'S FEEDBACK", ans: "EXCELLENT", score: null },
-    { no: 42, text: "OBSERVATIONS", ans: "NO", score: null },
-    { no: 43, text: "ANY R & M WORK REQUIRED", ans: "NO", score: "3/ 3" },
-    { no: 44, text: "ANY OTHER OBSERVATIONS", ans: "no", score: null },
-    { no: 45, text: "INCIDENT RESPONSE", ans: "NO", score: "2/ 2" },
-];
+const LOCAL_QUESTIONS_KEY = "audit_custom_questions_v6";
+
+const getLocalActiveQuestions = () => {
+    try {
+        const parsed = JSON.parse(localStorage.getItem(LOCAL_QUESTIONS_KEY) || "[]");
+        return Array.isArray(parsed) ? parsed.filter((q) => q.isActive !== false) : [];
+    } catch {
+        return [];
+    }
+};
+
+const extractSiteEvidencePhotos = (visit) => {
+    if (!visit) return [];
+    const list = [];
+    const seen = new Set();
+    const add = (url, label) => {
+        const clean = typeof url === "string" ? url.trim() : "";
+        if (!clean || seen.has(clean)) return;
+        seen.add(clean);
+        list.push({ url: clean, label });
+    };
+
+    if (typeof visit.notes === "string") {
+        const m = visit.notes.match(/\[SITE_EVIDENCE\]:\s*(\{[\s\S]*?\})/);
+        if (m) {
+            try {
+                const ev = JSON.parse(m[1]);
+                add(ev.nameplate || ev.namePlatePhoto, "Client Name Plate Photo");
+                add(ev.selfie || ev.selfiePhoto, "Supervisor Selfie");
+                add(ev.photo1 || ev.sitePhoto1 || ev.sitePhoto, "Site Photo 1");
+            } catch { }
+        }
+    }
+    add(visit.photoUrl, list.length === 0 ? "Site Evidence Photo" : "Site Photo");
+    add(visit.selfieUrl, "Check-In Selfie");
+    return list;
+};
+
+const extractAuditQuestions = (visit, activeChecklist = []) => {
+    const answers = visit?.auditSubmission?.answers;
+    if (Array.isArray(answers) && answers.length > 0) {
+        return answers.map((ans, idx) => {
+            let photos = [];
+            let textVal = ans.textValue;
+            if (textVal) {
+                try {
+                    const p = JSON.parse(textVal);
+                    if (Array.isArray(p)) {
+                        photos = p.filter(Boolean);
+                        textVal = null;
+                    } else if (typeof p === "string" && (p.startsWith("data:image") || p.startsWith("http"))) {
+                        photos = [p];
+                        textVal = null;
+                    }
+                } catch {
+                    if (typeof textVal === "string" && (textVal.startsWith("data:image") || textVal.startsWith("http"))) {
+                        photos = [textVal];
+                        textVal = null;
+                    }
+                }
+            }
+            const hasBool = typeof ans.booleanValue === "boolean";
+            return {
+                no: ans.questionNo || idx + 1,
+                text: ans.questionText || `Question #${ans.questionNo || idx + 1}`,
+                ans: hasBool ? (ans.booleanValue ? "YES" : "NO") : (textVal || "—"),
+                booleanValue: hasBool ? ans.booleanValue : true,
+                photos,
+            };
+        });
+    }
+
+    const src = Array.isArray(activeChecklist) && activeChecklist.length > 0
+        ? activeChecklist.filter((q) => q.isActive !== false)
+        : getLocalActiveQuestions();
+
+    return src.map((q, idx) => ({
+        no: idx + 1,
+        text: q.question || q.text || `Question #${idx + 1}`,
+        ans: "Pending",
+        booleanValue: null,
+        photos: [],
+    }));
+};
 
 // Numbered purple stop marker
 const createStopIcon = (number) => {
@@ -189,9 +230,29 @@ const DistanceReport = () => {
     const [mapError, setMapError] = useState("");
     const [tableSearch, setTableSearch] = useState("");
 
-    // Modals
+    // Modals & Checklist
     const [selectedCheckIn, setSelectedCheckIn] = useState(null);
-    const [selectedTask, setSelectedTask] = useState(null);
+    const [selectedAuditVisit, setSelectedAuditVisit] = useState(null);
+    const [activeChecklist, setActiveChecklist] = useState([]);
+    const [previewPhoto, setPreviewPhoto] = useState(null);
+    const [updatingId, setUpdatingId] = useState(null);
+
+    // Fetch active checklist once on mount
+    useEffect(() => {
+        const fetchActiveChecklist = async () => {
+            try {
+                const local = getLocalActiveQuestions();
+                if (local.length > 0) setActiveChecklist(local);
+                const res = await apiFetch("/api/audit/checklist", { method: "GET" });
+                if (res.ok) {
+                    const body = await res.json();
+                    const qs = (body?.data?.checklist?.questions || []).filter((q) => q.isActive !== false);
+                    if (qs.length > 0) setActiveChecklist(qs);
+                }
+            } catch { }
+        };
+        fetchActiveChecklist();
+    }, []);
 
     // 1. Fetch Supervisors list
     useEffect(() => {
@@ -582,130 +643,150 @@ const DistanceReport = () => {
         setTimeout(() => printWindow.print(), 400);
     };
 
-    /* =========================================================
-       PRINT COMPLETE 45-POINT AUDIT REPORT (NO SCROLL CUT-OFF)
-       ========================================================= */
-    const printAuditReport = (task) => {
-        if (!task) return;
-        const printWindow = window.open("", "_blank", "width=1000,height=900");
-        if (!printWindow) {
-            alert("Please allow popups to print the audit report.");
-            return;
+    const handleOpenCheckInModal = (stop) => {
+        const ci = stop.rawCheckIn || {};
+        const supUser = routeData?.user || {};
+        const supervisorName = supUser.name || stop.assignTo || "Supervisor";
+        const supervisorPhone = supUser.phone || "0000";
+
+        const inDate = stop.checkInTime ? new Date(stop.checkInTime) : (stop.timeFull ? new Date(stop.timeFull) : null);
+        const outDate = stop.checkOutTime ? new Date(stop.checkOutTime) : null;
+
+        const checkInDateTime = inDate && !isNaN(inDate.getTime())
+            ? inDate.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+            : stop.time || "N/A";
+
+        const checkOutDateTime = outDate && !isNaN(outDate.getTime())
+            ? outDate.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+            : (stop.checkOutTime ? String(stop.checkOutTime) : "NA (Currently Active)");
+
+        const site = ci.site || {};
+        const checkInPhotoUrl = stop.selfieIn || ci.photoUrl || ci.checkInPhotoUrl || ci.selfieUrl || null;
+
+        const dateTag = inDate && !isNaN(inDate.getTime())
+            ? inDate.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }).replace(/\s+/g, "_")
+            : "DATE";
+        const timeTag = inDate && !isNaN(inDate.getTime())
+            ? inDate.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }).replace(/\s+/g, "_")
+            : "TIME";
+
+        const checkInId = stop.checkInId || `${supervisorName.replace(/\s+/g, "")}${supervisorPhone}-${dateTag}_${timeTag}`;
+
+        setSelectedCheckIn({
+            checkInId,
+            name: supervisorName,
+            checkInDateTime,
+            checkOutDateTime,
+            gpsCheckInAddress: stop.checkInAddress || site.address || (stop.latitude ? `Lat: ${Number(stop.latitude).toFixed(6)}, Long: ${Number(stop.longitude).toFixed(6)}` : "Verified by Device GPS"),
+            gpsCheckOutAddress: stop.checkOutAddress || (outDate ? (site.address || "Verified on Check-Out") : "NA"),
+            checkInLatitude: ci.checkInLatitude ?? stop.latitude,
+            checkInLongitude: ci.checkInLongitude ?? stop.longitude,
+            checkOutLatitude: ci.checkOutLatitude ?? null,
+            checkOutLongitude: ci.checkOutLongitude ?? null,
+            siteName: site.name || stop.locationName || "Site",
+            siteCode: site.siteCode || stop.siteCode || "NA",
+            siteLatitude: site.latitude ?? null,
+            siteLongitude: site.longitude ?? null,
+            distanceTravelled: stop.distanceTravelled || stop.distanceFromPrevKm || "0.00 KM",
+            checkInPhotoUrl,
+            isAlternate: stop.isAlternate || ci.isAlternate || false,
+            alternateReason: stop.alternateReason || ci.alternateReason || null,
+        });
+    };
+
+    const handleOpenAuditModal = async (stop) => {
+        const visit = stop.visit ? { ...stop.visit } : {
+            id: stop.visitId || stop.id,
+            visitAt: stop.timeFull,
+            status: stop.status || "VERIFIED",
+            latitude: stop.latitude,
+            longitude: stop.longitude,
+            site: {
+                name: stop.siteName || stop.locationName,
+                siteCode: stop.siteCode,
+                address: stop.address,
+            },
+            user: routeData?.user || { name: stop.assignTo || "Supervisor" },
+            auditSubmission: stop.auditAnswers ? { answers: stop.auditAnswers } : null,
+            notes: stop.notes,
+            photoUrl: stop.photoUrl,
+            selfieUrl: stop.selfieUrl,
+        };
+
+        if (!visit.user && routeData?.user) {
+            visit.user = routeData.user;
         }
 
-        const questionsRows = HDFC_45_QUESTIONS.map((q) => `
-            <tr>
-                <td style="text-align: center; font-weight: bold; width: 40px; border: 1px solid #cbd5e1;">#${q.no}</td>
-                <td style="border: 1px solid #cbd5e1;">
-                    <strong>${q.text}</strong>
-                    ${q.photo ? `<div style="font-size: 11px; color: #d97706; margin-top: 2px;">📷 Photo Verified (${q.photoLabel})</div>` : ""}
-                </td>
-                <td style="font-weight: 600; color: #2563eb; width: 140px; border: 1px solid #cbd5e1;">${q.ans}</td>
-                <td style="text-align: center; font-weight: bold; color: #15803d; width: 80px; border: 1px solid #cbd5e1;">${q.score || "—"}</td>
-            </tr>
-        `).join("");
+        setSelectedAuditVisit(visit);
 
-        const html = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>HDFC Audit Report - ${task.siteName || "Branch"}</title>
-                <style>
-                    @page { size: A4 portrait; margin: 12mm 15mm; }
-                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #0f172a; margin: 0; padding: 0; font-size: 12.5px; line-height: 1.4; }
-                    .report-header { border-bottom: 2.5px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start; }
-                    .report-header h1 { margin: 0; font-size: 20px; color: #1e3a8a; }
-                    .report-header p { margin: 3px 0 0; color: #64748b; font-size: 12px; }
-                    .score-banner { background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-                    .score-box { text-align: right; }
-                    .score-num { font-size: 24px; font-weight: 800; color: #15803d; }
-                    .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 18px; font-size: 12px; }
-                    .meta-table td { padding: 6px 10px; border: 1px solid #e2e8f0; }
-                    .meta-label { background: #f8fafc; font-weight: 600; color: #475569; width: 22%; }
-                    .meta-val { color: #0f172a; font-weight: 600; }
-                    .audit-table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 10px; }
-                    .audit-table th { background: #1e3a8a; color: #ffffff; padding: 8px 10px; text-align: left; font-weight: 600; border: 1px solid #1e3a8a; }
-                    .audit-table td { padding: 6px 10px; vertical-align: middle; }
-                    .audit-table tr:nth-child(even) { background: #f8fafc; }
-                    .audit-table tr { page-break-inside: avoid; break-inside: avoid; }
-                    .footer-sign { margin-top: 30px; display: flex; justify-content: space-between; padding-top: 20px; border-top: 1px solid #cbd5e1; font-size: 12px; page-break-inside: avoid; }
-                </style>
-            </head>
-            <body>
-                <div class="report-header">
-                    <div>
-                        <h1>HDFC BANK BRANCH AUDIT REPORT</h1>
-                        <p>Comprehensive Branch Operations & Security Compliance Checklist</p>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 11px; color: #64748b;">Date: ${new Date().toLocaleDateString("en-IN")}</div>
-                        <div style="font-weight: 800; color: #15803d; font-size: 14px; margin-top: 2px;">STATUS: VERIFIED</div>
-                    </div>
-                </div>
+        if (!visit?.auditSubmission?.answers?.length && visit?.id) {
+            try {
+                const res = await apiFetch(`/api/audit/visits/${visit.id}/submission`, { method: "GET" });
+                if (res.ok) {
+                    const sub = (await res.json())?.data?.submission;
+                    if (sub?.answers?.length) {
+                        setSelectedAuditVisit((p) => (p?.id === visit.id ? { ...p, auditSubmission: sub } : p));
+                    }
+                }
+            } catch { }
+        }
+    };
 
-                <div class="score-banner">
-                    <div>
-                        <strong style="font-size: 15px; color: #166534;">HDFC BRANCH AUDIT CHECKLIST</strong>
-                        <div style="font-size: 12px; color: #15803d; margin-top: 2px;">Audit Reference: aud.pdf (45 Compliance Standards Evaluated)</div>
-                    </div>
-                    <div class="score-box">
-                        <div class="score-num">100 / 100</div>
-                        <div style="font-size: 11px; font-weight: 700; color: #166534;">COMPLIANCE: 100%</div>
-                    </div>
-                </div>
+    const updateVisitStatus = async (visit, nextStatus) => {
+        if (!visit?.id) return;
+        try {
+            setUpdatingId(visit.id);
+            const res = await apiFetch(`/api/visits/${visit.id}/status`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: nextStatus }),
+            });
+            if (res.ok) {
+                setSelectedAuditVisit((p) => (p ? { ...p, status: nextStatus } : null));
+                setRouteData((prev) => {
+                    if (!prev || !prev.stops) return prev;
+                    return {
+                        ...prev,
+                        stops: prev.stops.map((s) =>
+                            s.visit?.id === visit.id || s.id === visit.id
+                                ? { ...s, status: nextStatus, visit: { ...s.visit, status: nextStatus } }
+                                : s
+                        ),
+                    };
+                });
+            }
+        } catch { }
+        finally {
+            setUpdatingId(null);
+        }
+    };
 
-                <table class="meta-table">
-                    <tr>
-                        <td class="meta-label">Task / Visit ID</td>
-                        <td class="meta-val">${task.visitId || task.id}</td>
-                        <td class="meta-label">Auditor / Supervisor</td>
-                        <td class="meta-val">${task.assignTo || "Supervisor"}</td>
-                    </tr>
-                    <tr>
-                        <td class="meta-label">Site Name & Code</td>
-                        <td class="meta-val">${task.siteName || "Client Site"} (${task.siteCode || "18552"})</td>
-                        <td class="meta-label">Completed On</td>
-                        <td class="meta-val">${task.completedOn || "Completed"}</td>
-                    </tr>
-                    <tr>
-                        <td class="meta-label">Site Address</td>
-                        <td class="meta-val" colspan="3">${task.address || "Client Branch Address"}</td>
-                    </tr>
-                </table>
-
-                <h3 style="margin: 0 0 6px; font-size: 13.5px; color: #1e293b;">Checklist Evaluation (All 45 Questions)</h3>
-                <table class="audit-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 40px; text-align: center;">#</th>
-                            <th>Audit Checklist Parameter</th>
-                            <th style="width: 140px;">Response / Status</th>
-                            <th style="width: 80px; text-align: center;">Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${questionsRows}
-                    </tbody>
-                </table>
-
-                <div class="footer-sign">
-                    <div>
-                        <div>Auditor Signature: _______________________</div>
-                        <div style="color: #64748b; font-size: 11px; margin-top: 4px;">Name: ${task.assignTo || "Supervisor"}</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div>Verified by Admin: _______________________</div>
-                        <div style="color: #64748b; font-size: 11px; margin-top: 4px;">Super Admin Portal Verified</div>
-                    </div>
-                </div>
-            </body>
-            </html>
-        `;
-
-        printWindow.document.write(html);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => printWindow.print(), 400);
+    const printAuditReport = (visit) => {
+        if (!visit) return;
+        const pw = window.open("", "_blank", "width=1000,height=900");
+        if (!pw) return alert("Please allow popups to print the audit report.");
+        const qs = extractAuditQuestions(visit, activeChecklist);
+        const passed = qs.filter((q) => q.booleanValue === true).length;
+        const pct = qs.length > 0 ? Math.round((passed / qs.length) * 100) : 100;
+        const siteName = visit.site?.name || visit.clientName || visit.locationName || "Client Site";
+        const vDate = visit.visitAt ? new Date(visit.visitAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "N/A";
+        const vTime = visit.visitAt ? new Date(visit.visitAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "N/A";
+        const rowsHtml = qs
+            .map(
+                (q) =>
+                    `<tr><td style="text-align:center;font-weight:bold;">#${q.no}</td><td><strong>${q.text}</strong>${q.photos?.length ? `<div style="font-size:11px;color:#059669;">📷 ${q.photos.length} Photo(s) Attached</div>` : ""
+                    }</td><td style="text-align:center;font-weight:bold;color:${q.booleanValue === false ? "#dc2626" : "#15803d"
+                    };">${q.ans}</td></tr>`
+            )
+            .join("");
+        pw.document.write(
+            `<!DOCTYPE html><html><head><title>Audit Report - ${siteName}</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#0f172a;font-size:12px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #cbd5e1;padding:7px 10px;text-align:left;}th{background:#1e3a8a;color:#fff;}</style></head><body><h2>${siteName.toUpperCase()} — SITE AUDIT REPORT</h2><p>Auditor: <strong>${visit.user?.name || visit.assignTo || "Supervisor"
+            }</strong> | Date: ${vDate} ${vTime} | Status: <strong>${visit.status || "PENDING"
+            }</strong> | Compliance: <strong>${pct}% (${passed}/${qs.length})</strong></p><table><thead><tr><th style="width:45px;text-align:center;">#</th><th>Audit Checklist Question</th><th style="width:120px;text-align:center;">Response</th></tr></thead><tbody>${rowsHtml}</tbody></table></body></html>`
+        );
+        pw.document.close();
+        pw.focus();
+        setTimeout(() => pw.print(), 400);
     };
 
     return (
@@ -1315,9 +1396,9 @@ const DistanceReport = () => {
                                                         title="View Details"
                                                         onClick={() => {
                                                             if (stop.type === "CHECK_IN" || stop.type === "CHECK_OUT") {
-                                                                setSelectedCheckIn(stop);
+                                                                handleOpenCheckInModal(stop);
                                                             } else {
-                                                                setSelectedTask(stop);
+                                                                handleOpenAuditModal(stop);
                                                             }
                                                         }}
                                                     >
@@ -1359,71 +1440,99 @@ const DistanceReport = () => {
                 )}
             </section>
 
-            {/* CHECK-IN DETAILS MODAL */}
+            {/* CHECKIN DETAILS MODAL (Exact match with LatestCheckIn.jsx) */}
             {selectedCheckIn && (
                 <div className="checkin-modal-overlay" onClick={() => setSelectedCheckIn(null)}>
                     <div className="checkin-modal-card" onClick={(e) => e.stopPropagation()}>
                         <div className="checkin-modal-header">
-                            <h3>Check-In & Check-Out Details</h3>
-                            <button type="button" className="btn-modal-close" onClick={() => setSelectedCheckIn(null)}>×</button>
+                            <h3>CHECKIN DETAILS</h3>
+                            <button type="button" className="modal-close-btn" onClick={() => setSelectedCheckIn(null)}>
+                                <X size={20} />
+                            </button>
                         </div>
                         <div className="checkin-modal-body">
                             <div className="checkin-details-grid">
-                                <div className="checkin-detail-cell">
-                                    <label>Check-In ID</label>
-                                    <p>{selectedCheckIn.checkInId || "N/A"}</p>
+                                <div className="detail-item"><label>Check In ID :</label><span>{selectedCheckIn.checkInId}</span></div>
+                                <div className="detail-item"><label>Name :</label><span>{selectedCheckIn.name}</span></div>
+                                <div className="detail-item"><label>Check In Date Time:</label><span>{selectedCheckIn.checkInDateTime}</span></div>
+                                <div className="detail-item"><label>Check Out Date Time:</label><span>{selectedCheckIn.checkOutDateTime}</span></div>
+
+                                {/* SUPERVISOR GPS COORDINATES */}
+                                <div className="detail-item">
+                                    <label>Supervisor Check-In GPS :</label>
+                                    <span style={{ fontWeight: 600, color: "#1e40af" }}>
+                                        {selectedCheckIn.checkInLatitude != null && selectedCheckIn.checkInLongitude != null
+                                            ? `Lat: ${Number(selectedCheckIn.checkInLatitude).toFixed(6)}, Long: ${Number(selectedCheckIn.checkInLongitude).toFixed(6)}`
+                                            : "Not recorded"}
+                                    </span>
                                 </div>
-                                <div className="checkin-detail-cell">
-                                    <label>Distance Travelled</label>
-                                    <p>{selectedCheckIn.distanceTravelled || selectedCheckIn.distanceFromPrevKm || "0.00"} KM</p>
+                                <div className="detail-item">
+                                    <label>Supervisor Check-Out GPS :</label>
+                                    <span style={{ fontWeight: 600, color: "#1e40af" }}>
+                                        {selectedCheckIn.checkOutLatitude != null && selectedCheckIn.checkOutLongitude != null
+                                            ? `Lat: ${Number(selectedCheckIn.checkOutLatitude).toFixed(6)}, Long: ${Number(selectedCheckIn.checkOutLongitude).toFixed(6)}`
+                                            : (selectedCheckIn.checkOutDateTime !== "NA" && selectedCheckIn.checkOutDateTime !== "NA (Currently Active)" ? "Not recorded" : "Active / Pending")}
+                                    </span>
                                 </div>
-                                <div className="checkin-detail-cell">
-                                    <label>Check-In Date / Time</label>
-                                    <p>{selectedCheckIn.checkInTime ? new Date(selectedCheckIn.checkInTime).toLocaleString("en-IN") : selectedCheckIn.time}</p>
+
+                                {/* SITE GPS COORDINATES & SITE DETAILS */}
+                                <div className="detail-item">
+                                    <label>Site Name & Code :</label>
+                                    <span>{selectedCheckIn.siteName} {selectedCheckIn.siteCode && selectedCheckIn.siteCode !== "NA" ? `(${selectedCheckIn.siteCode})` : ""}</span>
                                 </div>
-                                <div className="checkin-detail-cell">
-                                    <label>Check-Out Date / Time</label>
-                                    <p style={{ color: selectedCheckIn.checkOutTime ? "#15803D" : "#DC2626", fontWeight: 700 }}>
-                                        {selectedCheckIn.checkOutTime ? new Date(selectedCheckIn.checkOutTime).toLocaleString("en-IN") : "NA (Currently Active)"}
-                                    </p>
+                                <div className="detail-item">
+                                    <label>Site Registered GPS :</label>
+                                    <span style={{ fontWeight: 600, color: "#b45309" }}>
+                                        {selectedCheckIn.siteLatitude != null && selectedCheckIn.siteLongitude != null
+                                            ? `Lat: ${Number(selectedCheckIn.siteLatitude).toFixed(6)}, Long: ${Number(selectedCheckIn.siteLongitude).toFixed(6)}`
+                                            : "Not registered (Auto-detected)"}
+                                    </span>
                                 </div>
-                                <div className="checkin-detail-cell" style={{ gridColumn: "1 / -1" }}>
-                                    <label>GPS Check-In Address</label>
-                                    <p>{selectedCheckIn.checkInAddress || "Verified by Device GPS"}</p>
-                                </div>
-                                <div className="checkin-detail-cell" style={{ gridColumn: "1 / -1" }}>
-                                    <label>GPS Check-Out Address</label>
-                                    <p>{selectedCheckIn.checkOutAddress || (selectedCheckIn.checkOutTime ? "Verified on Check-Out" : "NA")}</p>
+
+                                <div className="detail-item full-width"><label>GPS Check In Address :</label><span>{selectedCheckIn.gpsCheckInAddress}</span></div>
+                                <div className="detail-item full-width"><label>GPS Check Out Address :</label><span>{selectedCheckIn.gpsCheckOutAddress}</span></div>
+                                <div className="detail-item full-width"><label>Distance Travelled :</label><span className="dist-highlight">{selectedCheckIn.distanceTravelled}</span></div>
+
+                                {/* ALTERNATE CHECKIN MODE DISPLAY */}
+                                <div className="detail-item full-width" style={{ background: selectedCheckIn.isAlternate ? "#fef3c7" : "#f0fdf4", padding: "10px 14px", borderRadius: "8px", border: `1px solid ${selectedCheckIn.isAlternate ? '#f59e0b' : '#86efac'}` }}>
+                                    <label style={{ color: selectedCheckIn.isAlternate ? "#92400e" : "#166534", fontWeight: 700 }}>Check In Mode :</label>
+                                    <span style={{ color: selectedCheckIn.isAlternate ? "#d97706" : "#16a34a", fontWeight: "800", fontSize: "13.5px" }}>
+                                        {selectedCheckIn.isAlternate
+                                            ? `🌧️ Rain / Emergency Exception (${selectedCheckIn.alternateReason || "Geofence Bypassed"})`
+                                            : "Standard Verified Check-In (Within 100m)"}
+                                    </span>
                                 </div>
                             </div>
 
-                            <div className="selfie-photos-row">
+                            {/* SUPERVISOR SELFIE */}
+                            <div className="selfies-container">
                                 <div className="selfie-card">
-                                    <label>Selfie (Check In)</label>
-                                    <div className="selfie-img-placeholder">
-                                        {selectedCheckIn.selfieIn ? (
-                                            <img src={selectedCheckIn.selfieIn} alt="Check In Selfie" />
+                                    <div
+                                        className="selfie-image-wrap"
+                                        onClick={() => {
+                                            if (selectedCheckIn.checkInPhotoUrl) {
+                                                setPreviewPhoto({
+                                                    url: selectedCheckIn.checkInPhotoUrl,
+                                                    title: `Supervisor Selfie - ${selectedCheckIn.name}`,
+                                                });
+                                            }
+                                        }}
+                                        style={{ cursor: selectedCheckIn.checkInPhotoUrl ? "pointer" : "default" }}
+                                    >
+                                        {selectedCheckIn.checkInPhotoUrl ? (
+                                            <div className="selfie-img-container">
+                                                <img src={selectedCheckIn.checkInPhotoUrl} alt="Check-In Selfie" />
+                                                <div className="selfie-hover-hint">
+                                                    <ZoomIn size={14} /> Click to Zoom
+                                                </div>
+                                            </div>
                                         ) : (
-                                            <>
-                                                <Camera size={26} />
-                                                <span>Check-In Selfie</span>
-                                            </>
+                                            <div className="selfie-placeholder">
+                                                <span className="placeholder-text">No Selfie Photo Attached</span>
+                                            </div>
                                         )}
                                     </div>
-                                </div>
-
-                                <div className="selfie-card">
-                                    <label>Selfie (Check Out)</label>
-                                    <div className="selfie-img-placeholder">
-                                        {selectedCheckIn.selfieOut ? (
-                                            <img src={selectedCheckIn.selfieOut} alt="Check Out Selfie" />
-                                        ) : (
-                                            <>
-                                                <Camera size={26} />
-                                                <span>{selectedCheckIn.checkOutTime ? "Checkout Selfie" : "NA (Pending)"}</span>
-                                            </>
-                                        )}
-                                    </div>
+                                    <span className="selfie-caption">Selfie (Check In) Image</span>
                                 </div>
                             </div>
                         </div>
@@ -1431,78 +1540,168 @@ const DistanceReport = () => {
                 </div>
             )}
 
-            {/* TASK / AUDIT DETAILS MODAL (Matching aud.pdf) */}
-            {selectedTask && (
-                <div className="checkin-modal-overlay" onClick={() => setSelectedTask(null)}>
-                    <div className="checkin-modal-card task-audit-modal-card" onClick={(e) => e.stopPropagation()}>
-                        <div className="checkin-modal-header">
-                            <h3>Site Audit & Inspection Report</h3>
-                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                <button
-                                    type="button"
-                                    style={{
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        gap: "5px",
-                                        padding: "6px 12px",
-                                        borderRadius: "6px",
-                                        border: "1px solid #cbd5e1",
-                                        background: "#ffffff",
-                                        fontSize: "12px",
-                                        fontWeight: 600,
-                                        color: "#334155",
-                                        cursor: "pointer",
-                                    }}
-                                    onClick={() => printAuditReport(selectedTask)}
-                                    title="Print Full 45-Point Audit Report"
-                                >
-                                    <Printer size={14} /> Print Report
-                                </button>
-                                <button type="button" className="btn-modal-close" onClick={() => setSelectedTask(null)}>×</button>
-                            </div>
-                        </div>
-                        <div className="checkin-modal-body">
-                            <div className="audit-info-banner">
+            {/* DYNAMIC AUDIT REPORT MODAL (Exact match with LatestVisits.jsx) */}
+            {selectedAuditVisit && (() => {
+                const v = selectedAuditVisit;
+                const realQuestions = extractAuditQuestions(v, activeChecklist);
+                const siteEvidencePhotos = extractSiteEvidencePhotos(v);
+                const totalQ = realQuestions.length;
+                const passedQ = realQuestions.filter((q) => q.booleanValue === true).length;
+                const scorePct = totalQ > 0 ? Math.round((passedQ / totalQ) * 100) : 100;
+                const currentSite = v.site?.name || v.siteName || v.clientName || v.locationName || "Site";
+                const vDateStr = v.visitAt ? new Date(v.visitAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : (v.completedOn || "N/A");
+                const vTimeStr = v.visitAt ? new Date(v.visitAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "N/A";
+
+                return (
+                    <div className="audit-modal-overlay" onClick={() => setSelectedAuditVisit(null)}>
+                        <div className="audit-modal-dialog" onClick={(e) => e.stopPropagation()}>
+                            <div className="audit-modal-top-header">
                                 <div>
-                                    <strong style={{ fontSize: "16px", color: "#0f172a" }}>
-                                        {selectedTask.siteName || selectedTask.locationName} ({selectedTask.siteCode || "MSF"})
-                                    </strong>
-                                    <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: "12px" }}>
-                                        {selectedTask.address || "Client Verified Site Location"}
-                                    </p>
+                                    <h3>{currentSite} — Audit & Visit Verification Details</h3>
+                                    <p>{currentSite} ({v.site?.siteCode || v.siteCode || "N/A"}) • {vDateStr}, {vTimeStr}</p>
                                 </div>
-                                <div style={{ textAlign: "right" }}>
-                                    <div style={{ fontSize: "12px", color: "#64748b" }}>Date & Time</div>
-                                    <strong style={{ fontSize: "13px" }}>{selectedTask.timeFull ? new Date(selectedTask.timeFull).toLocaleString("en-IN") : selectedTask.time}</strong>
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                    <span className={`status-pill status-${String(v.status || "PENDING").toLowerCase()}`}>{v.status || "PENDING"}</span>
+                                    <button type="button" className="btn-close-modal" onClick={() => setSelectedAuditVisit(null)}>✕</button>
                                 </div>
                             </div>
 
-                            <div className="audit-score-header">
-                                <strong>TOTAL SCORE - 100 / 100</strong>
-                                <span style={{ fontSize: "12px", background: "#DCFCE7", color: "#15803D", padding: "4px 10px", borderRadius: "999px", fontWeight: 700 }}>
-                                    PASSED & VERIFIED
-                                </span>
-                            </div>
-
-                            <h4 style={{ margin: "0 0 12px 0", fontSize: "14px" }}>Audit Checklist Questions (45 Cards)</h4>
-                            <div className="audit-checklist-cards-container">
-                                {HDFC_45_QUESTIONS.map((q) => (
-                                    <div key={q.no} className="audit-question-card">
-                                        <div className="card-top-row">
-                                            <span className="q-title">{q.no}. &nbsp;{q.text}</span>
-                                            {q.score && <span className="score-pill-badge">SCORE : {q.score}</span>}
+                            <div className="audit-modal-scrollable-body">
+                                <div className="audit-score-banner">
+                                    <div className="score-badge-circle"><span className="score-num">{scorePct}</span><span className="score-max">/100</span></div>
+                                    <div className="score-info">
+                                        <h4>{currentSite.toUpperCase()} — SITE AUDIT CHECKLIST</h4>
+                                        <p>{totalQ > 0 ? `${passedQ} of ${totalQ} Audited Checkpoints Passed` : "Site Operations & Security Compliance Audit"}</p>
+                                        <div className="score-meta">
+                                            <span className="badge-pass"><ShieldCheck size={14} /> COMPLIANCE: {scorePct}%</span>
+                                            <span>Status: <strong>{v.status || "PENDING"}</strong></span>
+                                            <span>Auditor: <strong>{v.user?.name || v.assignTo || "Supervisor"}</strong></span>
                                         </div>
-                                        <div className="card-answer-val">{q.ans}</div>
-                                        {q.photo && (
-                                            <div style={{ marginTop: "6px", fontSize: "11px", color: "#d97706", display: "flex", alignItems: "center", gap: "4px" }}>
-                                                <Camera size={12} />
-                                                <span>Photo Attached: {q.photoLabel}</span>
-                                            </div>
+                                    </div>
+                                </div>
+
+                                <div className="audit-details-grid">
+                                    <div className="audit-detail-cell"><label>Visit / Task ID</label><p>{v.id || v.visitId || "N/A"}</p></div>
+                                    <div className="audit-detail-cell"><label>Site Code & Name</label><p>{currentSite} ({v.site?.siteCode || v.siteCode || "N/A"})</p></div>
+                                    <div className="audit-detail-cell"><label>Auditor Name & Contact</label><p>{v.user?.name || v.assignTo || "Supervisor"} ({v.user?.phone || v.user?.email || "N/A"})</p></div>
+                                    <div className="audit-detail-cell"><label>Date & Time</label><p>{vDateStr} at {vTimeStr}</p></div>
+                                    <div className="audit-detail-cell" style={{ gridColumn: "1 / -1" }}>
+                                        <label>Site Address & GPS Coordinates</label>
+                                        <p>{v.site?.address || v.address || "—"} • Coordinates: [{v.latitude ?? "N/A"}, {v.longitude ?? "N/A"}]</p>
+                                    </div>
+                                </div>
+
+                                {siteEvidencePhotos.length > 0 && (
+                                    <div className="audit-photo-section">
+                                        <h4 style={{ margin: "0 0 10px", fontSize: "14px", color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>
+                                            <span>Site Evidence & Turnout Photos</span>
+                                            <span style={{ fontSize: "11px", fontWeight: 600, color: "#2563eb" }}>(Click any photo to enlarge)</span>
+                                        </h4>
+                                        <div style={{ display: "flex", gap: "14px", flexWrap: "wrap" }}>
+                                            {siteEvidencePhotos.map((photo, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="evidence-photo-box"
+                                                    style={{ cursor: "pointer", position: "relative", width: "160px", height: "115px", borderRadius: "10px", overflow: "hidden", border: "2px solid #cbd5e1" }}
+                                                    onClick={() => setPreviewPhoto({ url: photo.url, title: photo.label })}
+                                                    title="Click to view full size photo"
+                                                >
+                                                    <img src={photo.url} alt={photo.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                                    <span className="photo-tag">{photo.label}</span>
+                                                    <div style={{ position: "absolute", top: "6px", right: "6px", background: "rgba(15,23,42,0.78)", color: "#fff", borderRadius: "6px", padding: "3px 6px", display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: 600 }}>
+                                                        <ZoomIn size={12} /> Zoom
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="audit-questions-section">
+                                    <h4 style={{ margin: "0 0 12px", fontSize: "15px", color: "#0f172a" }}>Audit Checklist Responses ({realQuestions.length} Questions)</h4>
+                                    <div className="audit-cards-grid">
+                                        {realQuestions.length === 0 ? (
+                                            <p style={{ color: "#64748b", padding: "16px" }}>No checklist answers submitted for this visit.</p>
+                                        ) : (
+                                            realQuestions.map((q) => (
+                                                <div key={q.no} className="audit-question-card">
+                                                    <div className="q-card-header">
+                                                        <span className="q-badge">#{q.no}</span>
+                                                        <strong className="q-text">{q.text}</strong>
+                                                        <span style={{ background: q.booleanValue === false ? "#fee2e2" : q.booleanValue === true ? "#dcfce7" : "#f1f5f9", color: q.booleanValue === false ? "#b91c1c" : q.booleanValue === true ? "#15803d" : "#475569", padding: "3px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "bold" }}>{q.ans}</span>
+                                                    </div>
+                                                    {q.photos && q.photos.length > 0 ? (
+                                                        <div style={{ marginTop: "10px" }}>
+                                                            <div style={{ fontSize: "11px", fontWeight: "700", color: "#059669", marginBottom: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
+                                                                <Camera size={13} /> {q.photos.length} Photo(s) Attached (Click to enlarge):
+                                                            </div>
+                                                            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                                                                {q.photos.map((imgSrc, pIdx) => (
+                                                                    <div
+                                                                        key={pIdx}
+                                                                        style={{ width: "96px", height: "74px", borderRadius: "8px", overflow: "hidden", border: "1.5px solid #cbd5e1", cursor: "pointer", position: "relative" }}
+                                                                        onClick={() => setPreviewPhoto({ url: imgSrc, title: `Q#${q.no}: ${q.text} (Photo ${pIdx + 1})` })}
+                                                                        title="Click to enlarge photo"
+                                                                    >
+                                                                        <img src={imgSrc} alt={`Q${q.no} photo ${pIdx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                                                        <div style={{ position: "absolute", bottom: "4px", right: "4px", background: "rgba(15,23,42,0.78)", color: "#fff", borderRadius: "4px", padding: "2px 4px", display: "flex" }}>
+                                                                            <ZoomIn size={11} />
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "8px" }}>No Photo Attached</div>
+                                                    )}
+                                                </div>
+                                            ))
                                         )}
                                     </div>
-                                ))}
+                                </div>
+                            </div>
+
+                            <div className="audit-modal-footer-bar">
+                                <div className="footer-status-info">
+                                    <span>Current Status:</span>
+                                    <span className={`status-pill status-${String(v.status || "PENDING").toLowerCase()}`}>{v.status || "PENDING"}</span>
+                                </div>
+                                <div className="footer-action-buttons">
+                                    <button type="button" className="btn-modal-print" onClick={() => printAuditReport(v)}><Printer size={15} /> Print Report</button>
+                                    <button type="button" className="btn-modal-reject" disabled={updatingId === v.id} onClick={() => updateVisitStatus(v, "REJECTED")}><XCircle size={16} /> Reject Visit</button>
+                                    <button type="button" className="btn-modal-unverify" disabled={updatingId === v.id} onClick={() => updateVisitStatus(v, "UNVERIFIED")}><RotateCcw size={16} /> Mark Unverified</button>
+                                    <button type="button" className="btn-modal-verify" disabled={updatingId === v.id} onClick={() => updateVisitStatus(v, "VERIFIED")}>
+                                        {updatingId === v.id ? <Loader2 size={16} className="btn-spinner" /> : <CheckCircle2 size={16} />} Verify Visit
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                );
+            })()}
+
+            {/* FULL-SCREEN PHOTO LIGHTBOX MODAL */}
+            {previewPhoto && (
+                <div
+                    style={{ position: "fixed", inset: 0, backgroundColor: "rgba(15, 23, 42, 0.92)", zIndex: 99999, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px" }}
+                    onClick={() => setPreviewPhoto(null)}
+                >
+                    <div
+                        style={{ maxWidth: "92vw", maxHeight: "90vh", background: "#0f172a", borderRadius: "14px", padding: "16px", border: "1px solid #334155", display: "flex", flexDirection: "column", alignItems: "center", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.7)" }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", marginBottom: "12px", paddingBottom: "10px", borderBottom: "1px solid #334155" }}>
+                            <strong style={{ color: "#f8fafc", fontSize: "15px" }}>{previewPhoto.title || "Photo Preview"}</strong>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                <a href={previewPhoto.url} download={`photo-${Date.now()}.jpg`} style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#2563eb", color: "#fff", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: 600, textDecoration: "none" }}>
+                                    <Download size={14} /> Download
+                                </a>
+                                <button type="button" onClick={() => setPreviewPhoto(null)} style={{ background: "#dc2626", color: "#fff", border: "none", borderRadius: "6px", padding: "6px 10px", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", fontWeight: 700, fontSize: "12px" }}>
+                                    <X size={16} /> Close
+                                </button>
+                            </div>
+                        </div>
+                        <img src={previewPhoto.url} alt={previewPhoto.title || "Full Preview"} style={{ maxWidth: "86vw", maxHeight: "76vh", objectFit: "contain", borderRadius: "8px", background: "#000" }} />
                     </div>
                 </div>
             )}

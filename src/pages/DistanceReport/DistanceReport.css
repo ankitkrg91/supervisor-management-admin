@@ -170,7 +170,7 @@
 }
 
 /* =========================================================
-   SUMMARY FILTER TOOLBAR & SEARCH BAR
+   SUMMARY FILTER TOOLBAR
 ========================================================= */
 
 .summary-filter-toolbar {
@@ -237,34 +237,29 @@
     outline: none;
 }
 
-/* Enhanced Search Box */
 .search-box-wrap {
     position: relative;
-    width: 280px;
-    display: flex;
-    align-items: center;
+    width: 240px;
 }
 
 .search-box-wrap input {
     width: 100%;
-    padding: 8px 12px 8px 34px !important;
+    padding: 7px 10px 7px 32px;
     box-sizing: border-box;
     border: 1px solid var(--border-color, #cbd5e1);
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 12px;
     background: var(--input-bg, #ffffff);
     color: var(--text-primary, #1e293b);
     outline: none;
-    transition: all 0.2s ease;
 }
 
 .search-box-wrap svg {
     position: absolute;
-    left: 10px;
+    left: 9px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted, #94a3b8);
-    pointer-events: none;
 }
 
 .toolbar-right {
@@ -837,7 +832,7 @@
 }
 
 /* =========================================================
-   TASK / AUDIT REPORT MODAL
+   TASK / AUDIT REPORT MODAL (Matching aud.pdf)
 ========================================================= */
 
 .audit-info-banner {
@@ -993,7 +988,7 @@ body.dark .preset-pill-btn,
 [data-color-scheme="dark"] .preset-pill-btn:hover,
 .dark .preset-pill-btn:hover,
 body.dark .preset-pill-btn:hover,
-:root:not([data-theme="light"]) .preset-pill-btn:hover {
+:root:not([data-theme="light"]) .preset-pill-btn {
     background: #162338;
     color: #ffffff;
 }
@@ -1278,14 +1273,14 @@ body.dark .card-answer-val,
 
 /* =========================================================
    SEARCH BAR & SUPERVISOR DETAILS - 100% DARK THEME FIX
-   Removes the white wrapper box leaked from other visit pages
+   Scoped to .distance-report-page to prevent leakage to other pages
 ========================================================= */
 
 /* Eliminate white background and border on the search-box wrapper */
 .distance-report-page .search-box-wrap,
-.summary-filter-toolbar .search-box-wrap,
-.stops-table-toolbar .search-box-wrap,
-.toolbar-left .search-box-wrap {
+.distance-report-page .summary-filter-toolbar .search-box-wrap,
+.distance-report-page .stops-table-toolbar .search-box-wrap,
+.distance-report-page .toolbar-left .search-box-wrap {
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
@@ -1299,9 +1294,9 @@ body.dark .card-answer-val,
 
 /* Style the actual input inside the wrapper */
 .distance-report-page .search-box-wrap input,
-.summary-filter-toolbar .search-box-wrap input,
-.stops-table-toolbar .search-box-wrap input,
-.toolbar-left .search-box-wrap input {
+.distance-report-page .summary-filter-toolbar .search-box-wrap input,
+.distance-report-page .stops-table-toolbar .search-box-wrap input,
+.distance-report-page .toolbar-left .search-box-wrap input {
     width: 100% !important;
     padding: 8px 12px 8px 34px !important;
     box-sizing: border-box !important;
@@ -1316,23 +1311,23 @@ body.dark .card-answer-val,
 }
 
 .distance-report-page .search-box-wrap input::placeholder,
-.summary-filter-toolbar .search-box-wrap input::placeholder,
-.stops-table-toolbar .search-box-wrap input::placeholder {
+.distance-report-page .summary-filter-toolbar .search-box-wrap input::placeholder,
+.distance-report-page .stops-table-toolbar .search-box-wrap input::placeholder {
     color: #8899b0 !important;
     opacity: 1 !important;
 }
 
 .distance-report-page .search-box-wrap input:focus,
-.summary-filter-toolbar .search-box-wrap input:focus,
-.stops-table-toolbar .search-box-wrap input:focus {
+.distance-report-page .summary-filter-toolbar .search-box-wrap input:focus,
+.distance-report-page .stops-table-toolbar .search-box-wrap input:focus {
     border-color: #3b82f6 !important;
     background: #0d1a2d !important;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
 }
 
 .distance-report-page .search-box-wrap svg,
-.summary-filter-toolbar .search-box-wrap svg,
-.stops-table-toolbar .search-box-wrap svg {
+.distance-report-page .summary-filter-toolbar .search-box-wrap svg,
+.distance-report-page .stops-table-toolbar .search-box-wrap svg {
     position: absolute !important;
     left: 10px !important;
     top: 50% !important;
@@ -1366,10 +1361,21 @@ body.dark .card-answer-val,
 
 /* Light Theme support */
 [data-theme="light"] .distance-report-page .search-box-wrap input,
-[data-theme="light"] .summary-filter-toolbar .search-box-wrap input {
+[data-theme="light"] .summary-filter-toolbar .search-box-wrap input,
+[data-theme="light"] .stops-table-toolbar .search-box-wrap input {
     background: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
     color: #1e293b !important;
+}
+
+/* Fix search input focus in light theme so it stays white */
+[data-theme="light"] .distance-report-page .search-box-wrap input:focus,
+[data-theme="light"] .summary-filter-toolbar .search-box-wrap input:focus,
+[data-theme="light"] .stops-table-toolbar .search-box-wrap input:focus {
+    background: #ffffff !important;
+    border-color: #2563eb !important;
+    color: #0f172a !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
 }
 
 [data-theme="light"] .distance-report-page .search-box-wrap input::placeholder {
