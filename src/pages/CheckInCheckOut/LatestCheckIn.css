@@ -330,6 +330,16 @@
     font-weight: 500;
 }
 
+/* OVERRIDE INLINE BLACK TEXT IN CHECKIN & CHECKOUT TIME */
+.checkin-table tbody td strong,
+.checkin-table tbody td strong[style*="0f172a" i],
+.checkin-table tbody td strong[style*="15, 23, 42"],
+.checkin-table tbody td [style*="0f172a" i],
+.checkin-table tbody td [style*="15, 23, 42"] {
+    color: var(--text-primary, #ffffff) !important;
+    font-weight: 700 !important;
+}
+
 .status-pill {
     display: inline-block;
     padding: 3px 8px;
@@ -423,13 +433,13 @@
 }
 
 /* =========================================================
-   CHECKIN DETAILS MODAL (Clean Single Supervisor Selfie Card)
+   CHECKIN DETAILS MODAL (Dark & Light Theme Compliant)
 ========================================================= */
 
 .checkin-modal-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(15, 23, 42, 0.75);
+    background-color: rgba(7, 13, 24, 0.85);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -438,7 +448,8 @@
 }
 
 .checkin-modal-card {
-    background: #ffffff;
+    background: #0f172a;
+    border: 1px solid #1e293b;
     border-radius: 14px;
     width: 100%;
     max-width: 680px;
@@ -446,7 +457,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    color: #ffffff;
 }
 
 .checkin-modal-header {
@@ -463,6 +475,7 @@
     font-size: 16px;
     font-weight: 700;
     letter-spacing: 0.5px;
+    color: #ffffff;
 }
 
 .modal-close-btn {
@@ -484,6 +497,7 @@
 .checkin-modal-body {
     padding: 20px;
     overflow-y: auto;
+    background: #0f172a;
 }
 
 .checkin-details-grid {
@@ -506,18 +520,47 @@
 
 .detail-item label {
     font-weight: 600;
-    color: #64748b;
+    color: #94a3b8;
     font-size: 12px;
 }
 
 .detail-item span {
-    color: #0f172a;
+    color: #ffffff !important;
     font-weight: 500;
 }
 
 .dist-highlight {
-    color: #2563eb !important;
+    color: #60a5fa !important;
     font-weight: 700 !important;
+}
+
+/* Coordinate highlights in dark mode */
+.detail-item span[style*="1e40af" i],
+.detail-item span[style*="30, 64, 175"] {
+    color: #60a5fa !important;
+}
+
+.detail-item span[style*="b45309" i],
+.detail-item span[style*="180, 83, 9"] {
+    color: #fbbf24 !important;
+}
+
+/* Alternate Mode Box in Dark Mode */
+.checkin-details-grid .detail-item.full-width[style*="fef3c7" i],
+.checkin-details-grid .detail-item.full-width[style*="254, 243, 199"],
+.checkin-details-grid .detail-item.full-width[style*="f59e0b" i] {
+    background: rgba(245, 158, 11, 0.15) !important;
+    border: 1px solid rgba(245, 158, 11, 0.45) !important;
+}
+
+.checkin-details-grid .detail-item.full-width[style*="fef3c7" i] label,
+.checkin-details-grid .detail-item.full-width[style*="254, 243, 199"] label {
+    color: #fef08a !important;
+}
+
+.checkin-details-grid .detail-item.full-width[style*="fef3c7" i] span,
+.checkin-details-grid .detail-item.full-width[style*="254, 243, 199"] span {
+    color: #fbbf24 !important;
 }
 
 .selfies-container {
@@ -525,7 +568,7 @@
     justify-content: center;
     align-items: center;
     padding-top: 16px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid #1e293b;
 }
 
 .selfie-card {
@@ -542,13 +585,13 @@
     height: 220px;
     border-radius: 12px;
     overflow: hidden;
-    border: 2px solid #cbd5e1;
-    background: #f1f5f9;
+    border: 2px solid #1e293b;
+    background: #111c2d;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
@@ -576,7 +619,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(15, 23, 42, 0.75);
+    background: rgba(15, 23, 42, 0.85);
     color: #ffffff;
     font-size: 11px;
     display: flex;
@@ -604,7 +647,7 @@
 .selfie-caption {
     font-size: 13px;
     font-weight: 700;
-    color: #1e293b;
+    color: #ffffff;
 }
 
 /* =========================================================
@@ -655,9 +698,60 @@
 }
 
 /* =========================================================
-   PRINT STYLES (@media print)
-   Hides sidebar, header, filters, pagination, and prints only table
+   LIGHT THEME SUPPORT FOR CHECKIN MODAL & TABLE
 ========================================================= */
+
+[data-theme="light"] .checkin-table tbody td strong,
+[data-theme="light"] .checkin-table tbody td strong[style*="0f172a" i] {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .checkin-modal-overlay {
+    background-color: rgba(15, 23, 42, 0.75);
+}
+
+[data-theme="light"] .checkin-modal-card {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+[data-theme="light"] .checkin-modal-body {
+    background: #ffffff;
+}
+
+[data-theme="light"] .detail-item label {
+    color: #64748b;
+}
+
+[data-theme="light"] .detail-item span {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .detail-item span[style*="1e40af" i] {
+    color: #1e40af !important;
+}
+
+[data-theme="light"] .detail-item span[style*="b45309" i] {
+    color: #b45309 !important;
+}
+
+[data-theme="light"] .selfies-container {
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .selfie-image-wrap {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+}
+
+[data-theme="light"] .selfie-caption {
+    color: #1e293b;
+}
+
+/* =========================
+   PRINT STYLES (@media print)
+========================= */
 
 @media print {
     @page {

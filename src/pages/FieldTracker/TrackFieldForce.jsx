@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 import {
     Smartphone,
@@ -61,80 +62,67 @@ const MapAutoFit = ({
     const map = useMap();
 
     useEffect(() => {
-        const validLocations = supervisors
-            .filter(
-                (person) =>
-                    person?.location?.latitude !==
-                    undefined &&
-                    person?.location?.latitude !==
-                    null &&
-                    person?.location?.longitude !==
-                    undefined &&
-                    person?.location?.longitude !==
-                    null
-            )
-            .map((person) => [
-                Number(person.location.latitude),
-                Number(person.location.longitude),
-            ])
-            .filter(
-                ([latitude, longitude]) =>
-                    Number.isFinite(latitude) &&
-                    Number.isFinite(longitude)
-            );
-
-        if (validLocations.length === 0) {
+        if (!fitTrigger) {
             return;
         }
 
-        if (validLocations.length === 1) {
-            map.setView(
-                validLocations[0],
-                13
-            );
+        const validPoints = supervisors
+            .filter(
+                (item) =>
+                    item.location?.latitude !==
+                    undefined &&
+                    item.location?.longitude !==
+                    undefined
+            )
+            .map((item) => [
+                Number(
+                    item.location.latitude
+                ),
+                Number(
+                    item.location.longitude
+                ),
+            ]);
 
+        if (validPoints.length === 0) {
+            return;
+        }
+
+        if (validPoints.length === 1) {
+            map.setView(
+                validPoints[0],
+                14
+            );
             return;
         }
 
         const bounds =
-            L.latLngBounds(validLocations);
+            L.latLngBounds(validPoints);
 
         map.fitBounds(bounds, {
-            padding: [40, 40],
-            maxZoom: 14,
+            padding: [50, 50],
         });
-    }, [
-        map,
-        supervisors,
-        fitTrigger,
-    ]);
+    }, [fitTrigger, supervisors, map]);
 
     return null;
 };
 
 const TrackFieldForce = () => {
-    const [fieldForce, setFieldForce] =
-        useState([]);
+    const [fieldForce, setFieldForce] = useState([]);
+    const [notCheckedInCount, setNotCheckedInCount] = useState(0);
 
-    const [notCheckedInCount, setNotCheckedInCount] =
-        useState(0);
+    const [activeFilter, setActiveFilter] = useState("ALL");
+    const [filterMenuOpen, setFilterMenuOpen] = useState(false);
 
-    const [loading, setLoading] =
-        useState(true);
+    const [fitTrigger, setFitTrigger] = useState(0);
 
-    const [error, setError] =
-        useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    const [filterOpen, setFilterOpen] =
-        useState(false);
+    // =========================================================
+    // FETCH SUPERVISORS + LOCATIONS + NOT CHECKED IN
+    // =========================================================
 
-    const [activeFilter, setActiveFilter] =
-        useState("ALL");
-
-    const [fitTrigger, setFitTrigger] =
-        useState(0);
-
-    const fetchFieldForce = async () => {
+    const fetchData = async () => {
         try {
             setError("");
 
@@ -166,7 +154,7 @@ const TrackFieldForce = () => {
             if (!trackResponse.ok) {
                 throw new Error(
                     trackData?.message ||
-                    "Failed to fetch tracked supervisors"
+                    "Failed to fetch tracked field force"
                 );
             }
 
@@ -177,51 +165,40 @@ const TrackFieldForce = () => {
                 );
             }
 
-            const supervisors =
-                trackData?.data?.fieldForce ||
-                [];
-
-            const notCheckedIn =
-                notCheckedInData?.data
-                    ?.notCheckedIn || [];
-
             setFieldForce(
-                supervisors
+                trackData?.data?.fieldForce || []
             );
 
             setNotCheckedInCount(
-                notCheckedIn.length
+                notCheckedInData?.data?.notCheckedIn?.length || 0
             );
         } catch (error) {
             console.error(
-                "Failed to fetch tracked supervisors:",
+                "Track field force fetch error:",
                 error
             );
 
             setError(
                 error?.message ||
-                "Failed to fetch tracked supervisors"
+                "Failed to fetch tracking data"
             );
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchFieldForce();
+    // =========================================================
+    // INITIAL LOAD + AUTO REFRESH + LIVE SOCKET LISTENER
+    // =========================================================
 
-        /*
-         * Refresh every minute.
-         */
+    useEffect(() => {
+        fetchData();
+
         const refreshInterval =
             setInterval(() => {
-                fetchFieldForce();
+                fetchData();
             }, 60000);
 
-        /*
-         * Receive live Supervisor location
-         * from AppSocketListener.
-         */
         const handleLiveLocation = (event) => {
             const data = event.detail;
 
@@ -232,70 +209,46 @@ const TrackFieldForce = () => {
                 return;
             }
 
-            const liveLocation =
-                data.location;
-
-            const batteryStatus =
-                liveLocation.batteryLevel !==
-                    null &&
-                    liveLocation.batteryLevel !==
-                    undefined
-                    ? liveLocation.batteryLevel <=
-                        20
-                        ? "BATTERY_LOW"
-                        : "NORMAL"
-                    : "UNKNOWN";
-
-            const updatedSupervisor = {
-                user: {
-                    id: data.user.id,
-                    name: data.user.name,
-                    email: data.user.email,
-                    role: data.user.role,
-                    siteId: data.user.siteId,
-                },
-
-                site: null,
-
-                location: liveLocation,
-
-                trackingStatus: "ONLINE",
-
-                batteryStatus,
-            };
-
             setFieldForce((current) => {
                 const existingIndex =
                     current.findIndex(
                         (item) =>
-                            item?.user?.id ===
+                            item.user?.id ===
                             data.user.id
                     );
+
+                const updatedPerson = {
+                    user: data.user,
+                    site:
+                        existingIndex !== -1
+                            ? current[existingIndex].site
+                            : null,
+                    location: data.location,
+                    trackingStatus: "ONLINE",
+                    batteryStatus:
+                        data.location?.batteryLevel !== null &&
+                            data.location?.batteryLevel !== undefined
+                            ? data.location.batteryLevel <= 20
+                                ? "BATTERY_LOW"
+                                : "NORMAL"
+                            : "UNKNOWN",
+                };
 
                 if (existingIndex === -1) {
                     return [
                         ...current,
-                        updatedSupervisor,
+                        updatedPerson,
                     ];
                 }
 
-                const updated = [
-                    ...current,
-                ];
+                const updated = [...current];
 
-                updated[
-                    existingIndex
-                ] = {
-                    ...updated[
-                    existingIndex
-                    ],
-
-                    ...updatedSupervisor,
-
-                    site:
-                        updated[
-                            existingIndex
-                        ]?.site || null,
+                updated[existingIndex] = {
+                    ...updated[existingIndex],
+                    location: data.location,
+                    trackingStatus: "ONLINE",
+                    batteryStatus:
+                        updatedPerson.batteryStatus,
                 };
 
                 return updated;
@@ -308,9 +261,7 @@ const TrackFieldForce = () => {
         );
 
         return () => {
-            clearInterval(
-                refreshInterval
-            );
+            clearInterval(refreshInterval);
 
             window.removeEventListener(
                 "field-location-updated",
@@ -319,137 +270,76 @@ const TrackFieldForce = () => {
         };
     }, []);
 
+    // =========================================================
+    // SUMMARY COUNTS
+    // =========================================================
+
     const onlineCount = useMemo(() => {
         return fieldForce.filter(
-            (person) =>
-                person.trackingStatus ===
-                "ONLINE"
+            (item) =>
+                item.trackingStatus === "ONLINE"
         ).length;
     }, [fieldForce]);
 
     const offlineCount = useMemo(() => {
         return fieldForce.filter(
-            (person) =>
-                person.trackingStatus ===
-                "OFFLINE"
+            (item) =>
+                item.trackingStatus === "OFFLINE"
         ).length;
     }, [fieldForce]);
 
     const batteryLowCount = useMemo(() => {
         return fieldForce.filter(
-            (person) =>
-                person.batteryStatus ===
-                "BATTERY_LOW"
+            (item) =>
+                item.batteryStatus === "BATTERY_LOW"
         ).length;
     }, [fieldForce]);
 
-    /*
-     * Only people with valid GPS coordinates
-     * can appear on the map.
-     */
-    const supervisorsWithLocation =
-        useMemo(() => {
-            return fieldForce.filter(
-                (person) => {
-                    const latitude =
-                        Number(
-                            person?.location
-                                ?.latitude
-                        );
+    // =========================================================
+    // FILTERED SUPERVISORS FOR MAP DISPLAY
+    // =========================================================
 
-                    const longitude =
-                        Number(
-                            person?.location
-                                ?.longitude
-                        );
-
-                    return (
-                        Number.isFinite(
-                            latitude
-                        ) &&
-                        Number.isFinite(
-                            longitude
-                        )
-                    );
-                }
-            );
-        }, [fieldForce]);
-
-    /*
-     * Apply selected map filter.
-     */
-    const filteredSupervisors =
-        useMemo(() => {
-            switch (activeFilter) {
-                case "ONLINE":
-                    return supervisorsWithLocation.filter(
-                        (person) =>
-                            person.trackingStatus ===
-                            "ONLINE"
-                    );
-
-                case "OFFLINE":
-                    return supervisorsWithLocation.filter(
-                        (person) =>
-                            person.trackingStatus ===
-                            "OFFLINE"
-                    );
-
-                case "BATTERY_LOW":
-                    return supervisorsWithLocation.filter(
-                        (person) =>
-                            person.batteryStatus ===
-                            "BATTERY_LOW"
-                    );
-
-                case "ALL":
-                default:
-                    return supervisorsWithLocation;
+    const filteredSupervisors = useMemo(() => {
+        return fieldForce.filter((item) => {
+            if (activeFilter === "ONLINE") {
+                return (
+                    item.trackingStatus === "ONLINE"
+                );
             }
-        }, [
-            supervisorsWithLocation,
-            activeFilter,
-        ]);
 
-    /*
-     * Location button.
-     *
-     * Incrementing fitTrigger forces MapAutoFit
-     * to fit all currently filtered locations.
-     */
+            if (activeFilter === "OFFLINE") {
+                return (
+                    item.trackingStatus === "OFFLINE"
+                );
+            }
+
+            if (activeFilter === "BATTERY_LOW") {
+                return (
+                    item.batteryStatus === "BATTERY_LOW"
+                );
+            }
+
+            return true;
+        });
+    }, [fieldForce, activeFilter]);
+
+    // =========================================================
+    // LOCATION BUTTON CLICK
+    // =========================================================
+
     const handleShowAllLocations = () => {
-        if (
-            filteredSupervisors.length ===
-            0
-        ) {
-            return;
-        }
-
-        setFitTrigger(
-            (current) => current + 1
-        );
+        setFitTrigger((current) => current + 1);
     };
 
-    /*
-     * Filter selection.
-     */
-    const handleFilterChange = (
-        filter
-    ) => {
-        setActiveFilter(filter);
+    // =========================================================
+    // FILTER BUTTON MENU
+    // =========================================================
 
-        /*
-         * Close filter panel after selection.
-         */
-        setFilterOpen(false);
+    const handleFilterChange = (filterType) => {
+        setActiveFilter(filterType);
+        setFilterMenuOpen(false);
 
-        /*
-         * Refit map using the newly selected
-         * filter after React updates.
-         */
-        setFitTrigger(
-            (current) => current + 1
-        );
+        setFitTrigger((current) => current + 1);
     };
 
     const summaryCards = [
@@ -458,79 +348,53 @@ const TrackFieldForce = () => {
             value: onlineCount,
             type: "online",
             icon: Smartphone,
+            path: "/field-tracker/online",
         },
-
         {
             title: "Offline",
             value: offlineCount,
             type: "offline",
             icon: WifiOff,
+            path: "/field-tracker/offline",
         },
-
         {
             title: "Battery Low",
             value: batteryLowCount,
             type: "battery",
             icon: BatteryLow,
+            path: "/field-tracker/battery-low",
         },
-
         {
             title: "Not Checked-In",
             value: notCheckedInCount,
             type: "not-checked",
             icon: LogIn,
+            path: "/field-tracker/not-checked-in",
         },
     ];
 
-    const defaultCenter = [
-        31.634,
-        74.8723,
-    ];
+    const defaultCenter = [31.634, 74.8723];
 
     return (
         <div className="track-field-force-page">
-
             <section className="track-content-card">
-
                 {/* =========================
                     TOP ACTION BAR
                 ========================= */}
-
                 <div className="track-toolbar">
-
                     <div className="track-toolbar-line" />
 
-                    <div
-                        className="track-actions"
-                        style={{
-                            position:
-                                "relative",
-                        }}
-                    >
-
+                    <div className="track-actions" style={{ position: "relative" }}>
                         {/* LOCATION BUTTON */}
                         <button
                             type="button"
                             className="track-action-button"
                             title="Show all Supervisor locations"
-                            onClick={
-                                handleShowAllLocations
-                            }
-                            disabled={
-                                filteredSupervisors.length ===
-                                0
-                            }
+                            onClick={handleShowAllLocations}
+                            disabled={filteredSupervisors.length === 0}
                             style={{
-                                opacity:
-                                    filteredSupervisors.length ===
-                                        0
-                                        ? 0.5
-                                        : 1,
-                                cursor:
-                                    filteredSupervisors.length ===
-                                        0
-                                        ? "not-allowed"
-                                        : "pointer",
+                                opacity: filteredSupervisors.length === 0 ? 0.5 : 1,
+                                cursor: filteredSupervisors.length === 0 ? "not-allowed" : "pointer",
                             }}
                         >
                             <MapPin size={20} />
@@ -540,160 +404,62 @@ const TrackFieldForce = () => {
                         <button
                             type="button"
                             className="track-action-button"
-                            title="Field force filters"
-                            onClick={() =>
-                                setFilterOpen(
-                                    (current) =>
-                                        !current
-                                )
-                            }
+                            title="Filter Map by status"
+                            onClick={() => setFilterMenuOpen((open) => !open)}
+                            style={{
+                                background: activeFilter !== "ALL" ? "#1e40af" : undefined,
+                            }}
                         >
-                            {filterOpen ? (
-                                <X size={20} />
-                            ) : (
-                                <Filter size={20} />
-                            )}
+                            {activeFilter !== "ALL" ? <X size={20} /> : <Filter size={20} />}
                         </button>
 
-                        {/* FILTER PANEL */}
-                        {filterOpen && (
+                        {/* FILTER POPUP */}
+                        {filterMenuOpen && (
                             <div
                                 style={{
-                                    position:
-                                        "absolute",
-
-                                    top: "48px",
-
+                                    position: "absolute",
+                                    top: "56px",
                                     right: "0",
-
-                                    zIndex: 2000,
-
-                                    minWidth:
-                                        "190px",
-
-                                    padding:
-                                        "10px",
-
-                                    background:
-                                        "#ffffff",
-
-                                    border:
-                                        "1px solid #e5e7eb",
-
-                                    borderRadius:
-                                        "10px",
-
-                                    boxShadow:
-                                        "0 8px 24px rgba(0,0,0,0.12)",
+                                    background: "#ffffff",
+                                    border: "1px solid #e5e7eb",
+                                    borderRadius: "8px",
+                                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)",
+                                    width: "180px",
+                                    padding: "6px",
+                                    zIndex: 1000,
                                 }}
                             >
-
-                                <div
-                                    style={{
-                                        fontSize:
-                                            "12px",
-
-                                        fontWeight:
-                                            700,
-
-                                        color:
-                                            "#6b7280",
-
-                                        marginBottom:
-                                            "8px",
-
-                                        textTransform:
-                                            "uppercase",
-                                    }}
-                                >
-                                    Filter
-                                </div>
-
                                 <button
                                     type="button"
-                                    onClick={() =>
-                                        handleFilterChange(
-                                            "ALL"
-                                        )
-                                    }
+                                    onClick={() => handleFilterChange("ALL")}
                                     style={{
-                                        width:
-                                            "100%",
-
-                                        border:
-                                            "none",
-
-                                        background:
-                                            activeFilter ===
-                                                "ALL"
-                                                ? "#f3f4f6"
-                                                : "transparent",
-
-                                        padding:
-                                            "9px 10px",
-
-                                        textAlign:
-                                            "left",
-
-                                        borderRadius:
-                                            "6px",
-
-                                        cursor:
-                                            "pointer",
-
-                                        fontSize:
-                                            "13px",
-
-                                        fontWeight:
-                                            activeFilter ===
-                                                "ALL"
-                                                ? 700
-                                                : 500,
+                                        width: "100%",
+                                        border: "none",
+                                        background: activeFilter === "ALL" ? "#f3f4f6" : "transparent",
+                                        padding: "9px 10px",
+                                        textAlign: "left",
+                                        borderRadius: "6px",
+                                        cursor: "pointer",
+                                        fontSize: "13px",
+                                        fontWeight: activeFilter === "ALL" ? 700 : 500,
                                     }}
                                 >
-                                    All
+                                    All ({fieldForce.length})
                                 </button>
 
                                 <button
                                     type="button"
-                                    onClick={() =>
-                                        handleFilterChange(
-                                            "ONLINE"
-                                        )
-                                    }
+                                    onClick={() => handleFilterChange("ONLINE")}
                                     style={{
-                                        width:
-                                            "100%",
-
-                                        border:
-                                            "none",
-
-                                        background:
-                                            activeFilter ===
-                                                "ONLINE"
-                                                ? "#f3f4f6"
-                                                : "transparent",
-
-                                        padding:
-                                            "9px 10px",
-
-                                        textAlign:
-                                            "left",
-
-                                        borderRadius:
-                                            "6px",
-
-                                        cursor:
-                                            "pointer",
-
-                                        fontSize:
-                                            "13px",
-
-                                        fontWeight:
-                                            activeFilter ===
-                                                "ONLINE"
-                                                ? 700
-                                                : 500,
+                                        width: "100%",
+                                        border: "none",
+                                        background: activeFilter === "ONLINE" ? "#f3f4f6" : "transparent",
+                                        padding: "9px 10px",
+                                        textAlign: "left",
+                                        borderRadius: "6px",
+                                        cursor: "pointer",
+                                        fontSize: "13px",
+                                        fontWeight: activeFilter === "ONLINE" ? 700 : 500,
                                     }}
                                 >
                                     Online
@@ -701,44 +467,17 @@ const TrackFieldForce = () => {
 
                                 <button
                                     type="button"
-                                    onClick={() =>
-                                        handleFilterChange(
-                                            "OFFLINE"
-                                        )
-                                    }
+                                    onClick={() => handleFilterChange("OFFLINE")}
                                     style={{
-                                        width:
-                                            "100%",
-
-                                        border:
-                                            "none",
-
-                                        background:
-                                            activeFilter ===
-                                                "OFFLINE"
-                                                ? "#f3f4f6"
-                                                : "transparent",
-
-                                        padding:
-                                            "9px 10px",
-
-                                        textAlign:
-                                            "left",
-
-                                        borderRadius:
-                                            "6px",
-
-                                        cursor:
-                                            "pointer",
-
-                                        fontSize:
-                                            "13px",
-
-                                        fontWeight:
-                                            activeFilter ===
-                                                "OFFLINE"
-                                                ? 700
-                                                : 500,
+                                        width: "100%",
+                                        border: "none",
+                                        background: activeFilter === "OFFLINE" ? "#f3f4f6" : "transparent",
+                                        padding: "9px 10px",
+                                        textAlign: "left",
+                                        borderRadius: "6px",
+                                        cursor: "pointer",
+                                        fontSize: "13px",
+                                        fontWeight: activeFilter === "OFFLINE" ? 700 : 500,
                                     }}
                                 >
                                     Offline
@@ -746,148 +485,87 @@ const TrackFieldForce = () => {
 
                                 <button
                                     type="button"
-                                    onClick={() =>
-                                        handleFilterChange(
-                                            "BATTERY_LOW"
-                                        )
-                                    }
+                                    onClick={() => handleFilterChange("BATTERY_LOW")}
                                     style={{
-                                        width:
-                                            "100%",
-
-                                        border:
-                                            "none",
-
-                                        background:
-                                            activeFilter ===
-                                                "BATTERY_LOW"
-                                                ? "#f3f4f6"
-                                                : "transparent",
-
-                                        padding:
-                                            "9px 10px",
-
-                                        textAlign:
-                                            "left",
-
-                                        borderRadius:
-                                            "6px",
-
-                                        cursor:
-                                            "pointer",
-
-                                        fontSize:
-                                            "13px",
-
-                                        fontWeight:
-                                            activeFilter ===
-                                                "BATTERY_LOW"
-                                                ? 700
-                                                : 500,
+                                        width: "100%",
+                                        border: "none",
+                                        background: activeFilter === "BATTERY_LOW" ? "#f3f4f6" : "transparent",
+                                        padding: "9px 10px",
+                                        textAlign: "left",
+                                        borderRadius: "6px",
+                                        cursor: "pointer",
+                                        fontSize: "13px",
+                                        fontWeight: activeFilter === "BATTERY_LOW" ? 700 : 500,
                                     }}
                                 >
                                     Battery Low
                                 </button>
-
                             </div>
                         )}
-
                     </div>
                 </div>
 
                 {/* =========================
                     ACTIVE FILTER
                 ========================= */}
-
                 {activeFilter !== "ALL" && (
                     <div
                         style={{
-                            padding:
-                                "8px 20px 0",
-
-                            fontSize:
-                                "13px",
-
-                            color:
-                                "#6b7280",
+                            padding: "8px 20px 0",
+                            fontSize: "13px",
+                            color: "#6b7280",
                         }}
                     >
                         Showing:{" "}
                         <strong>
-                            {activeFilter ===
-                                "BATTERY_LOW"
-                                ? "Battery Low"
-                                : activeFilter}
+                            {activeFilter === "BATTERY_LOW" ? "Battery Low" : activeFilter}
                         </strong>{" "}
                         ({filteredSupervisors.length})
                     </div>
                 )}
 
                 {/* =========================
-                    SUMMARY CARDS
+                    SUMMARY CARDS (CLICKABLE NAV)
                 ========================= */}
-
                 <div className="track-summary">
+                    {summaryCards.map((card) => {
+                        const Icon = card.icon;
 
-                    {summaryCards.map(
-                        (card) => {
-                            const Icon =
-                                card.icon;
-
-                            return (
-                                <div
-                                    key={
-                                        card.title
-                                    }
-                                    className={`track-summary-card track-summary-${card.type}`}
-                                >
+                        return (
+                            <Link
+                                key={card.title}
+                                to={card.path}
+                                className="track-card-link"
+                            >
+                                <div className={`track-summary-card track-summary-${card.type}`}>
                                     <div className="track-summary-content">
-
                                         <span className="track-summary-title">
-                                            {
-                                                card.title
-                                            }
+                                            {card.title}
                                         </span>
 
                                         <span className="track-summary-value">
-                                            {
-                                                card.value
-                                            }
+                                            {card.value}
                                         </span>
-
                                     </div>
 
                                     <div className="track-summary-icon">
-
-                                        <Icon
-                                            size={
-                                                22
-                                            }
-                                        />
-
+                                        <Icon size={22} />
                                     </div>
                                 </div>
-                            );
-                        }
-                    )}
-
+                            </Link>
+                        );
+                    })}
                 </div>
 
                 {/* =========================
                     ERROR
                 ========================= */}
-
                 {error && (
                     <div
                         style={{
-                            padding:
-                                "15px 20px",
-
-                            color:
-                                "#dc2626",
-
-                            fontSize:
-                                "14px",
+                            padding: "15px 20px",
+                            color: "#dc2626",
+                            fontSize: "14px",
                         }}
                     >
                         {error}
@@ -897,226 +575,82 @@ const TrackFieldForce = () => {
                 {/* =========================
                     MAP
                 ========================= */}
-
                 <div className="tracking-map">
-
                     <MapContainer
-                        center={
-                            defaultCenter
-                        }
-                        zoom={11}
-                        scrollWheelZoom={
-                            true
-                        }
-                        zoomControl={
-                            false
-                        }
+                        center={defaultCenter}
+                        zoom={6}
+                        zoomControl={false}
                         className="leaflet-map"
                     >
+                        <ZoomControl position="topleft" />
 
                         <TileLayer
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
 
-                        <ZoomControl
-                            position="topleft"
-                        />
-
                         <MapAutoFit
-                            supervisors={
-                                filteredSupervisors
-                            }
-                            fitTrigger={
-                                fitTrigger
-                            }
+                            supervisors={filteredSupervisors}
+                            fitTrigger={fitTrigger}
                         />
 
-                        {filteredSupervisors.map(
-                            (person) => (
+                        {filteredSupervisors
+                            .filter(
+                                (person) =>
+                                    person.location?.latitude !== undefined &&
+                                    person.location?.longitude !== undefined
+                            )
+                            .map((person) => (
                                 <Marker
-                                    key={
-                                        person
-                                            .user
-                                            .id
-                                    }
+                                    key={person.user.id}
                                     position={[
-                                        Number(
-                                            person
-                                                .location
-                                                .latitude
-                                        ),
-
-                                        Number(
-                                            person
-                                                .location
-                                                .longitude
-                                        ),
+                                        Number(person.location.latitude),
+                                        Number(person.location.longitude),
                                     ]}
-                                    icon={
-                                        markerIcon
-                                    }
+                                    icon={markerIcon}
                                 >
-
                                     <Popup>
-
                                         <div className="field-force-popup">
+                                            <strong>{person.user.name}</strong>
 
-                                            <strong>
-                                                {
-                                                    person
-                                                        .user
-                                                        .name
-                                                }
-                                            </strong>
-
-                                            <span>
-                                                {
-                                                    person
-                                                        .user
-                                                        ?.role ||
-                                                    "SUPERVISOR"
-                                                }
-                                            </span>
+                                            <span>{person.user?.role || "SUPERVISOR"}</span>
 
                                             {person.site && (
-                                                <span>
-                                                    Site:{" "}
-                                                    {
-                                                        person
-                                                            .site
-                                                            .name
-                                                    }
-                                                </span>
+                                                <span>Site: {person.site.name}</span>
                                             )}
 
                                             <span>
                                                 Battery:{" "}
-                                                {person
-                                                    .location
-                                                    .batteryLevel !==
-                                                    null &&
-                                                    person
-                                                        .location
-                                                        .batteryLevel !==
-                                                    undefined
-                                                    ? `${person.location.batteryLevel}%`
+                                                {(person.location?.batteryLevel ?? person.location?.batteryPercentage) !== null &&
+                                                    (person.location?.batteryLevel ?? person.location?.batteryPercentage) !== undefined
+                                                    ? `${person.location.batteryLevel ?? person.location.batteryPercentage}%`
                                                     : "N/A"}
                                             </span>
 
-                                            <span>
-                                                Status:{" "}
-                                                {
-                                                    person.trackingStatus
-                                                }
-                                            </span>
+                                            <span>Status: {person.trackingStatus}</span>
+
+                                            <span>Latitude: {person.location.latitude}</span>
+
+                                            <span>Longitude: {person.location.longitude}</span>
 
                                             <span>
-                                                Latitude:{" "}
-                                                {
-                                                    person
-                                                        .location
-                                                        .latitude
-                                                }
+                                                Last Seen:{" "}
+                                                {person.location?.recordedAt
+                                                    ? new Date(person.location.recordedAt).toLocaleString("en-IN", {
+                                                        day: "2-digit",
+                                                        month: "short",
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    })
+                                                    : "No location"}
                                             </span>
-
-                                            <span>
-                                                Longitude:{" "}
-                                                {
-                                                    person
-                                                        .location
-                                                        .longitude
-                                                }
-                                            </span>
-
                                         </div>
-
                                     </Popup>
-
                                 </Marker>
-                            )
-                        )}
-
+                            ))}
                     </MapContainer>
-
-                    {loading &&
-                        fieldForce.length ===
-                        0 && (
-                            <div
-                                style={{
-                                    position:
-                                        "absolute",
-
-                                    top: "15px",
-
-                                    right: "15px",
-
-                                    zIndex: 1000,
-
-                                    padding:
-                                        "10px 14px",
-
-                                    borderRadius:
-                                        "8px",
-
-                                    background:
-                                        "rgba(17, 24, 39, 0.9)",
-
-                                    color:
-                                        "#ffffff",
-
-                                    fontSize:
-                                        "13px",
-                                }}
-                            >
-                                Loading supervisors...
-                            </div>
-                        )}
-
-                    {!loading &&
-                        filteredSupervisors.length ===
-                        0 && (
-                            <div
-                                style={{
-                                    position:
-                                        "absolute",
-
-                                    top: "15px",
-
-                                    right: "15px",
-
-                                    zIndex: 1000,
-
-                                    padding:
-                                        "10px 14px",
-
-                                    borderRadius:
-                                        "8px",
-
-                                    background:
-                                        "rgba(17, 24, 39, 0.9)",
-
-                                    color:
-                                        "#ffffff",
-
-                                    fontSize:
-                                        "13px",
-                                }}
-                            >
-                                {activeFilter ===
-                                    "ALL"
-                                    ? "No Supervisor GPS location available."
-                                    : `No ${activeFilter === "BATTERY_LOW"
-                                        ? "Battery Low"
-                                        : activeFilter.toLowerCase()
-                                    } Supervisor location available.`}
-                            </div>
-                        )}
-
                 </div>
-
             </section>
-
         </div>
     );
 };
