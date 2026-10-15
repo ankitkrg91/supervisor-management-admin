@@ -22,7 +22,7 @@ import {
 
 import { useEffect, useState } from "react";
 
-import logo from "../../assets/logo.png";
+import logo from "../../assets/vinicia-logo.png";
 
 import "./Sidebar.css";
 
@@ -363,8 +363,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                                 <button
                                     type="button"
                                     className={`sidebar-parent ${parentActive
-                                            ? "parent-active"
-                                            : ""
+                                        ? "parent-active"
+                                        : ""
                                         }`}
                                     onClick={() =>
                                         toggleMenu(
@@ -390,8 +390,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
                                             <span
                                                 className={`sidebar-chevron ${isOpen
-                                                        ? "open"
-                                                        : ""
+                                                    ? "open"
+                                                    : ""
                                                     }`}
                                             >
                                                 <ChevronDown

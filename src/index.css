@@ -55,6 +55,12 @@ textarea {
 
     --border-color: #1d2a3d;
 
+    /* Vinicia brand palette: scoped to sidebar/header; app-wide primary stays unchanged. */
+    --brand-orange: #F47D32;
+    --brand-magenta: #D62D78;
+    --brand-crimson: #E93657;
+    --brand-purple: #653C83;
+
     --text-primary: #ffffff;
     --text-secondary: #9aa8bb;
     --text-muted: #68778d;

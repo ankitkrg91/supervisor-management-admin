@@ -11,8 +11,9 @@
     display: flex;
     flex-direction: column;
 
-    background: var(--sidebar-bg);
+    background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--bg-secondary) 100%);
     border-right: 1px solid var(--border-color);
+    box-shadow: 8px 0 28px rgba(0, 0, 0, 0.08);
 
     overflow: hidden;
 
@@ -35,21 +36,33 @@
     justify-content: space-between;
 
     border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(115deg, rgba(244, 125, 50, 0.08), rgba(214, 45, 120, 0.07), rgba(101, 60, 131, 0.06));
 }
 
 .sidebar-logo {
     display: flex;
     align-items: center;
 
+    width: 155px;
+    height: 48px;
     min-width: 0;
+    flex-shrink: 1;
+    overflow: hidden;
+
+    padding: 0;
+    border: 1px solid rgba(214, 45, 120, 0.14);
+    border-radius: 6px;
+    background: #ffffff;
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.12);
 }
 
 .sidebar-logo img {
-    width: 155px;
-    max-height: 48px;
+    display: block;
+    width: 100%;
+    height: 100%;
 
     object-fit: contain;
-    object-position: left center;
+    object-position: center;
 }
 
 .sidebar-toggle {
@@ -72,8 +85,8 @@
 }
 
 .sidebar-toggle:hover {
-    background: var(--card-bg-hover);
-    color: var(--text-primary);
+    background: rgba(244, 125, 50, 0.12);
+    color: var(--brand-orange);
 }
 
 /* Navigation */
@@ -130,13 +143,19 @@
 
 .sidebar-item:hover,
 .sidebar-parent:hover {
-    background: var(--card-bg-hover);
+    background: linear-gradient(90deg, rgba(214, 45, 120, 0.11), rgba(244, 125, 50, 0.07));
     color: var(--text-primary);
 }
 
+.sidebar-item:not(.active):hover .sidebar-icon,
+.sidebar-parent:hover .sidebar-icon {
+    color: var(--brand-orange);
+}
+
 .sidebar-item.active {
-    background: var(--primary);
+    background: linear-gradient(115deg, var(--brand-orange) 0%, var(--brand-magenta) 72%, var(--brand-crimson) 100%);
     color: #fff;
+    box-shadow: 0 5px 14px rgba(214, 45, 120, 0.20);
 }
 
 .sidebar-icon {
@@ -167,8 +186,14 @@
 }
 
 .sidebar-parent.parent-active {
-    background: var(--card-bg-hover);
+    background: linear-gradient(90deg, rgba(214, 45, 120, 0.14), rgba(244, 125, 50, 0.06));
     color: var(--text-primary);
+    box-shadow: inset 3px 0 0 var(--brand-magenta);
+}
+
+.sidebar-parent.parent-active .sidebar-icon,
+.sidebar-parent.parent-active .sidebar-chevron {
+    color: var(--brand-magenta);
 }
 
 .sidebar-chevron {
@@ -213,13 +238,15 @@
 }
 
 .sidebar-subitem:hover {
-    background: var(--card-bg-hover);
-    color: var(--text-primary);
+    background: rgba(244, 125, 50, 0.10);
+    color: var(--brand-orange);
 }
 
 .sidebar-subitem.active {
-    background: var(--primary);
-    color: #fff;
+    background: linear-gradient(90deg, rgba(214, 45, 120, 0.18), rgba(244, 125, 50, 0.08));
+    color: var(--brand-magenta);
+    font-weight: 700;
+    box-shadow: inset 3px 0 0 var(--brand-magenta);
 }
 
 /* Logout / action */
@@ -291,11 +318,23 @@
 }
 
 .logout-item:hover {
-    background: rgba(239, 68, 68, 0.08);
+    background: rgba(233, 54, 87, 0.10);
 
-    color: var(--danger);
+    color: var(--brand-crimson);
 }
 
 .logout-item:hover .sidebar-icon {
-    color: var(--danger);
+    color: var(--brand-crimson);
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-purple);
+}
+
+.sidebar-item:focus-visible,
+.sidebar-parent:focus-visible,
+.sidebar-subitem:focus-visible,
+.sidebar-toggle:focus-visible {
+    outline: 2px solid var(--brand-orange);
+    outline-offset: 2px;
 }

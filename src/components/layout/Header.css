@@ -12,13 +12,28 @@
 
     background: var(--header-bg);
     border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.045);
 
     transition:
         background-color 0.25s ease,
         border-color 0.25s ease;
+    isolation: isolate;
+}
+
+.header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--brand-purple) 0%, var(--brand-magenta) 34%, var(--brand-crimson) 62%, var(--brand-orange) 100%);
+    pointer-events: none;
 }
 
 .header-actions {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -49,8 +64,9 @@
 }
 
 .header-button:hover {
-    background: var(--card-bg-hover);
-    color: var(--text-primary);
+    background: rgba(244, 125, 50, 0.10);
+    color: var(--brand-magenta);
+    border-color: rgba(214, 45, 120, 0.35);
 }
 
 .notification-badge {
@@ -65,7 +81,7 @@
 
     border-radius: 50%;
 
-    background: var(--danger);
+    background: var(--brand-crimson);
     color: #fff;
 
     display: flex;
@@ -90,8 +106,9 @@
 
     border-radius: 50%;
 
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-magenta) 72%, var(--brand-purple) 100%);
     color: #fff;
+    box-shadow: 0 4px 12px rgba(214, 45, 120, 0.22);
 
     display: flex;
     align-items: center;
@@ -200,8 +217,8 @@
 }
 
 .notification-close:hover {
-    background: var(--card-bg-hover);
-    color: var(--text-primary);
+    background: rgba(214, 45, 120, 0.10);
+    color: var(--brand-magenta);
 }
 
 .notification-list {
@@ -253,8 +270,8 @@
 
     border-radius: 8px;
 
-    background: var(--bg-tertiary);
-    color: var(--primary);
+    background: linear-gradient(135deg, rgba(244, 125, 50, 0.12), rgba(214, 45, 120, 0.12));
+    color: var(--brand-magenta);
 }
 
 .notification-item.danger .notification-item-icon {
@@ -325,4 +342,16 @@
         max-width: none;
     }
 
+}
+
+.header-button:focus-visible,
+.notification-close:focus-visible,
+.notification-item:focus-visible {
+    outline: 2px solid var(--brand-orange);
+    outline-offset: 2px;
+}
+
+.admin-profile {
+    padding-left: 8px;
+    border-left: 1px solid var(--border-color);
 }

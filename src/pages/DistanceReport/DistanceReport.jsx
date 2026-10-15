@@ -38,6 +38,7 @@ import { apiFetch } from "../../utils/api";
 
 import "leaflet/dist/leaflet.css";
 import "./DistanceReport.css";
+import "../Visits/LatestVisits.css";
 
 // 45 HDFC Audit Questions matching aud.pdf
 const HDFC_45_QUESTIONS = [
@@ -328,7 +329,16 @@ const DistanceReport = () => {
             setMapError("");
             const params = new URLSearchParams();
             params.set("userId", selectedOfficer);
-            params.set("date", selectedDate);
+
+            // Normalize DD-MM-YYYY to YYYY-MM-DD
+            let queryDate = (selectedDate || todayStr).trim();
+            if (queryDate.includes("-")) {
+                const parts = queryDate.split("-");
+                if (parts[0].length === 2 && parts[2].length === 4) {
+                    queryDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                }
+            }
+            params.set("date", queryDate);
 
             const res = await apiFetch(`/api/location/daily-route?${params.toString()}`);
             const data = await res.json();
