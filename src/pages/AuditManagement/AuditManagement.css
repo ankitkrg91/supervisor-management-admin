@@ -347,6 +347,48 @@
 }
 
 /* =========================================================
+   STATUS
+========================================================= */
+
+.audit-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 5px 9px;
+
+    border-radius: 999px;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 0.35px;
+}
+
+.audit-status.active {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.audit-status.inactive {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* =========================================================
+   INACTIVE / DELETED QUESTION
+========================================================= */
+
+.question-inactive {
+    opacity: 0.58;
+}
+
+.question-inactive .audit-question-text {
+    text-decoration: line-through;
+    text-decoration-color: rgba(100, 116, 139, 0.45);
+}
+
+/* =========================================================
    ACTION BUTTONS
 ========================================================= */
 
@@ -399,6 +441,33 @@
 }
 
 .audit-icon-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.audit-restore-btn {
+    height: 32px;
+
+    padding: 0 11px;
+
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+
+    background: #eff6ff;
+    color: #2563eb;
+
+    cursor: pointer;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.audit-restore-btn:hover:not(:disabled) {
+    background: #dbeafe;
+}
+
+.audit-restore-btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
 }
@@ -972,4 +1041,113 @@ body.dark .audit-modal {
     .audit-modal-footer button {
         width: 100%;
     }
+}
+
+/* =========================================================
+   AUDIT MANAGEMENT - PHOTO REQUIRED BOX 100% DARK THEME FIX
+   Targets the dashed-border photo container rendered by React
+========================================================= */
+
+/* Turn the white dashed photo box into dark mode */
+.audit-modal div[style*="dashed"],
+.audit-modal div[style*="248, 250, 252"],
+.audit-modal div[style*="f8fafc" i],
+.audit-modal div[style*="F8FAFC"],
+.audit-form div[style*="dashed"],
+.audit-form div[style*="248, 250, 252"],
+.audit-form div[style*="f8fafc" i],
+.audit-form div[style*="F8FAFC"] {
+    background: #0c1727 !important;
+    border: 1px dashed #263854 !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    margin-bottom: 16px !important;
+    box-shadow: none !important;
+}
+
+/* Ensure the label inside the photo box is crisp white and fully visible */
+.audit-modal div[style*="dashed"] label,
+.audit-modal div[style*="248, 250, 252"] label,
+.audit-modal div[style*="f8fafc" i] label,
+.audit-modal div[style*="F8FAFC"] label,
+.audit-form div[style*="dashed"] label,
+.audit-form div[style*="248, 250, 252"] label,
+.audit-form div[style*="f8fafc" i] label,
+.audit-form div[style*="F8FAFC"] label {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    display: block !important;
+    margin-bottom: 7px !important;
+    opacity: 1 !important;
+}
+
+/* Ensure the input inside the photo box matches the dark theme */
+.audit-modal div[style*="dashed"] input,
+.audit-modal div[style*="248, 250, 252"] input,
+.audit-modal div[style*="f8fafc" i] input,
+.audit-modal div[style*="F8FAFC"] input,
+.audit-form div[style*="dashed"] input,
+.audit-form div[style*="248, 250, 252"] input,
+.audit-form div[style*="f8fafc" i] input,
+.audit-form div[style*="F8FAFC"] input {
+    background: #070d18 !important;
+    border: 1px solid #1e293b !important;
+    color: #ffffff !important;
+    border-radius: 7px !important;
+    padding: 10px 11px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+}
+
+.audit-modal div[style*="dashed"] input::placeholder,
+.audit-form div[style*="dashed"] input::placeholder {
+    color: #64748b !important;
+    opacity: 1 !important;
+}
+
+/* Table Photo Badge overrides */
+.audit-question-table td span[style*="#FEF3C7"],
+.audit-question-table td span[style*="#fef3c7"],
+.audit-question-table td span[style*="254, 243, 199"] {
+    background: rgba(245, 158, 11, 0.16) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+}
+
+.audit-question-table td span[style*="#9CA3AF"],
+.audit-question-table td span[style*="#9ca3af"],
+.audit-question-table td span[style*="156, 163, 175"] {
+    color: #68778d !important;
+}
+
+/* LIGHT THEME (when data-theme="light") */
+[data-theme="light"] .audit-modal div[style*="dashed"],
+[data-theme="light"] .audit-form div[style*="dashed"] {
+    background: #F8FAFC !important;
+    border: 1px dashed #CBD5E1 !important;
+}
+
+[data-theme="light"] .audit-modal div[style*="dashed"] label,
+[data-theme="light"] .audit-form div[style*="dashed"] label {
+    color: #374151 !important;
+}
+
+[data-theme="light"] .audit-modal div[style*="dashed"] input,
+[data-theme="light"] .audit-form div[style*="dashed"] input {
+    background: #ffffff !important;
+    border: 1px solid #d7dce5 !important;
+    color: #172033 !important;
+}
+
+[data-theme="light"] .audit-question-table td span[style*="#FEF3C7"],
+[data-theme="light"] .audit-question-table td span[style*="#fef3c7"] {
+    background: #FEF3C7 !important;
+    color: #92400E !important;
+    border: 1px solid #FDE68A !important;
+}
+
+[data-theme="light"] .audit-question-table td span[style*="#9CA3AF"] {
+    color: #9CA3AF !important;
 }

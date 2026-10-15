@@ -17,51 +17,51 @@ import "./AuditManagement.css";
 
 // 45 HDFC / MSF Audit Questions from aud.pdf
 export const HDFC_45_QUESTIONS = [
-    { questionNo: 1, question: "NUMBER OF EMPLOYEES", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 2, question: "ENTER GUARD DETAILS", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 3, question: "GROOMING & TURNOUT", type: "YES_NO", score: "3/ 3", photo: true, photoCount: 2, photoLabel: "Guard uniform & turnout photos", isRequired: true },
-    { questionNo: 4, question: "ESS APP LOGIN STATUS", type: "YES_NO", score: "3/ 3", photo: true, photoCount: 1, photoLabel: "ESS App login screen photo", isRequired: true },
-    { questionNo: 5, question: "UAN/ PF STATUS", type: "TEXT", score: "5/ 5", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 6, question: "ESIC", type: "TEXT", score: "5/ 5", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 7, question: "LAST MONTH SALARY RECEIVED", type: "YES_NO", score: "3/ 3", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 8, question: "KIT RECEIVED", type: "YES_NO", score: "2/ 2", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 9, question: "RENEWAL KIT RECEIVED", type: "YES_NO", score: "2/ 2", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 10, question: "SITE HOUSEKEEPING QUALITY", type: "YES_NO", score: "5/ 5", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 11, question: "LOBBY AREA", type: "YES_NO", score: "5/ 5", photo: true, photoCount: 1, photoLabel: "Lobby area photo", isRequired: true },
-    { questionNo: 12, question: "MEETING ROOM", type: "YES_NO", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "Meeting room photo", isRequired: true },
-    { questionNo: 13, question: "PANTRY", type: "YES_NO", score: "5/ 5", photo: true, photoCount: 1, photoLabel: "Pantry photo", isRequired: true },
-    { questionNo: 14, question: "WASH ROOM", type: "YES_NO", score: "5/ 5", photo: true, photoCount: 1, photoLabel: "Wash room photo", isRequired: true },
-    { questionNo: 15, question: "CABINS", type: "YES_NO", score: "5/ 5", photo: true, photoCount: 1, photoLabel: "Cabins photo", isRequired: true },
-    { questionNo: 16, question: "WORK STATIONS", type: "YES_NO", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "Work stations photo", isRequired: true },
-    { questionNo: 17, question: "COMMON AREA", type: "YES_NO", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "Common area photo", isRequired: true },
-    { questionNo: 18, question: "STORE ROOM", type: "YES_NO", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "Store room photo", isRequired: true },
-    { questionNo: 19, question: "ATTENDANCE REGISTER", type: "YES_NO", score: "3/ 3", photo: true, photoCount: 1, photoLabel: "Attendance register page photo", isRequired: true },
-    { questionNo: 20, question: "HK WASHROOM CHECKLIST", type: "YES_NO", score: "4/ 4", photo: true, photoCount: 1, photoLabel: "HK washroom checklist photo", isRequired: true },
-    { questionNo: 21, question: "HK KYC DOCUMENT", type: "YES_NO", score: "2/ 2", photo: true, photoCount: 1, photoLabel: "HK KYC document photo", isRequired: true },
-    { questionNo: 22, question: "OTHER", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: false },
-    { questionNo: 23, question: "KNOWLEDGE OF DUTY POST", type: "YES_NO", score: "2/ 2", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 24, question: "KNOWLEDGE OF DOCUMENTATION", type: "YES_NO", score: "2/ 2", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 25, question: "KNOWLEDGE OF FIRE SAFETY AND EMERGENCY SITUATION", type: "YES_NO", score: "5/ 5", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 26, question: "OTHER TRAINING", type: "YES_NO", score: "0/ 0", photo: false, photoCount: 0, photoLabel: "", isRequired: false },
-    { questionNo: 27, question: "TRAINING TOPICS", type: "YES_NO", score: "10/ 10", photo: true, photoCount: 2, photoLabel: "Training session photos", isRequired: true },
-    { questionNo: 28, question: "POST ORDER", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 29, question: "FED", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 30, question: "MEDICAL EMERGENCY", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 31, question: "FIRST AID AND CPR", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 32, question: "HANDING/TAKING OVER", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 33, question: "POSH", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 34, question: "OPEN SESSION", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 35, question: "DAILY USE EQUIPMENTS / CLEANING CHEMICAL", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 36, question: "PPE TRAINING", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 37, question: "DEEP CLEANING", type: "YES_NO", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 38, question: "CLIENT MET", type: "YES_NO", score: "3/ 3", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 39, question: "NAME", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: false },
-    { questionNo: 40, question: "DESIGNATION", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: false },
-    { questionNo: 41, question: "CLIENT FEEDBACK", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: false },
-    { questionNo: 42, question: "OBSERVATIONS", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: false },
-    { questionNo: 43, question: "ANY R & M WORK REQUIRED", type: "YES_NO", score: "3/ 3", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
-    { questionNo: 44, question: "ANY OTHER OBSERVATIONS", type: "TEXT", score: null, photo: false, photoCount: 0, photoLabel: "", isRequired: false },
-    { questionNo: 45, question: "INCIDENT RESPONSE", type: "YES_NO", score: "2/ 2", photo: false, photoCount: 0, photoLabel: "", isRequired: true },
+    { questionNo: 1, question: "NUMBER OF EMPLOYEES", type: "TEXT", score: null, photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 2, question: "ENTER GUARD DETAILS", type: "TEXT", score: null, photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 3, question: "GROOMING & TURNOUT", type: "YES_NO", score: "3/ 3", photo: true, photoLabel: "Guard uniform & turnout photos", isRequired: true },
+    { questionNo: 4, question: "ESS APP LOGIN STATUS", type: "YES_NO", score: "3/ 3", photo: true, photoLabel: "ESS App login screen photo", isRequired: true },
+    { questionNo: 5, question: "UAN/ PF STATUS", type: "TEXT", score: "5/ 5", photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 6, question: "ESIC", type: "TEXT", score: "5/ 5", photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 7, question: "LAST MONTH SALARY RECEIVED", type: "YES_NO", score: "3/ 3", photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 8, question: "KIT RECEIVED", type: "YES_NO", score: "2/ 2", photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 9, question: "RENEWAL KIT RECEIVED", type: "YES_NO", score: "2/ 2", photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 10, question: "SITE HOUSEKEEPING QUALITY", type: "YES_NO", score: "5/ 5", photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 11, question: "LOBBY AREA", type: "YES_NO", score: "5/ 5", photo: true, photoLabel: "Lobby area photo", isRequired: true },
+    { questionNo: 12, question: "MEETING ROOM", type: "YES_NO", score: "4/ 4", photo: true, photoLabel: "Meeting room photo", isRequired: true },
+    { questionNo: 13, question: "PANTRY", type: "YES_NO", score: "5/ 5", photo: true, photoLabel: "Pantry photo", isRequired: true },
+    { questionNo: 14, question: "WASH ROOM", type: "YES_NO", score: "5/ 5", photo: true, photoLabel: "Wash room photo", isRequired: true },
+    { questionNo: 15, question: "CABINS", type: "YES_NO", score: "5/ 5", photo: true, photoLabel: "Cabins photo", isRequired: true },
+    { questionNo: 16, question: "WORK STATIONS", type: "YES_NO", score: "4/ 4", photo: true, photoLabel: "Work stations photo", isRequired: true },
+    { questionNo: 17, question: "COMMON AREA", type: "YES_NO", score: "4/ 4", photo: true, photoLabel: "Common area photo", isRequired: true },
+    { questionNo: 18, question: "STORE ROOM", type: "YES_NO", score: "4/ 4", photo: true, photoLabel: "Store room photo", isRequired: true },
+    { questionNo: 19, question: "ATTENDANCE REGISTER", type: "YES_NO", score: "3/ 3", photo: true, photoLabel: "Attendance register page photo", isRequired: true },
+    { questionNo: 20, question: "HK WASHROOM CHECKLIST", type: "YES_NO", score: "4/ 4", photo: true, photoLabel: "HK washroom checklist photo", isRequired: true },
+    { questionNo: 21, question: "HK KYC DOCUMENT", type: "YES_NO", score: "2/ 2", photo: true, photoLabel: "HK KYC document photo", isRequired: true },
+    { questionNo: 22, question: "OTHER", type: "TEXT", score: null, photo: false, photoLabel: "", isRequired: false },
+    { questionNo: 23, question: "KNOWLEDGE OF DUTY POST", type: "YES_NO", score: "2/ 2", photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 24, question: "KNOWLEDGE OF DOCUMENTATION", type: "YES_NO", score: "2/ 2", photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 25, question: "KNOWLEDGE OF FIRE SAFETY AND EMERGENCY SITUATION", type: "YES_NO", score: "5/ 5", photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 26, question: "OTHER TRAINING", type: "YES_NO", score: "0/ 0", photo: false, photoLabel: "", isRequired: false },
+    { questionNo: 27, question: "TRAINING TOPICS", type: "YES_NO", score: "10/ 10", photo: true, photoLabel: "Training session photos", isRequired: true },
+    { questionNo: 28, question: "POST ORDER", type: "YES_NO", score: null, photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 29, question: "FED", type: "YES_NO", score: null, photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 30, question: "MEDICAL EMERGENCY", type: "YES_NO", score: null, photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 31, question: "FIRST AID AND CPR", type: "YES_NO", score: null, photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 32, question: "HANDING/TAKING OVER", type: "YES_NO", score: null, photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 33, question: "POSH", type: "YES_NO", score: null, photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 34, question: "OPEN SESSION", type: "YES_NO", score: null, photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 35, question: "DAILY USE EQUIPMENTS / CLEANING CHEMICAL", type: "YES_NO", score: null, photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 36, question: "PPE TRAINING", type: "YES_NO", score: null, photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 37, question: "DEEP CLEANING", type: "YES_NO", score: null, photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 38, question: "CLIENT MET", type: "YES_NO", score: "3/ 3", photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 39, question: "NAME", type: "TEXT", score: null, photo: false, photoLabel: "", isRequired: false },
+    { questionNo: 40, question: "DESIGNATION", type: "TEXT", score: null, photo: false, photoLabel: "", isRequired: false },
+    { questionNo: 41, question: "CLIENT FEEDBACK", type: "TEXT", score: null, photo: false, photoLabel: "", isRequired: false },
+    { questionNo: 42, question: "OBSERVATIONS", type: "TEXT", score: null, photo: false, photoLabel: "", isRequired: false },
+    { questionNo: 43, question: "ANY R & M WORK REQUIRED", type: "YES_NO", score: "3/ 3", photo: false, photoLabel: "", isRequired: true },
+    { questionNo: 44, question: "ANY OTHER OBSERVATIONS", type: "TEXT", score: null, photo: false, photoLabel: "", isRequired: false },
+    { questionNo: 45, question: "INCIDENT RESPONSE", type: "YES_NO", score: "2/ 2", photo: false, photoLabel: "", isRequired: true },
 ];
 
 const STORAGE_KEY = "audit_custom_questions_v6";
@@ -136,7 +136,6 @@ const EMPTY_FORM = {
     type: "YES_NO",
     score: "",
     requiresPhoto: false,
-    photoCount: 1,
     photoLabel: "",
     isRequired: true,
 };
@@ -306,7 +305,6 @@ const AuditManagement = () => {
                         score: null,
                         requiresPhoto: false,
                         photo: false,
-                        photoCount: 0,
                         photoLabel: "",
                         isRequired: sQ.isRequired !== false,
                         isActive: sQ.isActive !== false,
@@ -440,7 +438,6 @@ const AuditManagement = () => {
             setSaving(false);
         }
     };
-
 
     // Top Refresh Button with user feedback
     const refreshCurrentSection = async () => {
@@ -585,7 +582,6 @@ const AuditManagement = () => {
     // Open Add Modal
     const openAddQuestion = () => {
         clearAlerts();
-        // Next sequential number
         const nextQuestionNo = questions.length + 1;
 
         setEditingQuestion(null);
@@ -595,7 +591,6 @@ const AuditManagement = () => {
             type: "YES_NO",
             score: "",
             requiresPhoto: false,
-            photoCount: 1,
             photoLabel: "",
             isRequired: true,
         });
@@ -613,7 +608,6 @@ const AuditManagement = () => {
             type: question.type || "YES_NO",
             score: question.score || "",
             requiresPhoto: Boolean(question.requiresPhoto || question.photo),
-            photoCount: question.photoCount || 1,
             photoLabel: question.photoLabel || "",
             isRequired: question.isRequired !== false,
         });
@@ -657,7 +651,6 @@ const AuditManagement = () => {
             score: form.score ? form.score.trim() : null,
             requiresPhoto: Boolean(form.requiresPhoto),
             photo: Boolean(form.requiresPhoto),
-            photoCount: form.requiresPhoto ? Number(form.photoCount) || 1 : 0,
             photoLabel: form.requiresPhoto ? (form.photoLabel || "").trim() : "",
             isRequired: Boolean(form.isRequired),
             isActive: true,
@@ -761,54 +754,6 @@ const AuditManagement = () => {
         }
     };
 
-    // Open Audit Details Modal
-    const openAuditDetails = async (audit) => {
-        clearAlerts();
-        setSelectedAudit(audit);
-        setAuditDetails(null);
-
-        try {
-            setAuditDetailLoading(true);
-            const response = await apiFetch(`/api/audit/submissions/${audit.id}`);
-            if (!response.ok) return;
-
-            const body = await response.json();
-            setAuditDetails(body?.data?.submission || body?.data?.audit || audit);
-        } catch (err) {
-            console.error("Open audit details error:", err);
-            showError("Failed to fetch audit details.");
-        } finally {
-            setAuditDetailLoading(false);
-        }
-    };
-
-    const closeAuditDetails = () => {
-        setSelectedAudit(null);
-        setAuditDetails(null);
-    };
-
-    // Verify / Reject Audit
-    const updateAuditStatus = async (auditId, status) => {
-        clearAlerts();
-        try {
-            setAuditActionLoading(true);
-            const response = await apiFetch(`/api/audit/submissions/${auditId}/status`, {
-                method: "PATCH",
-                body: JSON.stringify({ status }),
-            });
-            if (!response.ok) return;
-
-            showSuccess(`Audit status updated to ${status}.`);
-            closeAuditDetails();
-            await loadSubmittedAudits();
-        } catch (err) {
-            console.error("Update audit status error:", err);
-            showError("Failed to update audit status.");
-        } finally {
-            setAuditActionLoading(false);
-        }
-    };
-
     return (
         <div className="audit-management-page">
             {/* Header */}
@@ -861,8 +806,8 @@ const AuditManagement = () => {
             {/* Alerts */}
             {error && <div className="audit-alert audit-alert-error">{error}</div>}
             {success && <div className="audit-alert audit-alert-success">{success}</div>}
-            {/* CHECKLIST SECTION */}
 
+            {/* CHECKLIST SECTION */}
             <section className="audit-checklist-card">
                 <div className="audit-card-header">
                     <div>
@@ -913,7 +858,6 @@ const AuditManagement = () => {
                                 questions.map((question) => {
                                     const isText = question.type === "TEXT";
                                     const hasPhoto = Boolean(question.requiresPhoto || question.photo);
-                                    const photoCount = question.photoCount || 1;
                                     const photoLabel = question.photoLabel || "";
                                     const scoreVal = question.score;
                                     const isActive = question.isActive !== false;
@@ -980,7 +924,7 @@ const AuditManagement = () => {
                                                         }}
                                                     >
                                                         <Camera size={13} />
-                                                        {photoCount} Photo{photoCount > 1 ? "s" : ""}: {photoLabel || "Required"}
+                                                        {photoLabel ? `Photo: ${photoLabel}` : "Photo Required"}
                                                     </span>
                                                 ) : (
                                                     <span style={{ color: "#9CA3AF" }}>No</span>
@@ -1153,8 +1097,6 @@ const AuditManagement = () => {
                 </div>
             )}
 
-
-
             {/* ADD / EDIT MODAL */}
             {showModal && (
                 <div className="audit-modal-backdrop" onClick={closeModal}>
@@ -1246,25 +1188,14 @@ const AuditManagement = () => {
                             </div>
 
                             {form.requiresPhoto && (
-                                <div className="audit-form-grid" style={{ background: "#F8FAFC", padding: "12px", borderRadius: "8px", marginBottom: "16px", border: "1px dashed #CBD5E1" }}>
+                                <div style={{ background: "#F8FAFC", padding: "12px", borderRadius: "8px", marginBottom: "16px", border: "1px dashed #CBD5E1" }}>
                                     <div className="audit-form-field" style={{ marginBottom: 0 }}>
-                                        <label>Number of Photos</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="5"
-                                            value={form.photoCount}
-                                            onChange={(e) => setForm({ ...form, photoCount: Number(e.target.value) || 1 })}
-                                            disabled={saving}
-                                        />
-                                    </div>
-                                    <div className="audit-form-field" style={{ marginBottom: 0 }}>
-                                        <label>Photo Label / Instructions</label>
+                                        <label>Photo Label / Instructions (Optional)</label>
                                         <input
                                             type="text"
                                             value={form.photoLabel}
                                             onChange={(e) => setForm({ ...form, photoLabel: e.target.value })}
-                                            placeholder="e.g. Guard uniform photos, Lobby photo"
+                                            placeholder="e.g. Guard uniform photo, Lobby area photo"
                                             disabled={saving}
                                         />
                                     </div>
