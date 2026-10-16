@@ -981,3 +981,56 @@
 [data-theme="light"] .audit-photo-section h4 {
     color: #0f172a !important;
 }
+/* STATUS FILTER DROPDOWN (<select>) - DARK THEME (DEFAULT) */
+.verification-toolbar select,
+.status-filter-select,
+.toolbar-left select {
+    background-color: #0c1727 !important;
+    color: #ffffff !important;
+    border: 1px solid #1d2a3d !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    outline: none !important;
+    cursor: pointer !important;
+    color-scheme: dark !important;
+    transition: all 0.2s ease !important;
+}
+
+.verification-toolbar select option,
+.status-filter-select option,
+.toolbar-left select option {
+    background-color: #0c1727 !important;
+    color: #ffffff !important;
+}
+
+.verification-toolbar select:focus,
+.status-filter-select:focus,
+.toolbar-left select:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* STATUS FILTER DROPDOWN - LIGHT THEME */
+[data-theme="light"] .verification-toolbar select,
+[data-theme="light"] .status-filter-select,
+[data-theme="light"] .toolbar-left select {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    color-scheme: light !important;
+}
+
+[data-theme="light"] .verification-toolbar select option,
+[data-theme="light"] .status-filter-select option,
+[data-theme="light"] .toolbar-left select option {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .verification-toolbar select:focus,
+[data-theme="light"] .status-filter-select:focus,
+[data-theme="light"] .toolbar-left select:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+}

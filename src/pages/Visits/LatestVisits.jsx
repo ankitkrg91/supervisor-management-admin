@@ -401,9 +401,12 @@ const LatestVisits = ({ showVerificationTabs = false }) => {
                         </div>
                         {!showVerificationTabs && (
                             <select
-                                style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "13px", color: "#334155" }}
+                                className="status-filter-select"
                                 value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
+                                onChange={(e) => {
+                                    setStatusFilter(e.target.value);
+                                    setPage(1);
+                                }}
                             >
                                 <option value="ALL">All Statuses</option>
                                 <option value="PENDING">Pending / Unverified</option>
