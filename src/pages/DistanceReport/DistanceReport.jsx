@@ -83,6 +83,38 @@ const extractSiteEvidencePhotos = (visit) => {
     return list;
 };
 
+const extractClientFeedback = (visit) => {
+    if (!visit) return null;
+    if (typeof visit.notes === "string") {
+        const m = visit.notes.match(/\[CLIENT_FEEDBACK\]:\s*(\{[\s\S]*?\})/);
+        if (m) {
+            try {
+                const data = JSON.parse(m[1]);
+                if (data && typeof data === "object") {
+                    return {
+                        rating: data.rating ? String(data.rating) : null,
+                        clientName: data.clientName ? String(data.clientName).trim() : null,
+                        clientPhone: data.clientPhone ? String(data.clientPhone).trim() : null,
+                        comments: data.comments ? String(data.comments).trim() : null,
+                        submittedAt: data.submittedAt || null,
+                    };
+                }
+            } catch { }
+        }
+    }
+    if (visit.clientFeedback || visit.feedback) {
+        const fb = visit.clientFeedback || visit.feedback;
+        return {
+            rating: fb.rating ? String(fb.rating) : (visit.clientRating ? String(visit.clientRating) : null),
+            clientName: fb.clientName || visit.clientName || null,
+            clientPhone: fb.clientPhone || null,
+            comments: fb.comments || fb.comment || (typeof fb === "string" ? fb : null),
+            submittedAt: fb.submittedAt || null,
+        };
+    }
+    return null;
+};
+
 const extractAuditQuestions = (visit, activeChecklist = []) => {
     const answers = visit?.auditSubmission?.answers;
     if (Array.isArray(answers) && answers.length > 0) {
@@ -769,6 +801,7 @@ const DistanceReport = () => {
         const passed = qs.filter((q) => q.booleanValue === true).length;
         const pct = qs.length > 0 ? Math.round((passed / qs.length) * 100) : 100;
         const siteName = visit.site?.name || visit.clientName || visit.locationName || "Client Site";
+        const fb = extractClientFeedback(visit);
         const vDate = visit.visitAt ? new Date(visit.visitAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "N/A";
         const vTime = visit.visitAt ? new Date(visit.visitAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "N/A";
         const rowsHtml = qs
@@ -782,7 +815,7 @@ const DistanceReport = () => {
         pw.document.write(
             `<!DOCTYPE html><html><head><title>Audit Report - ${siteName}</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#0f172a;font-size:12px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #cbd5e1;padding:7px 10px;text-align:left;}th{background:#1e3a8a;color:#fff;}</style></head><body><h2>${siteName.toUpperCase()} — SITE AUDIT REPORT</h2><p>Auditor: <strong>${visit.user?.name || visit.assignTo || "Supervisor"
             }</strong> | Date: ${vDate} ${vTime} | Status: <strong>${visit.status || "PENDING"
-            }</strong> | Compliance: <strong>${pct}% (${passed}/${qs.length})</strong></p><table><thead><tr><th style="width:45px;text-align:center;">#</th><th>Audit Checklist Question</th><th style="width:120px;text-align:center;">Response</th></tr></thead><tbody>${rowsHtml}</tbody></table></body></html>`
+            }</strong> | Compliance: <strong>${pct}% (${passed}/${qs.length})</strong></p>${fb ? `<div style="background:#f0fdf4;border:1.5px solid #86efac;padding:12px;margin:14px 0;border-radius:6px;"><strong style="color:#166534;">⭐ CLIENT FEEDBACK & RATING:</strong> Rating: <strong>${fb.rating || "5"}/5</strong> ${fb.clientName ? ` | Client: <strong>${fb.clientName}</strong> (${fb.clientPhone || ""})` : ""}${fb.comments ? `<div style="margin-top:6px;font-style:italic;color:#1e293b;">"${fb.comments}"</div>` : ""}</div>` : ""}<table><thead><tr><th style="width:45px;text-align:center;">#</th><th>Audit Checklist Question</th><th style="width:120px;text-align:center;">Response</th></tr></thead><tbody>${rowsHtml}</tbody></table></body></html>`
         );
         pw.document.close();
         pw.focus();
@@ -1545,6 +1578,7 @@ const DistanceReport = () => {
                 const v = selectedAuditVisit;
                 const realQuestions = extractAuditQuestions(v, activeChecklist);
                 const siteEvidencePhotos = extractSiteEvidencePhotos(v);
+                const clientFeedback = extractClientFeedback(v);
                 const totalQ = realQuestions.length;
                 const passedQ = realQuestions.filter((q) => q.booleanValue === true).length;
                 const scorePct = totalQ > 0 ? Math.round((passedQ / totalQ) * 100) : 100;
@@ -1616,6 +1650,95 @@ const DistanceReport = () => {
                                         </div>
                                     </div>
                                 )}
+
+                                {/* CLIENT FEEDBACK & RATING DISPLAY */}
+                                <div className="audit-feedback-section" style={{
+                                    marginTop: "16px",
+                                    marginBottom: "20px",
+                                    padding: "16px 18px",
+                                    borderRadius: "10px",
+                                    background: clientFeedback ? "rgba(34, 197, 94, 0.08)" : "var(--bg-tertiary, #f8fafc)",
+                                    border: clientFeedback ? "1.5px solid #22c55e" : "1px dashed var(--border-color, #cbd5e1)",
+                                }}>
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px", marginBottom: clientFeedback ? "12px" : "0" }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                            <span style={{ fontSize: "18px" }}>⭐</span>
+                                            <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: clientFeedback ? "#15803d" : "var(--text-primary, #0f172a)" }}>
+                                                Client Feedback & Rating
+                                            </h4>
+                                        </div>
+
+                                        {clientFeedback ? (
+                                            <div style={{
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: "6px",
+                                                padding: "4px 12px",
+                                                borderRadius: "999px",
+                                                background: "rgba(34, 197, 94, 0.18)",
+                                                border: "1px solid #22c55e",
+                                                fontWeight: "800",
+                                                fontSize: "13px",
+                                                color: "#15803d",
+                                            }}>
+                                                <span>Rating:</span>
+                                                <strong>{clientFeedback.rating || "5"} / 5</strong>
+                                                <span style={{ color: "#eab308", fontSize: "14px", letterSpacing: "1px" }}>
+                                                    {"★".repeat(Math.min(5, Math.max(1, parseInt(clientFeedback.rating) || 5)))}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <span style={{ fontSize: "12px", fontWeight: "600", color: "#d97706" }}>
+                                                ⏳ Feedback Pending (Link sent to client via WhatsApp)
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {clientFeedback && (
+                                        <>
+                                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "10px", fontSize: "12px" }}>
+                                                {clientFeedback.clientName && (
+                                                    <div>
+                                                        <span style={{ color: "var(--text-secondary, #64748b)" }}>Client Name: </span>
+                                                        <strong style={{ color: "var(--text-primary, #0f172a)" }}>{clientFeedback.clientName}</strong>
+                                                    </div>
+                                                )}
+                                                {clientFeedback.clientPhone && (
+                                                    <div>
+                                                        <span style={{ color: "var(--text-secondary, #64748b)" }}>Contact Number: </span>
+                                                        <strong style={{ color: "var(--text-primary, #0f172a)" }}>{clientFeedback.clientPhone}</strong>
+                                                    </div>
+                                                )}
+                                                {clientFeedback.submittedAt && (
+                                                    <div>
+                                                        <span style={{ color: "var(--text-secondary, #64748b)" }}>Submitted At: </span>
+                                                        <strong style={{ color: "var(--text-primary, #0f172a)" }}>{new Date(clientFeedback.submittedAt).toLocaleString("en-IN")}</strong>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {clientFeedback.comments && (
+                                                <div style={{
+                                                    marginTop: "12px",
+                                                    padding: "10px 14px",
+                                                    borderRadius: "7px",
+                                                    background: "var(--card-bg, #ffffff)",
+                                                    border: "1px solid rgba(34, 197, 94, 0.3)",
+                                                    fontSize: "13px",
+                                                    color: "var(--text-primary, #1e293b)",
+                                                    lineHeight: "1.5",
+                                                }}>
+                                                    <div style={{ fontSize: "11px", fontWeight: "700", color: "#166534", textTransform: "uppercase", marginBottom: "4px" }}>
+                                                        💬 Client Remarks / Comments:
+                                                    </div>
+                                                    <div style={{ fontStyle: "italic" }}>
+                                                        "{clientFeedback.comments}"
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
 
                                 <div className="audit-questions-section">
                                     <h4 style={{ margin: "0 0 12px", fontSize: "15px", color: "#0f172a" }}>Audit Checklist Responses ({realQuestions.length} Questions)</h4>
