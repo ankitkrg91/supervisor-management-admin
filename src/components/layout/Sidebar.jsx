@@ -146,12 +146,6 @@ const menuItems = [
     },
 
     {
-        label: "Audit Management",
-        icon: ClipboardCheck,
-        path: "/audit-management",
-    },
-
-    {
         label: "Settings",
         icon: Settings,
         path: "/settings",

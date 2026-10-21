@@ -19,9 +19,6 @@ const Dashboard = lazy(
     () => import("../pages/Dashboard/Dashboard")
 );
 
-const AuditManagement = lazy(
-    () => import("../pages/AuditManagement/AuditManagement")
-);
 
 const Online = lazy(
     () => import("../pages/FieldTracker/Online")
@@ -258,11 +255,6 @@ const ProtectedRoutes = () => {
                     <Route
                         path="/reports"
                         element={<Reports />}
-                    />
-
-                    <Route
-                        path="/audit-management"
-                        element={<AuditManagement />}
                     />
 
                     <Route
