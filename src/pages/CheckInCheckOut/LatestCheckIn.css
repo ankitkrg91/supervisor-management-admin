@@ -639,3 +639,33 @@
 [data-theme="light"] .detail-item span {
     color: #0f172a !important;
 }
+
+
+/* =========================================================
+   CHECK-IN MODE HIGHLIGHT — THEME-SAFE TEXT CONTRAST
+   Keep dark text on the intentionally pale yellow/green panel.
+   These selectors override the generic .detail-item span color.
+   ========================================================= */
+
+.checkin-modal-card .detail-item.checkin-mode-detail .checkin-mode-label {
+    color: #92400e !important;
+    font-weight: 800 !important;
+}
+
+.checkin-modal-card .detail-item.checkin-mode-detail.checkin-mode-emergency .checkin-mode-value {
+    color: #92400e !important;
+    font-weight: 800 !important;
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.checkin-modal-card .detail-item.checkin-mode-detail.checkin-mode-standard .checkin-mode-label {
+    color: #166534 !important;
+}
+
+.checkin-modal-card .detail-item.checkin-mode-detail.checkin-mode-standard .checkin-mode-value {
+    color: #166534 !important;
+    font-weight: 800 !important;
+    font-size: 13.5px;
+    line-height: 1.5;
+}

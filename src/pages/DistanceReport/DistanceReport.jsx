@@ -56,6 +56,43 @@ const getLocalActiveQuestions = () => {
     }
 };
 
+const parseVsfReport = (visit) => {
+    const notes = visit?.notes;
+    if (typeof notes !== "string") return null;
+    const marker = "[VINICA_VSF_REPORT]:";
+    const markerAt = notes.indexOf(marker);
+    if (markerAt < 0) return null;
+    const start = notes.indexOf("{", markerAt + marker.length);
+    if (start < 0) return null;
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let i = start; i < notes.length; i += 1) {
+        const ch = notes[i];
+        if (inString) {
+            if (escaped) escaped = false;
+            else if (ch === "\\") escaped = true;
+            else if (ch === '"') inString = false;
+            continue;
+        }
+        if (ch === '"') inString = true;
+        else if (ch === "{") depth += 1;
+        else if (ch === "}") {
+            depth -= 1;
+            if (depth === 0) {
+                try {
+                    const parsed = JSON.parse(notes.slice(start, i + 1));
+                    return parsed && typeof parsed === "object" ? parsed : null;
+                } catch { return null; }
+            }
+        }
+    }
+    return null;
+};
+
+const isVsfVisit = (visit) => Boolean(parseVsfReport(visit) || String(visit?.reportType || "").toUpperCase().includes("VSF"));
+const escapeReportHtml = (value) => String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
+
 const extractSiteEvidencePhotos = (visit) => {
     if (!visit) return [];
     const list = [];
@@ -63,6 +100,7 @@ const extractSiteEvidencePhotos = (visit) => {
     const add = (url, label) => {
         const clean = typeof url === "string" ? url.trim() : "";
         if (!clean || seen.has(clean)) return;
+        if (!clean.startsWith("data:image/") && !/^https?:\/\//i.test(clean)) return;
         seen.add(clean);
         list.push({ url: clean, label });
     };
@@ -75,8 +113,17 @@ const extractSiteEvidencePhotos = (visit) => {
                 add(ev.nameplate || ev.namePlatePhoto, "Client Name Plate Photo");
                 add(ev.selfie || ev.selfiePhoto, "Supervisor Selfie");
                 add(ev.photo1 || ev.sitePhoto1 || ev.sitePhoto, "Site Photo 1");
+                (Array.isArray(ev.opt) ? ev.opt : []).forEach((url, idx) => add(url, `Additional Site Photo ${idx + 1}`));
             } catch { }
         }
+    }
+
+    const report = parseVsfReport(visit);
+    if (report?.photos) {
+        add(report.photos.nameplate, "Client Name Plate Photo");
+        add(report.photos.selfie, "Supervisor Selfie");
+        (Array.isArray(report.photos.opt) ? report.photos.opt : []).forEach((url, idx) => add(url, `Additional Site Photo ${idx + 1}`));
+        add(report.photos.signature || report.signature, "Supervisor Signature");
     }
     add(visit.photoUrl, list.length === 0 ? "Site Evidence Photo" : "Site Photo");
     add(visit.selfieUrl, "Check-In Selfie");
@@ -116,6 +163,31 @@ const extractClientFeedback = (visit) => {
 };
 
 const extractAuditQuestions = (visit, activeChecklist = []) => {
+    const vsf = parseVsfReport(visit);
+    if (vsf && Array.isArray(vsf.answers)) {
+        return vsf.answers.map((answer, idx) => {
+            const raw = String(answer?.a ?? "").trim();
+            const normalized = raw.toLowerCase();
+            const isYes = normalized === "yes";
+            const isNo = normalized === "no";
+            const photos = Array.isArray(answer?.ph) ? answer.ph.filter((url) => typeof url === "string" && url.trim()) : [];
+            const details = [];
+            if (answer?.kp !== undefined && answer.kp !== null && String(answer.kp).trim()) {
+                details.push(`Number: ${String(answer.kp).trim()}`);
+            }
+            if (answer?.rm) details.push(String(answer.rm).trim());
+            return {
+                no: answer?.n || idx + 1,
+                text: answer?.t || `Question #${answer?.n || idx + 1}`,
+                section: answer?.sec || "VSF Inspection",
+                ans: isYes ? "YES" : isNo ? "NO" : (raw || (answer?.kp ? String(answer.kp) : "—")),
+                booleanValue: isYes ? true : isNo ? false : null,
+                remarks: details.filter(Boolean).join(" • "),
+                photos,
+            };
+        });
+    }
+
     const answers = visit?.auditSubmission?.answers;
     if (Array.isArray(answers) && answers.length > 0) {
         return answers.map((ans, idx) => {
@@ -142,8 +214,10 @@ const extractAuditQuestions = (visit, activeChecklist = []) => {
             return {
                 no: ans.questionNo || idx + 1,
                 text: ans.questionText || `Question #${ans.questionNo || idx + 1}`,
+                section: ans.section || "",
                 ans: hasBool ? (ans.booleanValue ? "YES" : "NO") : (textVal || "—"),
-                booleanValue: hasBool ? ans.booleanValue : true,
+                booleanValue: hasBool ? ans.booleanValue : null,
+                remarks: ans.remarks || ans.remark || "",
                 photos,
             };
         });
@@ -156,8 +230,10 @@ const extractAuditQuestions = (visit, activeChecklist = []) => {
     return src.map((q, idx) => ({
         no: idx + 1,
         text: q.question || q.text || `Question #${idx + 1}`,
+        section: q.section || "",
         ans: "Pending",
         booleanValue: null,
+        remarks: "",
         photos: [],
     }));
 };
@@ -751,7 +827,7 @@ const DistanceReport = () => {
 
         setSelectedAuditVisit(visit);
 
-        if (!visit?.auditSubmission?.answers?.length && visit?.id) {
+        if (!parseVsfReport(visit) && !visit?.auditSubmission?.answers?.length && visit?.id) {
             try {
                 const res = await apiFetch(`/api/audit/visits/${visit.id}/submission`, { method: "GET" });
                 if (res.ok) {
@@ -796,30 +872,66 @@ const DistanceReport = () => {
     const printAuditReport = (visit) => {
         if (!visit) return;
         const pw = window.open("", "_blank", "width=1000,height=900");
-        if (!pw) return alert("Please allow popups to print the audit report.");
+        if (!pw) return alert("Please allow popups to print the report.");
+
+        const report = parseVsfReport(visit);
         const qs = extractAuditQuestions(visit, activeChecklist);
-        const passed = qs.filter((q) => q.booleanValue === true).length;
-        const pct = qs.length > 0 ? Math.round((passed / qs.length) * 100) : 100;
-        const siteName = visit.site?.name || visit.clientName || visit.locationName || "Client Site";
+        const scoreQuestions = qs.filter((q) => q.booleanValue === true || q.booleanValue === false);
+        const yesCount = qs.filter((q) => q.ans === "YES").length;
+        const noCount = qs.filter((q) => q.ans === "NO").length;
+        const score = scoreQuestions.length ? Math.round((yesCount / scoreQuestions.length) * 100) : 0;
+        const siteName = report?.siteName || visit.site?.name || visit.clientName || "Client Site";
+        const supervisorName = report?.supervisor?.name || visit.user?.name || "Supervisor";
+        const supervisorEmail = report?.supervisor?.email || visit.user?.email || "—";
+        const taskId = report?.taskId || visit.taskId || "—";
+        const submittedAt = report?.submittedAt || visit.visitAt;
+        const vDate = submittedAt ? new Date(submittedAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "medium" }) : "N/A";
         const fb = extractClientFeedback(visit);
-        const vDate = visit.visitAt ? new Date(visit.visitAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "N/A";
-        const vTime = visit.visitAt ? new Date(visit.visitAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "N/A";
-        const rowsHtml = qs
-            .map(
-                (q) =>
-                    `<tr><td style="text-align:center;font-weight:bold;">#${q.no}</td><td><strong>${q.text}</strong>${q.photos?.length ? `<div style="font-size:11px;color:#059669;">📷 ${q.photos.length} Photo(s) Attached</div>` : ""
-                    }</td><td style="text-align:center;font-weight:bold;color:${q.booleanValue === false ? "#dc2626" : "#15803d"
-                    };">${q.ans}</td></tr>`
-            )
-            .join("");
-        pw.document.write(
-            `<!DOCTYPE html><html><head><title>Audit Report - ${siteName}</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#0f172a;font-size:12px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #cbd5e1;padding:7px 10px;text-align:left;}th{background:#1e3a8a;color:#fff;}</style></head><body><h2>${siteName.toUpperCase()} — SITE AUDIT REPORT</h2><p>Auditor: <strong>${visit.user?.name || visit.assignTo || "Supervisor"
-            }</strong> | Date: ${vDate} ${vTime} | Status: <strong>${visit.status || "PENDING"
-            }</strong> | Compliance: <strong>${pct}% (${passed}/${qs.length})</strong></p>${fb ? `<div style="background:#f0fdf4;border:1.5px solid #86efac;padding:12px;margin:14px 0;border-radius:6px;"><strong style="color:#166534;">⭐ CLIENT FEEDBACK & RATING:</strong> Rating: <strong>${fb.rating || "5"}/5</strong> ${fb.clientName ? ` | Client: <strong>${fb.clientName}</strong> (${fb.clientPhone || ""})` : ""}${fb.comments ? `<div style="margin-top:6px;font-style:italic;color:#1e293b;">"${fb.comments}"</div>` : ""}</div>` : ""}<table><thead><tr><th style="width:45px;text-align:center;">#</th><th>Audit Checklist Question</th><th style="width:120px;text-align:center;">Response</th></tr></thead><tbody>${rowsHtml}</tbody></table></body></html>`
-        );
+        const safe = escapeReportHtml;
+
+        let previousSection = "";
+        const rowsHtml = qs.map((q) => {
+            let sectionRow = "";
+            if (report && q.section && q.section !== previousSection) {
+                sectionRow = `<tr class="section-row"><td colspan="4">${safe(q.section)}</td></tr>`;
+                previousSection = q.section;
+            }
+            const responseColor = q.booleanValue === false ? "#b91c1c" : q.booleanValue === true ? "#166534" : "#334155";
+            const photos = (q.photos || []).map((url) => `<img class="answer-photo" src="${safe(url)}" alt="Question ${safe(q.no)} evidence" />`).join("");
+            return sectionRow + `<tr><td class="number">#${safe(q.no)}</td><td><strong>${safe(q.text)}</strong>${q.remarks ? `<div class="remark">${safe(q.remarks)}</div>` : ""}${photos ? `<div class="answer-photos">${photos}</div>` : ""}</td><td class="response" style="color:${responseColor}">${safe(q.ans)}</td><td>${photos ? `${q.photos.length} photo(s)` : "—"}</td></tr>`;
+        }).join("");
+
+        const coverPhotoItems = [];
+        if (report?.photos?.nameplate) coverPhotoItems.push({ url: report.photos.nameplate, label: "Client Name Plate" });
+        if (report?.photos?.selfie) coverPhotoItems.push({ url: report.photos.selfie, label: "Supervisor Selfie" });
+        (Array.isArray(report?.photos?.opt) ? report.photos.opt : []).forEach((url, idx) => coverPhotoItems.push({ url, label: `Additional Site Photo ${idx + 1}` }));
+        const evidenceHtml = coverPhotoItems.filter((p) => typeof p.url === "string" && p.url.trim()).map((p) =>
+            `<div class="evidence-item"><img src="${safe(p.url)}" alt="${safe(p.label)}"><div>${safe(p.label)}</div></div>`
+        ).join("");
+        const signatureHtml = report?.signature || report?.photos?.signature
+            ? `<section class="signature"><h3>Authorised Signature</h3><img src="${safe(report.signature || report.photos.signature)}" alt="Supervisor signature"><p>${safe(supervisorName)} • ${safe(supervisorEmail)} • ${safe(vDate)}</p></section>`
+            : "";
+        const metadataHtml = report
+            ? `<div class="meta-grid"><div><span>Task</span><strong>${safe(report.taskTitle || "VSF Inspection")}</strong></div><div><span>Task ID</span><strong>${safe(taskId)}</strong></div><div><span>Site / Area</span><strong>${safe(siteName)}${visit.site?.siteCode ? ` · ${safe(visit.site.siteCode)}` : ""}</strong></div><div><span>Submitted By</span><strong>${safe(supervisorName)}<br>${safe(supervisorEmail)}</strong></div><div><span>Submitted On</span><strong>${safe(vDate)}</strong></div><div><span>Review Status</span><strong>${safe(visit.status || "PENDING")}</strong></div><div><span>GPS Coordinates</span><strong>${safe(visit.latitude ?? "—")}, ${safe(visit.longitude ?? "—")}</strong></div><div><span>Server Visit ID</span><strong>${safe(visit.id || "—")}</strong></div></div>`
+            : `<p>Auditor: <strong>${safe(supervisorName)}</strong> | Date: ${safe(vDate)} | Status: <strong>${safe(visit.status || "PENDING")}</strong> | Compliance: <strong>${score}% (${yesCount}/${scoreQuestions.length || 0} Yes/No)</strong></p>`;
+
+        pw.document.open();
+        pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${report ? "VSF Inspection Report" : "Site Audit Report"} - ${safe(siteName)}</title><style>
+            @page{size:A4;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;padding:0;color:#172033;font-size:11px;line-height:1.4}header{display:flex;justify-content:space-between;align-items:center;border-bottom:5px solid #6b6cf5;padding:0 0 12px;margin-bottom:15px}header .logo{font-size:25px;font-weight:900;color:#f47735;letter-spacing:.5px}header .sub{text-align:right;color:#475569}h1{font-size:19px;margin:4px 0 12px;color:#111827}h3{font-size:12px;margin:16px 0 8px;text-transform:uppercase;letter-spacing:.3px}.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f5f6fb;border:1px solid #dfe3ee;border-radius:8px;padding:12px;margin-bottom:12px}.meta-grid div{display:flex;flex-direction:column;gap:3px;overflow-wrap:anywhere}.meta-grid span{font-size:9px;text-transform:uppercase;color:#64748b;font-weight:bold}.meta-grid strong{font-size:11px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.stat{border:1px solid #e2e8f0;border-radius:6px;text-align:center;padding:9px}.stat b{display:block;font-size:18px;color:#6b6cf5}.stat span{font-size:9px;color:#64748b;text-transform:uppercase}.section-title{background:#6b6cf5;color:#fff;padding:7px 9px;margin:16px 0 0;font-weight:bold;text-transform:uppercase}table{width:100%;border-collapse:collapse;margin:0 0 10px;table-layout:fixed}th,td{border:1px solid #d5dae5;padding:7px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#f1f3f9;font-size:9px;text-transform:uppercase}.number{text-align:center;font-weight:bold;width:7%}.response{font-weight:bold;text-align:center;width:16%}td:last-child{width:12%;font-size:10px}.section-row td{background:#eef0ff;color:#3730a3;font-weight:bold;text-transform:uppercase;padding:6px 8px}.remark{margin-top:4px;color:#475569;font-size:10px;white-space:pre-wrap}.answer-photos{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.answer-photo{width:90px;height:65px;object-fit:cover;border:1px solid #cbd5e1;border-radius:4px}.evidence-grid{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 14px}.evidence-item{width:150px;text-align:center;font-size:10px;color:#475569}.evidence-item img{width:100%;height:105px;object-fit:contain;border:1px solid #cbd5e1;border-radius:5px}.signature{margin-top:20px;border-top:1px solid #cbd5e1;padding-top:12px;page-break-inside:avoid}.signature img{max-width:240px;max-height:90px;object-fit:contain;display:block}.signature p{color:#475569}.feedback{background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;margin:12px 0}.footer{margin-top:18px;border-top:1px solid #d5dae5;padding-top:8px;font-size:9px;color:#64748b;display:flex;justify-content:space-between}@media print{tr{page-break-inside:avoid}.evidence-item,.signature{page-break-inside:avoid}}
+            </style></head><body>
+            <header><div class="logo">VINICIA</div><div class="sub"><strong>${report ? "SITE VISIT REPORT" : "SITE AUDIT REPORT"}</strong><br>${report ? "VSF Inspection Report" : "Audit & Visit Report"}<br>Vinicia Security Services Pvt Ltd</div></header>
+            <h1>${safe(siteName)} — ${report ? "VSF INSPECTION REPORT" : "SITE AUDIT REPORT"}</h1>
+            ${metadataHtml}
+            ${report ? `<div class="summary"><div class="stat"><b>${qs.length}</b><span>Responses</span></div><div class="stat"><b>${yesCount}</b><span>Yes</span></div><div class="stat"><b>${noCount}</b><span>No</span></div><div class="stat"><b>${coverPhotoItems.length + qs.reduce((n, q) => n + (q.photos?.length || 0), 0)}</b><span>Photos</span></div></div>` : ""}
+            ${evidenceHtml ? `<div class="section-title">Photo Evidence</div><div class="evidence-grid">${evidenceHtml}</div>` : ""}
+            ${fb ? `<div class="feedback"><strong>Client Feedback:</strong> ${safe(fb.rating || "—")} ${fb.clientName ? `· ${safe(fb.clientName)} (${safe(fb.clientPhone || "")})` : ""}${fb.comments ? `<div>${safe(fb.comments)}</div>` : ""}</div>` : ""}
+            <div class="section-title">${report ? "Inspection Responses" : "Audit Checklist Responses"}</div>
+            <table><thead><tr><th class="number">#</th><th>Parameter / Question</th><th class="response">Response</th><th>Evidence</th></tr></thead><tbody>${rowsHtml || `<tr><td colspan="4">No submitted responses found.</td></tr>`}</tbody></table>
+            ${signatureHtml}<div class="footer"><span>Vinicia Security Services Pvt Ltd | Confidential</span><span>Generated ${safe(new Date().toLocaleString("en-IN"))}</span></div>
+            </body></html>`);
         pw.document.close();
         pw.focus();
-        setTimeout(() => pw.print(), 400);
+        setTimeout(() => pw.print(), 500);
     };
 
     return (
@@ -1576,13 +1688,15 @@ const DistanceReport = () => {
             {/* DYNAMIC AUDIT REPORT MODAL (Exact match with LatestVisits.jsx) */}
             {selectedAuditVisit && (() => {
                 const v = selectedAuditVisit;
+                const vsfReport = parseVsfReport(v);
                 const realQuestions = extractAuditQuestions(v, activeChecklist);
                 const siteEvidencePhotos = extractSiteEvidencePhotos(v);
                 const clientFeedback = extractClientFeedback(v);
+                const scoreQuestions = realQuestions.filter((q) => q.booleanValue === true || q.booleanValue === false);
                 const totalQ = realQuestions.length;
                 const passedQ = realQuestions.filter((q) => q.booleanValue === true).length;
-                const scorePct = totalQ > 0 ? Math.round((passedQ / totalQ) * 100) : 100;
-                const currentSite = v.site?.name || v.siteName || v.clientName || v.locationName || "Site";
+                const scorePct = scoreQuestions.length > 0 ? Math.round((passedQ / scoreQuestions.length) * 100) : 0;
+                const currentSite = vsfReport?.siteName || v.site?.name || v.siteName || v.clientName || v.locationName || "Site";
                 const vDateStr = v.visitAt ? new Date(v.visitAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : (v.completedOn || "N/A");
                 const vTimeStr = v.visitAt ? new Date(v.visitAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "N/A";
 
@@ -1591,7 +1705,7 @@ const DistanceReport = () => {
                         <div className="audit-modal-dialog" onClick={(e) => e.stopPropagation()}>
                             <div className="audit-modal-top-header">
                                 <div>
-                                    <h3>{currentSite} — Audit & Visit Verification Details</h3>
+                                    <h3>{vsfReport ? "VINICIA VSF Inspection Report" : `${currentSite} — Audit & Visit Verification Details`}</h3>
                                     <p>{currentSite} ({v.site?.siteCode || v.siteCode || "N/A"}) • {vDateStr}, {vTimeStr}</p>
                                 </div>
                                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -1604,8 +1718,8 @@ const DistanceReport = () => {
                                 <div className="audit-score-banner">
                                     <div className="score-badge-circle"><span className="score-num">{scorePct}</span><span className="score-max">/100</span></div>
                                     <div className="score-info">
-                                        <h4>{currentSite.toUpperCase()} — SITE AUDIT CHECKLIST</h4>
-                                        <p>{totalQ > 0 ? `${passedQ} of ${totalQ} Audited Checkpoints Passed` : "Site Operations & Security Compliance Audit"}</p>
+                                        <h4>{vsfReport ? `${currentSite.toUpperCase()} — VSF INSPECTION` : `${currentSite.toUpperCase()} — SITE AUDIT CHECKLIST`}</h4>
+                                        <p>{scoreQuestions.length > 0 ? `${passedQ} of ${scoreQuestions.length} Yes/No checkpoints marked YES` : `${totalQ} submitted responses`}</p>
                                         <div className="score-meta">
                                             <span className="badge-pass"><ShieldCheck size={14} /> COMPLIANCE: {scorePct}%</span>
                                             <span>Status: <strong>{v.status || "PENDING"}</strong></span>
@@ -1615,7 +1729,9 @@ const DistanceReport = () => {
                                 </div>
 
                                 <div className="audit-details-grid">
-                                    <div className="audit-detail-cell"><label>Visit / Task ID</label><p>{v.id || v.visitId || "N/A"}</p></div>
+                                    <div className="audit-detail-cell"><label>{vsfReport ? "Server Visit ID" : "Visit / Task ID"}</label><p>{v.id || v.visitId || "N/A"}</p></div>
+                                    {vsfReport && <div className="audit-detail-cell"><label>Task ID</label><p>{vsfReport.taskId || "—"}</p></div>}
+                                    {vsfReport && <div className="audit-detail-cell"><label>Submitted On</label><p>{vsfReport.submittedAt ? new Date(vsfReport.submittedAt).toLocaleString("en-IN") : `${vDateStr} ${vTimeStr}`}</p></div>}
                                     <div className="audit-detail-cell"><label>Site Code & Name</label><p>{currentSite} ({v.site?.siteCode || v.siteCode || "N/A"})</p></div>
                                     <div className="audit-detail-cell"><label>Auditor Name & Contact</label><p>{v.user?.name || v.assignTo || "Supervisor"} ({v.user?.phone || v.user?.email || "N/A"})</p></div>
                                     <div className="audit-detail-cell"><label>Date & Time</label><p>{vDateStr} at {vTimeStr}</p></div>
@@ -1741,18 +1857,20 @@ const DistanceReport = () => {
                                 </div>
 
                                 <div className="audit-questions-section">
-                                    <h4 style={{ margin: "0 0 12px", fontSize: "15px", color: "#0f172a" }}>Audit Checklist Responses ({realQuestions.length} Questions)</h4>
+                                    <h4 style={{ margin: "0 0 12px", fontSize: "15px", color: "#0f172a" }}>{vsfReport ? `VSF Inspection Responses (${realQuestions.length} Questions)` : `Audit Checklist Responses (${realQuestions.length} Questions)`}</h4>
                                     <div className="audit-cards-grid">
                                         {realQuestions.length === 0 ? (
                                             <p style={{ color: "#64748b", padding: "16px" }}>No checklist answers submitted for this visit.</p>
                                         ) : (
                                             realQuestions.map((q) => (
-                                                <div key={q.no} className="audit-question-card">
+                                                <div key={`${q.section || "audit"}-${q.no}`} className="audit-question-card">
+                                                    {q.section && <div style={{ fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.4px", color: "#6366f1", marginBottom: "6px" }}>{q.section}</div>}
                                                     <div className="q-card-header">
                                                         <span className="q-badge">#{q.no}</span>
                                                         <strong className="q-text">{q.text}</strong>
                                                         <span style={{ background: q.booleanValue === false ? "#fee2e2" : q.booleanValue === true ? "#dcfce7" : "#f1f5f9", color: q.booleanValue === false ? "#b91c1c" : q.booleanValue === true ? "#15803d" : "#475569", padding: "3px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "bold" }}>{q.ans}</span>
                                                     </div>
+                                                    {q.remarks && <div style={{ marginTop: "7px", fontSize: "12px", color: "#475569", whiteSpace: "pre-wrap" }}><strong>Remarks / Details: </strong>{q.remarks}</div>}
                                                     {q.photos && q.photos.length > 0 ? (
                                                         <div style={{ marginTop: "10px" }}>
                                                             <div style={{ fontSize: "11px", fontWeight: "700", color: "#059669", marginBottom: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
@@ -1790,7 +1908,7 @@ const DistanceReport = () => {
                                     <span className={`status-pill status-${String(v.status || "PENDING").toLowerCase()}`}>{v.status || "PENDING"}</span>
                                 </div>
                                 <div className="footer-action-buttons">
-                                    <button type="button" className="btn-modal-print" onClick={() => printAuditReport(v)}><Printer size={15} /> Print Report</button>
+                                    <button type="button" className="btn-modal-print" onClick={() => printAuditReport(v)}><Printer size={15} /> Print / Save PDF</button>
                                     <button type="button" className="btn-modal-reject" disabled={updatingId === v.id} onClick={() => updateVisitStatus(v, "REJECTED")}><XCircle size={16} /> Reject Visit</button>
                                     <button type="button" className="btn-modal-unverify" disabled={updatingId === v.id} onClick={() => updateVisitStatus(v, "UNVERIFIED")}><RotateCcw size={16} /> Mark Unverified</button>
                                     <button type="button" className="btn-modal-verify" disabled={updatingId === v.id} onClick={() => updateVisitStatus(v, "VERIFIED")}>

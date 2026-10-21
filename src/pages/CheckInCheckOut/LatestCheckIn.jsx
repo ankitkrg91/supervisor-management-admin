@@ -612,10 +612,21 @@ const LatestCheckIn = () => {
                                 <div className="detail-item full-width"><label>GPS Check Out Address :</label><span>{selectedCheckIn.gpsCheckOutAddress}</span></div>
                                 <div className="detail-item full-width"><label>Distance Travelled :</label><span className="dist-highlight">{selectedCheckIn.distanceTravelled}</span></div>
 
-                                {/* ALTERNATE CHECKIN MODE DISPLAY */}
-                                <div className="detail-item full-width" style={{ background: selectedCheckIn.isAlternate ? "#fef3c7" : "#f0fdf4", padding: "10px 14px", borderRadius: "8px", border: `1px solid ${selectedCheckIn.isAlternate ? '#f59e0b' : '#86efac'}` }}>
-                                    <label style={{ color: selectedCheckIn.isAlternate ? "#92400e" : "#166534", fontWeight: 700 }}>Check In Mode :</label>
-                                    <span style={{ color: selectedCheckIn.isAlternate ? "#d97706" : "#16a34a", fontWeight: "800", fontSize: "13.5px" }}>
+                                {/* ALTERNATE CHECK-IN MODE DISPLAY
+                                    Dedicated classes keep the message readable in both themes.
+                                    The general .detail-item span rule uses !important and otherwise
+                                    overrides the inline text color on this highlighted panel. */}
+                                <div
+                                    className={`detail-item full-width checkin-mode-detail ${selectedCheckIn.isAlternate ? "checkin-mode-emergency" : "checkin-mode-standard"}`}
+                                    style={{
+                                        background: selectedCheckIn.isAlternate ? "#fef3c7" : "#f0fdf4",
+                                        padding: "10px 14px",
+                                        borderRadius: "8px",
+                                        border: `1px solid ${selectedCheckIn.isAlternate ? "#f59e0b" : "#86efac"}`,
+                                    }}
+                                >
+                                    <label className="checkin-mode-label">Check In Mode :</label>
+                                    <span className="checkin-mode-value">
                                         {selectedCheckIn.isAlternate
                                             ? `🌧️ Rain / Emergency Exception (${selectedCheckIn.alternateReason || "Geofence Bypassed"})`
                                             : "Standard Verified Check-In (Within 100m)"}

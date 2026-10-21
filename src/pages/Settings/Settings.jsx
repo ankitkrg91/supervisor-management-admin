@@ -40,6 +40,9 @@ const EMPTY_USER = {
 const EMPTY_SITE = {
     name: "",
     siteCode: "",
+    clientName: "",
+    clientPhone: "",
+    clientEmail: "",
     address: "",
     city: "",
     state: "",
@@ -238,6 +241,9 @@ const Settings = () => {
             const values = [
                 item.name,
                 item.siteCode,
+                item.clientName,
+                item.clientPhone,
+                item.clientEmail,
                 item.address,
                 item.city,
                 item.state,
@@ -352,6 +358,9 @@ const Settings = () => {
         setSiteForm({
             name: site.name || "",
             siteCode: site.siteCode || "",
+            clientName: site.clientName || "",
+            clientPhone: site.clientPhone || "",
+            clientEmail: site.clientEmail || "",
             address: site.address || "",
             city: site.city || "",
             state: site.state || "",
@@ -499,6 +508,9 @@ const Settings = () => {
             const payload = {
                 name: siteForm.name.trim(),
                 siteCode: siteForm.siteCode.trim().toUpperCase(),
+                clientName: siteForm.clientName.trim() || null,
+                clientPhone: siteForm.clientPhone.trim() || null,
+                clientEmail: siteForm.clientEmail.trim() || null,
                 address: siteForm.address.trim() || null,
                 city: siteForm.city.trim() || null,
                 state: siteForm.state.trim() || null,
@@ -613,6 +625,9 @@ const Settings = () => {
             const rows = filteredData.map((site) => ({
                 Name: site.name || "",
                 SiteCode: site.siteCode || "",
+                ClientName: site.clientName || "",
+                ClientMobile: site.clientPhone || "",
+                ClientEmail: site.clientEmail || "",
                 Address: site.address || "",
                 City: site.city || "",
                 State: site.state || "",
@@ -629,6 +644,9 @@ const Settings = () => {
                     : [{
                         Name: "",
                         SiteCode: "",
+                        ClientName: "",
+                        ClientMobile: "",
+                        ClientEmail: "",
                         Address: "",
                         City: "",
                         State: "",
@@ -643,11 +661,13 @@ const Settings = () => {
             worksheet["!cols"] = [
                 { wch: 28 },
                 { wch: 16 },
+                { wch: 24 },
+                { wch: 18 },
+                { wch: 32 },
                 { wch: 42 },
                 { wch: 20 },
                 { wch: 20 },
                 { wch: 12 },
-                { wch: 14 },
                 { wch: 14 },
                 { wch: 14 },
                 { wch: 18 },
@@ -969,6 +989,9 @@ const Settings = () => {
                                 <tr>
                                     <th>SITE NAME</th>
                                     <th>SITE CODE</th>
+                                    <th>CLIENT NAME</th>
+                                    <th>CLIENT MOBILE</th>
+                                    <th>CLIENT EMAIL</th>
                                     <th>ADDRESS</th>
                                     <th>CITY</th>
                                     <th>STATE</th>
@@ -983,7 +1006,7 @@ const Settings = () => {
                                 {paginatedData.length === 0 ? (
                                     <tr>
                                         <td
-                                            colSpan="9"
+                                            colSpan="12"
                                             className="settings-empty"
                                         >
                                             No sites found.
@@ -999,6 +1022,12 @@ const Settings = () => {
                                             </td>
 
                                             <td>{site.siteCode}</td>
+
+                                            <td>{site.clientName || "-"}</td>
+
+                                            <td>{site.clientPhone || "-"}</td>
+
+                                            <td>{site.clientEmail || "-"}</td>
 
                                             <td className="site-address">
                                                 {site.address || "-"}
@@ -1419,6 +1448,51 @@ const Settings = () => {
                                                     event.target.value.toUpperCase(),
                                             })
                                         }
+                                    />
+                                </div>
+
+                                <div className="settings-form-field">
+                                    <label>Client Name</label>
+                                    <input
+                                        type="text"
+                                        value={siteForm.clientName}
+                                        onChange={(event) =>
+                                            setSiteForm({
+                                                ...siteForm,
+                                                clientName: event.target.value,
+                                            })
+                                        }
+                                        placeholder="Client / company name"
+                                    />
+                                </div>
+
+                                <div className="settings-form-field">
+                                    <label>Client Mobile</label>
+                                    <input
+                                        type="tel"
+                                        value={siteForm.clientPhone}
+                                        onChange={(event) =>
+                                            setSiteForm({
+                                                ...siteForm,
+                                                clientPhone: event.target.value,
+                                            })
+                                        }
+                                        placeholder="Client mobile number"
+                                    />
+                                </div>
+
+                                <div className="settings-form-field">
+                                    <label>Client Email</label>
+                                    <input
+                                        type="email"
+                                        value={siteForm.clientEmail}
+                                        onChange={(event) =>
+                                            setSiteForm({
+                                                ...siteForm,
+                                                clientEmail: event.target.value,
+                                            })
+                                        }
+                                        placeholder="client@example.com"
                                     />
                                 </div>
 

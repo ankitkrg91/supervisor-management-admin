@@ -72,11 +72,11 @@ const ScheduleTask = () => {
 
         useState("");
 
-    const [clientPhone, setClientPhone] =
+    const [clientEmail, setClientEmail] =
 
         useState("");
 
-    const [clientEmail, setClientEmail] =
+    const [clientPhone, setClientPhone] =
 
         useState("");
 
@@ -189,6 +189,18 @@ const ScheduleTask = () => {
         useState("");
 
     const [newSiteName, setNewSiteName] =
+
+        useState("");
+
+    const [newSiteClientName, setNewSiteClientName] =
+
+        useState("");
+
+    const [newSiteClientPhone, setNewSiteClientPhone] =
+
+        useState("");
+
+    const [newSiteClientEmail, setNewSiteClientEmail] =
 
         useState("");
 
@@ -468,6 +480,11 @@ const ScheduleTask = () => {
 
         );
 
+        // Load the contact details saved against this site.
+        setClient(siteItem.clientName || siteItem.name || "");
+        setClientPhone(siteItem.clientPhone || "");
+        setClientEmail(siteItem.clientEmail || "");
+
         setShowSiteSelector(false);
 
         setSiteSearch("");
@@ -485,6 +502,9 @@ const ScheduleTask = () => {
         setSite("");
 
         setAddress("");
+        setClient("");
+        setClientPhone("");
+        setClientEmail("");
 
         setSelectedSupervisor(null);
 
@@ -499,6 +519,9 @@ const ScheduleTask = () => {
         setNewSiteCode("");
 
         setNewSiteName("");
+        setNewSiteClientName("");
+        setNewSiteClientPhone("");
+        setNewSiteClientEmail("");
 
         setNewSiteAddress("");
 
@@ -637,6 +660,12 @@ const ScheduleTask = () => {
                         .trim()
 
                         .toUpperCase(),
+
+                clientName: newSiteClientName.trim() || null,
+
+                clientPhone: newSiteClientPhone.trim() || null,
+
+                clientEmail: newSiteClientEmail.trim() || null,
 
                 address:
 
@@ -783,6 +812,9 @@ const ScheduleTask = () => {
                     newSiteAddress.trim()
 
                 );
+                setClient(createdSite.clientName || createdSite.name || newSiteClientName.trim());
+                setClientPhone(createdSite.clientPhone || newSiteClientPhone.trim());
+                setClientEmail(createdSite.clientEmail || newSiteClientEmail.trim());
 
             } else {
 
@@ -1472,9 +1504,19 @@ const ScheduleTask = () => {
 
         }
 
-        const scheduledAt =
-
-            `${scheduleFrom}T09:00:00.000Z`;
+        // Build the schedule in the Admin user's local timezone.
+        // Hard-coding 09:00Z displayed as 14:30 in India and made whole-day tasks look overdue too early.
+        const [startYear, startMonth, startDay] = scheduleFrom.split("-").map(Number);
+        const scheduledStart = new Date(
+            startYear,
+            startMonth - 1,
+            startDay,
+            wholeDay ? 0 : 9,
+            0,
+            0,
+            0
+        );
+        const scheduledAt = scheduledStart.toISOString();
 
         const payload = {
 
@@ -1585,7 +1627,6 @@ const ScheduleTask = () => {
             setClient("");
 
             setClientPhone("");
-
             setClientEmail("");
 
             setTask("");
@@ -2154,30 +2195,29 @@ const ScheduleTask = () => {
 
                     { }
 
-                    {/* CLIENT MOBILE */}
                     <div className="schedule-field">
+
                         <label>
+
                             Client Mobile
+
                         </label>
-                        <div className="schedule-input-with-action">
-                            <input
-                                type="tel"
-                                value={clientPhone}
-                                onChange={(e) => setClientPhone(e.target.value)}
-                                placeholder="Client mobile number (e.g. 9876543210)"
-                            />
-                            {clientPhone && (
-                                <button
-                                    type="button"
-                                    className="schedule-remove-button"
-                                    onClick={() => setClientPhone("")}
-                                    title="Clear"
-                                >
-                                    <X size={19} />
-                                </button>
-                            )}
-                        </div>
+
+                        <input
+
+                            type="tel"
+
+                            value={clientPhone}
+
+                            onChange={(e) => setClientPhone(e.target.value)}
+
+                            placeholder="Client mobile number"
+
+                        />
+
                     </div>
+
+                    { }
 
                     <div className="schedule-field">
 
@@ -3276,50 +3316,143 @@ const ScheduleTask = () => {
                 { }
 
                 <div className="schedule-map-container">
+
                     <MapContainer
+
                         key={`${mapPosition[0]}-${mapPosition[1]}`}
-                        center={mapPosition}
-                        zoom={
-                            selectedSite && hasSelectedCoordinates
-                                ? 14
-                                : 11
+
+                        center={
+
+                            mapPosition
+
                         }
-                        scrollWheelZoom={true}
+
+                        zoom={
+
+                            selectedSite &&
+
+                                hasSelectedCoordinates
+
+                                ? 14
+
+                                : 11
+
+                        }
+
+                        scrollWheelZoom={
+
+                            true
+
+                        }
+
                         className="schedule-map"
+
                     >
+
                         <TileLayer
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+                            attribution='&copy; OpenStreetMap contributors'
+
+                            url="https\://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
                         />
 
                         <Marker
-                            position={mapPosition}
-                            icon={markerIcon}
+
+                            position={
+
+                                mapPosition
+
+                            }
+
+                            icon={
+
+                                markerIcon
+
+                            }
+
                         >
+
                             <Popup>
+
                                 {selectedSite ? (
+
                                     <div>
+
                                         <strong>
-                                            {selectedSite.siteCode}
+
+                                            {
+
+                                                selectedSite.siteCode
+
+                                            }
+
                                         </strong>
 
                                         <br />
 
-                                        {selectedSite.name}
+                                        {
+
+                                            selectedSite.name
+
+                                        }
 
                                         {selectedSite.city && (
+
                                             <>
+
                                                 <br />
-                                                {selectedSite.city}
+
+                                                {
+
+                                                    selectedSite.city
+
+                                                }
+
                                             </>
+
                                         )}
+
                                     </div>
+
                                 ) : (
+
                                     "Supervisor Management site map"
+
                                 )}
+
                             </Popup>
+
                         </Marker>
+
                     </MapContainer>
+
+                    <div className="schedule-map-switch">
+
+                        <button
+
+                            type="button"
+
+                            className="active"
+
+                        >
+
+                            Map
+
+                        </button>
+
+                        <button
+
+                            type="button"
+
+                        >
+
+                            Satellite
+
+                        </button>
+
+                    </div>
+
                 </div>
 
             </div>
@@ -3969,6 +4102,84 @@ const ScheduleTask = () => {
                                         modalInputStyle
 
                                     }
+
+                                />
+
+                            </div>
+
+                            { }
+
+                            <div
+
+                                style={modalFieldStyle}
+
+                            >
+
+                                <label style={modalLabelStyle}>Client Name</label>
+
+                                <input
+
+                                    type="text"
+
+                                    value={newSiteClientName}
+
+                                    onChange={(e) => setNewSiteClientName(e.target.value)}
+
+                                    placeholder="Client / company name"
+
+                                    style={modalInputStyle}
+
+                                />
+
+                            </div>
+
+                            { }
+
+                            <div
+
+                                style={modalFieldStyle}
+
+                            >
+
+                                <label style={modalLabelStyle}>Client Mobile</label>
+
+                                <input
+
+                                    type="tel"
+
+                                    value={newSiteClientPhone}
+
+                                    onChange={(e) => setNewSiteClientPhone(e.target.value)}
+
+                                    placeholder="Client mobile number"
+
+                                    style={modalInputStyle}
+
+                                />
+
+                            </div>
+
+                            { }
+
+                            <div
+
+                                style={modalFieldStyle}
+
+                            >
+
+                                <label style={modalLabelStyle}>Client Email</label>
+
+                                <input
+
+                                    type="email"
+
+                                    value={newSiteClientEmail}
+
+                                    onChange={(e) => setNewSiteClientEmail(e.target.value)}
+
+                                    placeholder="client@example.com"
+
+                                    style={modalInputStyle}
 
                                 />
 

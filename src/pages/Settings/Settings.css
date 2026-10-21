@@ -339,7 +339,7 @@
 }
 
 .sites-table {
-    min-width: 1050px;
+    min-width: 1550px;
 }
 
 .settings-table th {
@@ -1060,6 +1060,7 @@
 ================================= */
 
 @media print {
+
     .settings-message,
     .settings-filter-select,
     .settings-modal-backdrop {
