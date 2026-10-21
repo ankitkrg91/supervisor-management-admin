@@ -2541,15 +2541,15 @@ const ScheduleTask = () => {
 
                             </option>
 
-                            <option value="MSF">
+                            <option value="VSF">
 
-                                MSF
+                                VSF
 
                             </option>
 
-                            <option value="MFM">
+                            <option value="VFM">
 
-                                MFM
+                                VFM
 
                             </option>
 
