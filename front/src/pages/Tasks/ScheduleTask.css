@@ -1,0 +1,519 @@
+/* =========================================================
+   SCHEDULE TASK
+========================================================= */
+
+.schedule-task-page {
+    width: 100%;
+    --text-color: var(--text-primary, #111827);
+    color: var(--text-primary, #111827);
+}
+
+/* =========================================================
+   MAIN CARD
+========================================================= */
+
+.schedule-task-card {
+    display: grid;
+    grid-template-columns: minmax(550px, 1fr) minmax(400px, 0.9fr);
+    gap: 20px;
+    padding: 38px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.schedule-task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.schedule-field {
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    align-items: center;
+    gap: 16px;
+}
+
+.schedule-field>label,
+.schedule-checkbox-field>label {
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.schedule-field input,
+.schedule-field select {
+    width: 100%;
+    height: 45px;
+    padding: 0 14px;
+    box-sizing: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+}
+
+.schedule-field input:focus,
+.schedule-field select:focus {
+    border-color: var(--primary);
+}
+
+.schedule-field input::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+}
+
+/* =========================================================
+   CLIENT
+========================================================= */
+
+.schedule-input-with-action {
+    display: grid;
+    grid-template-columns: 1fr 48px;
+    gap: 16px;
+}
+
+.schedule-remove-button {
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 7px;
+    background: var(--danger);
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.schedule-remove-button:hover {
+    opacity: 0.9;
+}
+
+/* =========================================================
+   SITE
+========================================================= */
+
+.schedule-site-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+}
+
+.schedule-site-select {
+    width: 100%;
+    min-width: 0;
+    padding: 11px 13px;
+    box-sizing: border-box;
+    text-align: left;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.schedule-site-select:hover {
+    border-color: var(--primary);
+}
+
+.schedule-blue-button {
+    min-width: 123px;
+    min-height: 45px;
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: none;
+    border-radius: 7px;
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 7px 16px rgba(37, 99, 235, 0.2);
+}
+
+.schedule-blue-button:hover {
+    background: var(--primary-hover);
+}
+
+/* =========================================================
+   CHECKBOX
+========================================================= */
+
+.schedule-checkbox-field {
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    align-items: center;
+    gap: 16px;
+    min-height: 35px;
+}
+
+.schedule-checkbox-field input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.schedule-checkbox-content {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* =========================================================
+   DATE
+========================================================= */
+
+.schedule-date-wrapper {
+    height: 45px;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--input-bg);
+    overflow: hidden;
+}
+
+.schedule-date-wrapper input {
+    flex: 1;
+    border: none;
+    background: transparent;
+}
+
+.schedule-date-wrapper svg {
+    width: 45px;
+    height: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    color: var(--text-secondary);
+    background: var(--card-bg-hover);
+}
+
+/* =========================================================
+   ASSIGNED TO
+========================================================= */
+
+.schedule-assigned-row {
+    display: grid;
+    grid-template-columns: 1fr 180px;
+    gap: 16px;
+}
+
+.non-system-button {
+    line-height: 17px;
+    text-align: center;
+}
+
+/* =========================================================
+   SUBMIT
+========================================================= */
+
+.schedule-submit-button {
+    width: 100%;
+    height: 46px;
+    margin-top: 18px;
+    border: none;
+    border-radius: 7px;
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.2);
+}
+
+.schedule-submit-button:hover {
+    background: var(--primary-hover);
+}
+
+.schedule-submit-button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* =========================================================
+   MAP
+========================================================= */
+
+.schedule-map-container {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    min-height: 420px;
+    height: 420px;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: #e5e7eb;
+}
+
+.schedule-map {
+    width: 100%;
+    height: 100%;
+    min-height: 420px;
+}
+
+/* Leaflet zoom controls */
+
+.schedule-map .leaflet-top,
+.schedule-map .leaflet-bottom {
+    z-index: 500;
+}
+
+.schedule-map .leaflet-control-zoom {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.schedule-map .leaflet-control-zoom a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.schedule-map .leaflet-control-zoom a:last-child {
+    border-bottom: none;
+}
+
+.schedule-map .leaflet-control-zoom a:hover {
+    background: var(--card-bg-hover);
+    color: var(--text-primary);
+}
+
+/* =========================================================
+   MODAL FIX
+========================================================= */
+
+.schedule-task-page>div[style*="position: fixed"] {
+    color: var(--text-primary, #111827);
+}
+
+.schedule-task-page>div[style*="position: fixed"]>div {
+    color: var(--text-primary, #111827) !important;
+    --text-color: var(--text-primary, #111827);
+}
+
+/* =========================================================
+   MODAL TEXT
+========================================================= */
+
+.schedule-task-page>div[style*="position: fixed"]>div h1,
+.schedule-task-page>div[style*="position: fixed"]>div h2,
+.schedule-task-page>div[style*="position: fixed"]>div h3,
+.schedule-task-page>div[style*="position: fixed"]>div h4 {
+    color: var(--text-primary, #111827) !important;
+    -webkit-text-fill-color: var(--text-primary, #111827);
+}
+
+.schedule-task-page>div[style*="position: fixed"]>div label {
+    color: var(--text-primary, #111827) !important;
+    -webkit-text-fill-color: var(--text-primary, #111827);
+}
+
+.schedule-task-page>div[style*="position: fixed"]>div p {
+    color: var(--text-secondary, #6b7280) !important;
+    -webkit-text-fill-color: var(--text-secondary, #6b7280);
+}
+
+/* =========================================================
+   MODAL INPUTS
+========================================================= */
+
+.schedule-task-page>div[style*="position: fixed"]>div input,
+.schedule-task-page>div[style*="position: fixed"]>div select,
+.schedule-task-page>div[style*="position: fixed"]>div textarea {
+    background: var(--input-bg, #ffffff) !important;
+    color: var(--text-primary, #111827) !important;
+    -webkit-text-fill-color: var(--text-primary, #111827) !important;
+    border-color: var(--border-color, #d1d5db) !important;
+    color-scheme: light dark;
+}
+
+.schedule-task-page>div[style*="position: fixed"]>div input::placeholder,
+.schedule-task-page>div[style*="position: fixed"]>div textarea::placeholder {
+    color: var(--text-muted, #6b7280) !important;
+    -webkit-text-fill-color: var(--text-muted, #6b7280) !important;
+    opacity: 1 !important;
+}
+
+/* =========================================================
+   MODAL SELECT OPTIONS
+========================================================= */
+
+.schedule-task-page>div[style*="position: fixed"]>div select option,
+.schedule-task-page>div[style*="position: fixed"]>div select optgroup {
+    background: var(--input-bg, #ffffff) !important;
+    color: var(--text-primary, #111827) !important;
+}
+
+/* =========================================================
+   SITE / SUPERVISOR LIST ITEMS
+========================================================= */
+
+.schedule-task-page>div[style*="position: fixed"]>div button {
+    color: var(--text-primary, #111827);
+    -webkit-text-fill-color: var(--text-primary, #111827);
+}
+
+.schedule-task-page>div[style*="position: fixed"]>div button strong,
+.schedule-task-page>div[style*="position: fixed"]>div button b {
+    color: var(--text-primary, #111827) !important;
+    -webkit-text-fill-color: var(--text-primary, #111827) !important;
+}
+
+.schedule-task-page>div[style*="position: fixed"]>div button div {
+    color: var(--text-primary, #111827);
+}
+
+.schedule-task-page>div[style*="position: fixed"]>div button small {
+    color: var(--text-secondary, #6b7280);
+    -webkit-text-fill-color: var(--text-secondary, #6b7280);
+}
+
+/* =========================================================
+   MODAL SEARCH FIELD
+========================================================= */
+
+.schedule-task-page>div[style*="position: fixed"]>div input:focus {
+    outline: none !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* =========================================================
+   MODAL BUTTON HOVER
+========================================================= */
+
+.schedule-task-page>div[style*="position: fixed"]>div button:hover {
+    color: var(--text-primary, #111827);
+}
+
+.schedule-task-page>div[style*="position: fixed"]>div .schedule-blue-button,
+.schedule-task-page>div[style*="position: fixed"]>div .schedule-blue-button:hover {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* =========================================================
+   MODAL DIVIDERS
+========================================================= */
+
+.schedule-task-page>div[style*="position: fixed"]>div hr {
+    border-color: var(--border-color) !important;
+}
+
+.schedule-task-page>div[style*="position: fixed"]>div div[style*="borderTop"] {
+    border-top-color: var(--border-color) !important;
+}
+
+/* =========================================================
+   DARK MODE
+========================================================= */
+
+[data-color-scheme="dark"] .schedule-task-page,
+.dark .schedule-task-page {
+    --text-color: var(--text-primary, #f8fafc);
+    color: var(--text-primary, #f8fafc);
+}
+
+[data-color-scheme="dark"] .schedule-task-page>div[style*="position: fixed"]>div,
+.dark .schedule-task-page>div[style*="position: fixed"]>div {
+    --text-color: var(--text-primary, #f8fafc);
+    color: var(--text-primary, #f8fafc) !important;
+}
+
+[data-color-scheme="dark"] .schedule-task-page>div[style*="position: fixed"]>div input,
+[data-color-scheme="dark"] .schedule-task-page>div[style*="position: fixed"]>div select,
+[data-color-scheme="dark"] .schedule-task-page>div[style*="position: fixed"]>div textarea,
+.dark .schedule-task-page>div[style*="position: fixed"]>div input,
+.dark .schedule-task-page>div[style*="position: fixed"]>div select,
+.dark .schedule-task-page>div[style*="position: fixed"]>div textarea {
+    background: #0f172a !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    border-color: #64748b !important;
+    color-scheme: dark;
+}
+
+[data-color-scheme="dark"] .schedule-task-page>div[style*="position: fixed"]>div button,
+.dark .schedule-task-page>div[style*="position: fixed"]>div button {
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+}
+
+[data-color-scheme="dark"] .schedule-task-page>div[style*="position: fixed"]>div button small,
+.dark .schedule-task-page>div[style*="position: fixed"]>div button small {
+    color: #94a3b8 !important;
+    -webkit-text-fill-color: #94a3b8 !important;
+}
+
+[data-color-scheme="dark"] .schedule-task-page>div[style*="position: fixed"]>div select option,
+.dark .schedule-task-page>div[style*="position: fixed"]>div select option {
+    background: #0f172a !important;
+    color: #f8fafc !important;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+    .schedule-task-card {
+        grid-template-columns: 1fr;
+    }
+
+    .schedule-map-container {
+        min-height: 450px;
+        height: 450px;
+        order: -1;
+    }
+
+    .schedule-map {
+        min-height: 450px;
+    }
+}
+
+@media (max-width: 700px) {
+    .schedule-task-card {
+        padding: 20px;
+    }
+
+    .schedule-field,
+    .schedule-checkbox-field {
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+
+    .schedule-site-row,
+    .schedule-assigned-row {
+        grid-template-columns: 1fr;
+    }
+
+    .schedule-input-with-action {
+        grid-template-columns: 1fr 45px;
+    }
+}

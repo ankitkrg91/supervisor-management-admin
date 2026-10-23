@@ -1,0 +1,419 @@
+.reassign-bulk-task-page {
+    width: 100%;
+    min-height: 100%;
+}
+
+.reassign-bulk-task-card {
+    max-width: 1100px;
+    margin: 0 auto;
+
+    padding: 28px;
+
+    background: var(--card-bg);
+
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+
+    box-shadow: var(--shadow);
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.reassign-bulk-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+.reassign-bulk-header h1 {
+    color: var(--text-primary);
+
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.reassign-bulk-header p {
+    margin-top: 7px;
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+}
+
+.reassign-bulk-icon {
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: rgba(37, 99, 235, 0.1);
+
+    color: var(--primary);
+}
+
+/* =========================
+   DIVIDER
+========================= */
+
+.reassign-bulk-divider {
+    height: 1px;
+
+    margin: 24px 0;
+
+    background: var(--border-color);
+}
+
+/* =========================
+   FORMAT
+========================= */
+
+.reassign-bulk-format-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 18px;
+
+    background: var(--bg-tertiary);
+
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+}
+
+.reassign-bulk-format-row h3 {
+    color: var(--text-primary);
+
+    font-size: 15px;
+}
+
+.reassign-bulk-format-row p {
+    margin-top: 5px;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+}
+
+.reassign-download-button {
+    height: 42px;
+
+    padding: 0 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+
+    background: transparent;
+
+    color: var(--primary);
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.reassign-download-button:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+/* =========================
+   UPLOAD
+========================= */
+
+.reassign-upload-box {
+    min-height: 230px;
+
+    margin-top: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+
+    background: var(--bg-tertiary);
+}
+
+.reassign-upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    text-align: center;
+}
+
+.reassign-upload-content>svg {
+    margin-bottom: 10px;
+
+    color: var(--primary);
+}
+
+.reassign-upload-content h3 {
+    color: var(--text-primary);
+
+    font-size: 16px;
+}
+
+.reassign-upload-content p {
+    margin-top: 5px;
+    margin-bottom: 16px;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+}
+
+.reassign-file-input {
+    display: none;
+}
+
+.reassign-choose-button {
+    height: 40px;
+
+    padding: 0 20px;
+
+    border: none;
+    border-radius: 6px;
+
+    background: var(--primary);
+    color: #fff;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.reassign-choose-button:hover {
+    background: var(--primary-hover);
+}
+
+.reassign-file-name {
+    max-width: 400px;
+
+    margin-top: 10px;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* =========================
+   USER
+========================= */
+
+.reassign-user-section {
+    margin-top: 22px;
+
+    padding: 18px;
+
+    background: var(--bg-tertiary);
+
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+}
+
+.reassign-user-title {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+
+    margin-bottom: 14px;
+}
+
+.reassign-user-title>svg {
+    color: var(--primary);
+
+    margin-top: 2px;
+}
+
+.reassign-user-title h3 {
+    color: var(--text-primary);
+
+    font-size: 15px;
+}
+
+.reassign-user-title p {
+    margin-top: 4px;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+}
+
+.reassign-user-section select {
+    width: 100%;
+    height: 44px;
+
+    padding: 0 12px;
+
+    background: var(--input-bg);
+    color: var(--text-primary);
+
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+
+    outline: none;
+
+    font-size: 13px;
+}
+
+.reassign-user-section select:focus {
+    border-color: var(--primary);
+}
+
+/* =========================
+   WARNING
+========================= */
+
+.reassign-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    margin-top: 20px;
+    padding: 14px 16px;
+
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 7px;
+
+    background: rgba(245, 158, 11, 0.08);
+
+    color: var(--warning);
+}
+
+.reassign-warning p {
+    margin-top: 4px;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.reassign-status {
+    margin-top: 18px;
+
+    padding: 12px 14px;
+
+    border-radius: 6px;
+
+    background: var(--bg-tertiary);
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+
+.reassign-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    margin-top: 24px;
+}
+
+.reassign-clear-button,
+.reassign-submit-button {
+    height: 44px;
+
+    padding: 0 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    border-radius: 6px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.reassign-clear-button {
+    border: 1px solid var(--border-color);
+
+    background: var(--card-bg);
+
+    color: var(--text-secondary);
+}
+
+.reassign-clear-button:hover {
+    background: var(--card-bg-hover);
+
+    color: var(--text-primary);
+}
+
+.reassign-submit-button {
+    border: none;
+
+    background: var(--primary);
+
+    color: #fff;
+
+    box-shadow: 0 7px 16px rgba(37, 99, 235, 0.2);
+}
+
+.reassign-submit-button:hover {
+    background: var(--primary-hover);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 700px) {
+    .reassign-bulk-task-card {
+        padding: 18px;
+    }
+
+    .reassign-bulk-format-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .reassign-download-button {
+        width: 100%;
+
+        justify-content: center;
+    }
+
+    .reassign-actions {
+        flex-direction: column-reverse;
+    }
+
+    .reassign-clear-button,
+    .reassign-submit-button {
+        width: 100%;
+    }
+}

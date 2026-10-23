@@ -8,6 +8,7 @@ import {
     PenTool,
     Loader2,
 } from "lucide-react";
+import { PUBLIC_API_BASE } from "../../utils/publicConfig";
 import "./PublicFeedback.css";
 
 const FEEDBACK_QUESTIONS = [
@@ -81,9 +82,7 @@ export default function PublicFeedback() {
     const [errorMsg, setErrorMsg] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
-    const API_BASE_URL = (
-        import.meta.env.VITE_API_URL || "http://localhost:5000"
-    ).replace(/\/+$/, "");
+    const API_BASE_URL = PUBLIC_API_BASE;
 
     const handleInputChange = (key, value) => {
         setAnswers((prev) => ({ ...prev, [key]: value }));
@@ -116,20 +115,14 @@ export default function PublicFeedback() {
                 submittedAt: new Date().toISOString(),
             };
 
-            let res = await fetch(`${API_BASE_URL}/api/public/feedback/${visitId || "general"}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-
-            if (!res.ok) {
-                // Fallback to live Render backend
-                res = await fetch(`https://supervisor-management-backend.onrender.com/api/public/feedback/${visitId || "general"}`, {
+            const res = await fetch(
+                `${API_BASE_URL}/api/public/feedback/${encodeURIComponent(visitId)}`,
+                {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload),
-                });
-            }
+                }
+            );
 
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));

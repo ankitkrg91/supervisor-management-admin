@@ -1,0 +1,357 @@
+.header {
+    height: 76px;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    padding: 0 24px;
+
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.045);
+
+    transition:
+        background-color 0.25s ease,
+        border-color 0.25s ease;
+    isolation: isolate;
+}
+
+.header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--brand-purple) 0%, var(--brand-magenta) 34%, var(--brand-crimson) 62%, var(--brand-orange) 100%);
+    pointer-events: none;
+}
+
+.header-actions {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-button {
+    width: 40px;
+    height: 40px;
+
+    position: relative;
+
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+
+    background: var(--card-bg);
+    color: var(--text-secondary);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.header-button:hover {
+    background: rgba(244, 125, 50, 0.10);
+    color: var(--brand-magenta);
+    border-color: rgba(214, 45, 120, 0.35);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+
+    min-width: 17px;
+    height: 17px;
+
+    padding: 0 4px;
+
+    border-radius: 50%;
+
+    background: var(--brand-crimson);
+    color: #fff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.admin-profile {
+    margin-left: 8px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-avatar {
+    width: 38px;
+    height: 38px;
+
+    border-radius: 50%;
+
+    background: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-magenta) 72%, var(--brand-purple) 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(214, 45, 120, 0.22);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.admin-info strong {
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.admin-info span {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+@media (max-width: 550px) {
+    .header {
+        padding: 0 15px;
+    }
+
+    .admin-info {
+        display: none;
+    }
+}
+
+/* =========================================
+   NOTIFICATION DROPDOWN
+========================================= */
+
+.header-notification-wrapper {
+    position: relative;
+}
+
+.notification-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+
+    width: 360px;
+    max-width: calc(100vw - 30px);
+
+    overflow: hidden;
+
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+
+    box-shadow: var(--shadow);
+
+    z-index: 1200;
+}
+
+.notification-header {
+    min-height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 14px;
+
+    border-bottom: 1px solid var(--border-color);
+}
+
+.notification-header>div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.notification-header strong {
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.notification-header span {
+    color: var(--text-muted);
+    font-size: 10px;
+}
+
+.notification-close {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 6px;
+
+    background: transparent;
+    color: var(--text-secondary);
+
+    cursor: pointer;
+}
+
+.notification-close:hover {
+    background: rgba(214, 45, 120, 0.10);
+    color: var(--brand-magenta);
+}
+
+.notification-list {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    width: 100%;
+
+    display: flex;
+    align-items: flex-start;
+
+    gap: 10px;
+
+    padding: 12px 14px;
+
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+
+    background: transparent;
+    color: inherit;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item:hover {
+    background: var(--card-bg-hover);
+}
+
+.notification-item-icon {
+    width: 34px;
+    height: 34px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 8px;
+
+    background: linear-gradient(135deg, rgba(244, 125, 50, 0.12), rgba(214, 45, 120, 0.12));
+    color: var(--brand-magenta);
+}
+
+.notification-item.danger .notification-item-icon {
+    color: var(--danger);
+}
+
+.notification-item.warning .notification-item-icon {
+    color: var(--warning);
+}
+
+.notification-item-content {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.notification-item-content strong {
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.notification-item-content span {
+    color: var(--text-muted);
+
+    font-size: 11px;
+    line-height: 16px;
+}
+
+.notification-empty {
+    min-height: 150px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    gap: 8px;
+
+    padding: 20px;
+
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.notification-empty svg {
+    color: var(--text-muted);
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 550px) {
+
+    .notification-panel {
+        position: fixed;
+
+        top: 72px;
+        right: 12px;
+        left: 12px;
+
+        width: auto;
+        max-width: none;
+    }
+
+}
+
+.header-button:focus-visible,
+.notification-close:focus-visible,
+.notification-item:focus-visible {
+    outline: 2px solid var(--brand-orange);
+    outline-offset: 2px;
+}
+
+.admin-profile {
+    padding-left: 8px;
+    border-left: 1px solid var(--border-color);
+}

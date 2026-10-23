@@ -1,0 +1,691 @@
+.take-tour-page {
+    width: 100%;
+
+    min-height: calc(100vh - 125px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+}
+
+/* =================================
+   MAIN CARD
+================================= */
+
+.take-tour-card {
+    width: 100%;
+    max-width: 1050px;
+
+    overflow: hidden;
+
+    background: var(--card-bg);
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 10px;
+
+    box-shadow: var(--shadow);
+}
+
+/* =================================
+   TOP
+================================= */
+
+.tour-top {
+    min-height: 90px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 20px 25px;
+
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tour-heading {
+    display: flex;
+    align-items: center;
+
+    gap: 15px;
+}
+
+.tour-main-icon {
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 9px;
+
+    background: rgba(37, 99, 235, 0.12);
+
+    color: var(--primary);
+}
+
+.tour-heading h1 {
+    margin: 0 0 5px;
+
+    color: var(--text-primary);
+
+    font-size: 20px;
+
+    font-weight: 600;
+}
+
+.tour-heading p {
+    margin: 0;
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+}
+
+.tour-close-button {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 6px;
+
+    background: var(--card-bg);
+
+    color: var(--text-secondary);
+
+    cursor: pointer;
+}
+
+.tour-close-button:hover {
+    background: var(--card-bg-hover);
+
+    color: var(--danger);
+}
+
+/* =================================
+   PROGRESS
+================================= */
+
+.tour-progress-section {
+    padding: 18px 25px;
+
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tour-progress-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 7px;
+
+    color: var(--text-secondary);
+
+    font-size: 11px;
+}
+
+.tour-progress-info strong {
+    color: var(--primary);
+}
+
+.tour-progress-bar {
+    width: 100%;
+    height: 5px;
+
+    overflow: hidden;
+
+    border-radius: 10px;
+
+    background: var(--border-color);
+}
+
+.tour-progress-bar span {
+    display: block;
+
+    height: 100%;
+
+    border-radius: 10px;
+
+    background: var(--primary);
+
+    transition: width 0.3s ease;
+}
+
+/* =================================
+   CONTENT
+================================= */
+
+.tour-content {
+    min-height: 430px;
+
+    display: grid;
+
+    grid-template-columns: 280px 1fr;
+}
+
+/* =================================
+   STEP NAVIGATION
+================================= */
+
+.tour-step-navigation {
+    padding: 18px 12px;
+
+    border-right: 1px solid var(--border-color);
+
+    background: var(--bg-tertiary);
+}
+
+.tour-step-item {
+    width: 100%;
+    min-height: 44px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 7px 10px;
+
+    margin-bottom: 4px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background: transparent;
+
+    color: var(--text-secondary);
+
+    text-align: left;
+
+    font-size: 12px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.tour-step-item:hover {
+    background: var(--card-bg-hover);
+
+    color: var(--text-primary);
+}
+
+.tour-step-item.active {
+    background: rgba(37, 99, 235, 0.12);
+
+    color: var(--primary);
+
+    font-weight: 600;
+}
+
+.tour-step-item.completed {
+    color: var(--success);
+}
+
+.tour-step-number {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: var(--card-bg);
+
+    color: var(--text-muted);
+}
+
+.tour-step-item.active .tour-step-number {
+    background: var(--primary);
+
+    color: #ffffff;
+}
+
+.tour-step-item.completed .tour-step-number {
+    background: rgba(34, 197, 94, 0.12);
+
+    color: var(--success);
+}
+
+/* =================================
+   STEP CONTENT
+================================= */
+
+.tour-step-content {
+    padding: 45px 55px;
+}
+
+.tour-step-icon {
+    width: 70px;
+    height: 70px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 18px;
+
+    border-radius: 12px;
+
+    background: rgba(37, 99, 235, 0.1);
+
+    color: var(--primary);
+}
+
+.tour-step-number-label {
+    margin-bottom: 6px;
+
+    color: var(--primary);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.8px;
+}
+
+.tour-step-content h2 {
+    margin: 0 0 10px;
+
+    color: var(--text-primary);
+
+    font-size: 25px;
+
+    font-weight: 600;
+}
+
+.tour-description {
+    max-width: 650px;
+
+    margin: 0 0 25px;
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+
+    line-height: 1.7;
+}
+
+/* =================================
+   DETAILS
+================================= */
+
+.tour-details {
+    padding: 18px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 8px;
+
+    background: var(--bg-tertiary);
+}
+
+.tour-details h3 {
+    margin: 0 0 13px;
+
+    color: var(--text-primary);
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+.tour-detail-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 11px;
+}
+
+.tour-detail-item {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 9px;
+
+    color: var(--text-secondary);
+
+    font-size: 11px;
+
+    line-height: 1.5;
+}
+
+.tour-detail-item svg {
+    flex-shrink: 0;
+
+    margin-top: 1px;
+
+    color: var(--success);
+}
+
+/* =================================
+   FOOTER
+================================= */
+
+.tour-footer {
+    min-height: 76px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 15px 25px;
+
+    border-top: 1px solid var(--border-color);
+}
+
+.tour-skip-button {
+    height: 40px;
+
+    padding: 0 15px;
+
+    border: none;
+
+    background: transparent;
+
+    color: var(--text-secondary);
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.tour-skip-button:hover {
+    color: var(--danger);
+}
+
+.tour-navigation-buttons {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+}
+
+.tour-previous-button,
+.tour-next-button {
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    padding: 0 16px;
+
+    border-radius: 6px;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.tour-previous-button {
+    border: 1px solid var(--border-color);
+
+    background: var(--card-bg);
+
+    color: var(--text-secondary);
+}
+
+.tour-previous-button:hover:not(:disabled) {
+    background: var(--card-bg-hover);
+
+    color: var(--text-primary);
+}
+
+.tour-previous-button:disabled {
+    opacity: 0.4;
+
+    cursor: not-allowed;
+}
+
+.tour-next-button {
+    border: 1px solid var(--primary);
+
+    background: var(--primary);
+
+    color: #ffffff;
+
+    min-width: 105px;
+}
+
+.tour-next-button:hover {
+    background: var(--primary-hover);
+}
+
+/* =================================
+   COMPLETED
+================================= */
+
+.tour-complete-card {
+    width: 100%;
+    max-width: 600px;
+
+    padding: 45px;
+
+    text-align: center;
+
+    background: var(--card-bg);
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 10px;
+
+    box-shadow: var(--shadow);
+}
+
+.tour-complete-icon {
+    width: 85px;
+    height: 85px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 auto 20px;
+
+    border-radius: 50%;
+
+    background: rgba(34, 197, 94, 0.12);
+
+    color: var(--success);
+}
+
+.tour-complete-card h1 {
+    margin: 0 0 10px;
+
+    color: var(--text-primary);
+
+    font-size: 25px;
+}
+
+.tour-complete-card>p {
+    max-width: 450px;
+
+    margin: 0 auto;
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+
+    line-height: 1.7;
+}
+
+.tour-complete-summary {
+    display: flex;
+    justify-content: center;
+
+    gap: 12px;
+
+    margin: 28px 0;
+}
+
+.tour-complete-summary div {
+    min-width: 150px;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+
+    padding: 15px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 7px;
+
+    background: var(--bg-tertiary);
+}
+
+.tour-complete-summary strong {
+    color: var(--text-primary);
+
+    font-size: 17px;
+}
+
+.tour-complete-summary span {
+    color: var(--text-muted);
+
+    font-size: 10px;
+}
+
+.tour-restart-button {
+    height: 43px;
+
+    padding: 0 20px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background: var(--primary);
+
+    color: #ffffff;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.tour-restart-button:hover {
+    background: var(--primary-hover);
+}
+
+/* =================================
+   RESPONSIVE
+================================= */
+
+@media (max-width: 850px) {
+    .tour-content {
+        grid-template-columns: 1fr;
+    }
+
+    .tour-step-navigation {
+        display: flex;
+
+        overflow-x: auto;
+
+        border-right: none;
+
+        border-bottom: 1px solid var(--border-color);
+
+        padding: 10px;
+    }
+
+    .tour-step-item {
+        min-width: 140px;
+    }
+
+    .tour-step-content {
+        padding: 30px;
+    }
+}
+
+@media (max-width: 600px) {
+    .take-tour-page {
+        padding: 10px;
+    }
+
+    .tour-top {
+        padding: 15px;
+    }
+
+    .tour-heading h1 {
+        font-size: 17px;
+    }
+
+    .tour-heading p {
+        display: none;
+    }
+
+    .tour-progress-section {
+        padding: 15px;
+    }
+
+    .tour-step-content {
+        padding: 25px 20px;
+    }
+
+    .tour-step-content h2 {
+        font-size: 21px;
+    }
+
+    .tour-footer {
+        align-items: stretch;
+
+        flex-direction: column;
+
+        gap: 10px;
+
+        padding: 15px;
+    }
+
+    .tour-navigation-buttons {
+        width: 100%;
+    }
+
+    .tour-previous-button,
+    .tour-next-button {
+        flex: 1;
+    }
+
+    .tour-skip-button {
+        order: 2;
+    }
+
+    .tour-complete-card {
+        padding: 30px 20px;
+    }
+
+    .tour-complete-summary {
+        flex-direction: column;
+    }
+
+    .tour-complete-summary div {
+        width: 100%;
+    }
+}

@@ -7,6 +7,7 @@ import {
     ZoomIn,
     X,
 } from "lucide-react";
+import { PUBLIC_API_BASE } from "../../utils/publicConfig";
 import "./PublicAuditView.css";
 
 const parseSiteEvidence = (notes) => {
@@ -54,6 +55,32 @@ const parseSubmittedAnswers = (visit) => {
             };
         });
     }
+    // New supervisor app stores the report inside visit.notes
+    const m = typeof visit?.notes === "string" ? visit.notes.match(/\[VINICA_VSF_REPORT\]:\s*(.+)/) : null;
+    if (m) {
+        try {
+            const report = JSON.parse(m[1]);
+            if (Array.isArray(report?.answers)) {
+                return report.answers.map((a, idx) => {
+                    const v = String(a.a ?? "").trim();
+                    const isYes = /^yes$/i.test(v), isNo = /^no$/i.test(v);
+                    let ans = isYes ? "Yes" : isNo ? "No" : (v || "-");
+                    const extra = [];
+                    if (a.kp) extra.push(`Number: ${a.kp}`);
+                    if (a.rm) extra.push(`Remark: ${a.rm}`);
+                    if (extra.length) ans += ` (${extra.join(" | ")})`;
+                    return {
+                        no: a.n || idx + 1,
+                        text: a.t || `Question #${a.n || idx + 1}`,
+                        ans,
+                        booleanValue: isYes ? true : isNo ? false : undefined,
+                        photos: Array.isArray(a.ph) ? a.ph.filter(Boolean) : (a.ph ? [a.ph] : []),
+                        score: isNo ? "0 / 4" : "4 / 4",
+                    };
+                });
+            }
+        } catch (_) { }
+    }
     return [];
 };
 
@@ -61,6 +88,7 @@ export default function PublicAuditView() {
     const { visitId } = useParams();
     const [visit, setVisit] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
     const [previewPhoto, setPreviewPhoto] = useState(null);
 
     const siteEvidence = useMemo(() => parseSiteEvidence(visit?.notes), [visit]);
@@ -69,32 +97,28 @@ export default function PublicAuditView() {
     const passedQ = submittedQuestions.filter((q) => q.booleanValue === true).length;
     const dynamicScore = totalQ > 0 ? Math.round((passedQ / totalQ) * 100) : 100;
 
-    const API_BASE_URL = (
-        import.meta.env.VITE_API_URL || "http://localhost:5000"
-    ).replace(/\/+$/, "");
+    const API_BASE_URL = PUBLIC_API_BASE;
 
     useEffect(() => {
         const fetchAudit = async () => {
             try {
                 setLoading(true);
-                let res = await fetch(`${API_BASE_URL}/api/public/audit/${visitId}`);
-                if (!res.ok) {
-                    res = await fetch(`https://supervisor-management-backend.onrender.com/api/public/audit/${visitId}`);
+                setError("");
+                const res = await fetch(`${API_BASE_URL}/api/public/audit/${encodeURIComponent(visitId)}`);
+                if (res.status === 404) {
+                    setError("This audit report was not found. The link may be incorrect or the visit was removed.");
+                    return;
                 }
-                if (res.ok) {
-                    const data = await res.json();
-                    setVisit(data?.data?.visit || null);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                if (!data?.data?.visit) {
+                    setError("This audit report is not available.");
+                    return;
                 }
+                setVisit(data.data.visit);
             } catch (err) {
-                try {
-                    const res = await fetch(`https://supervisor-management-backend.onrender.com/api/public/audit/${visitId}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        setVisit(data?.data?.visit || null);
-                    }
-                } catch (_) {
-                    console.error("Public audit fetch error:", err);
-                }
+                console.error("Public audit fetch error:", err);
+                setError("Could not load the report. Please check your connection and try again in a minute.");
             } finally {
                 setLoading(false);
             }
@@ -168,6 +192,10 @@ export default function PublicAuditView() {
                 <div className="audit-loading-container">
                     <Loader2 size={32} className="btn-spinner" />
                     <p>Loading Verified Site Audit Report...</p>
+                </div>
+            ) : error ? (
+                <div className="audit-loading-container" role="alert">
+                    <p>{error}</p>
                 </div>
             ) : (
                 <main className="public-audit-main">

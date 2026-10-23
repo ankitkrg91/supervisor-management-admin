@@ -1,0 +1,671 @@
+/* =========================================================
+   LATEST CHECK-IN PAGE & TABLE STYLES (Dark & Light Mode)
+   ========================================================= */
+
+.latest-checkin-page {
+    width: 100%;
+    min-height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.latest-checkin-card {
+    width: 100%;
+    background: var(--card-bg, #101a2a);
+    border: 1px solid var(--border-color, #1d2a3d);
+    border-radius: 8px;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* =========================
+   TABLE CONTROLS (Top Bar)
+   ========================= */
+
+.table-controls {
+    margin-top: 4px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.table-search {
+    width: 260px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 1px solid var(--border-color, #1d2a3d);
+    border-radius: 6px;
+    background: var(--input-bg, #0c1727);
+    color: var(--text-secondary, #9aa8bb);
+}
+
+.table-search input {
+    flex: 1;
+    height: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-primary, #ffffff);
+    font-size: 13px;
+    padding: 0;
+}
+
+.table-search input::placeholder {
+    color: var(--text-muted, #68778d);
+}
+
+.table-search svg {
+    color: var(--text-secondary, #9aa8bb);
+    flex-shrink: 0;
+}
+
+.filter-button {
+    width: 40px;
+    height: 38px;
+    border: 1px solid var(--border-color, #1d2a3d);
+    border-radius: 6px;
+    background: var(--bg-tertiary, #111c2d);
+    color: var(--text-primary, #ffffff);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+    background: var(--card-bg-hover, #162338);
+    color: var(--primary, #2563eb);
+    border-color: var(--primary, #2563eb);
+}
+
+.filter-button.active {
+    background: var(--primary, #2563eb);
+    color: #ffffff;
+    border-color: var(--primary, #2563eb);
+}
+
+.export-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.export-button {
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--border-color, #1d2a3d);
+    border-radius: 6px;
+    background: var(--bg-tertiary, #111c2d);
+    color: var(--text-primary, #ffffff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.export-button:hover {
+    background: var(--card-bg-hover, #162338);
+    color: var(--primary, #2563eb);
+    border-color: var(--primary, #2563eb);
+}
+
+/* =========================
+   FILTER PANEL
+   ========================= */
+
+.checkin-filter-panel {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 10px;
+    margin-bottom: 18px;
+    padding: 16px;
+    background: var(--bg-tertiary, #111c2d);
+    border: 1px solid var(--border-color, #1d2a3d);
+    border-radius: 6px;
+}
+
+.checkin-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.checkin-filter-field label {
+    color: var(--text-secondary, #9aa8bb);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.checkin-filter-field input {
+    width: 190px;
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid var(--border-color, #1d2a3d);
+    border-radius: 5px;
+    background: var(--input-bg, #0c1727);
+    color: var(--text-primary, #ffffff);
+    color-scheme: dark;
+    outline: none;
+    box-sizing: border-box;
+    font-size: 13px;
+}
+
+.checkin-filter-field input:focus {
+    border-color: var(--primary, #2563eb);
+}
+
+.checkin-apply-button,
+.checkin-reset-button {
+    height: 38px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.checkin-apply-button {
+    background: var(--primary, #2563eb);
+}
+
+.checkin-apply-button:hover {
+    opacity: 0.9;
+}
+
+.checkin-reset-button {
+    background: #64748b;
+}
+
+.checkin-reset-button:hover {
+    opacity: 0.9;
+}
+
+/* =========================
+   DATA TABLE
+   ========================= */
+
+.checkin-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border-color, #1d2a3d);
+    border-radius: 6px;
+    background: var(--card-bg, #101a2a);
+}
+
+.checkin-table {
+    width: 100%;
+    min-width: 1000px;
+    border-collapse: collapse;
+    color: var(--text-primary, #ffffff);
+    font-size: 13px;
+    text-align: left;
+}
+
+.checkin-table thead tr {
+    background: var(--bg-tertiary, #111c2d);
+}
+
+.checkin-table thead th {
+    height: 44px;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--border-color, #1d2a3d);
+    color: var(--text-secondary, #9aa8bb);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.checkin-table tbody td {
+    padding: 14px;
+    border-bottom: 1px solid var(--border-color, #1d2a3d);
+    color: var(--text-primary, #ffffff);
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.checkin-table tbody tr {
+    background: var(--card-bg, #101a2a);
+    transition: background 0.15s ease;
+}
+
+.checkin-table tbody tr:nth-child(even) {
+    background: var(--bg-secondary, #0b1423);
+}
+
+.checkin-table tbody tr:hover {
+    background: var(--card-bg-hover, #162338);
+}
+
+.checkin-table tbody td.name-cell {
+    white-space: normal;
+    line-height: 1.4;
+    font-weight: 600;
+}
+
+/* Fix dark mode inline time colors */
+.checkin-table tbody td strong,
+.checkin-table tbody td strong[style*="0f172a" i] {
+    color: var(--text-primary, #ffffff) !important;
+    font-weight: 700 !important;
+}
+
+.view-column {
+    width: 60px;
+    text-align: center;
+}
+
+.view-button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    background: rgba(37, 99, 235, 0.15);
+    color: #60a5fa;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-button:hover {
+    background: rgba(37, 99, 235, 0.35);
+    color: #93c5fd;
+    border-color: #60a5fa;
+}
+
+.status-pill {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--text-primary, #ffffff);
+}
+
+.status-pill.running {
+    background: rgba(22, 163, 74, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.empty-state {
+    height: 140px;
+    text-align: center;
+    color: var(--text-muted, #68778d) !important;
+    vertical-align: middle;
+}
+
+/* =========================
+   PAGINATION FOOTER
+   ========================= */
+
+.checkin-pagination-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--text-secondary, #9aa8bb);
+    font-size: 13px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.checkin-pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.checkin-pagination button {
+    height: 34px;
+    min-width: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--border-color, #1d2a3d);
+    border-radius: 6px;
+    background: var(--bg-tertiary, #111c2d);
+    color: var(--text-primary, #ffffff);
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s ease;
+}
+
+.checkin-pagination button.active {
+    background: var(--primary, #2563eb);
+    border-color: var(--primary, #2563eb);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.checkin-pagination button:hover:not(:disabled):not(.active) {
+    background: var(--card-bg-hover, #162338);
+}
+
+.checkin-pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* =========================================================
+   CHECKIN DETAILS MODAL
+   ========================================================= */
+
+.checkin-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(7, 13, 24, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.checkin-modal-card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+}
+
+.checkin-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #1e3a8a;
+    color: #ffffff;
+}
+
+.checkin-modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+}
+
+.modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.checkin-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    background: #0f172a;
+}
+
+.checkin-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 18px;
+    margin-bottom: 20px;
+    font-size: 13px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.detail-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: #94a3b8;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.detail-item span {
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+.dist-highlight {
+    color: #60a5fa !important;
+    font-weight: 700 !important;
+}
+
+.selfies-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid #1e293b;
+}
+
+.selfie-card {
+    width: 320px;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.selfie-image-wrap {
+    width: 100%;
+    height: 220px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid #1e293b;
+    background: #111c2d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.selfie-img-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.selfie-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.selfie-hover-hint {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 23, 42, 0.85);
+    color: #ffffff;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 6px 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.selfie-image-wrap:hover .selfie-hover-hint {
+    opacity: 1;
+}
+
+.selfie-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.selfie-caption {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+/* =========================================================
+   LIGHT THEME SUPPORT
+   ========================================================= */
+
+[data-theme="light"] .latest-checkin-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .table-search {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+}
+
+[data-theme="light"] .table-search input {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .filter-button,
+[data-theme="light"] .export-button {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #334155 !important;
+}
+
+[data-theme="light"] .checkin-filter-panel {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .checkin-filter-field input {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+    color-scheme: light !important;
+}
+
+[data-theme="light"] .checkin-table-wrapper {
+    border-color: #e2e8f0 !important;
+    background: #ffffff !important;
+}
+
+[data-theme="light"] .checkin-table thead tr {
+    background: #f8fafc !important;
+}
+
+[data-theme="light"] .checkin-table thead th {
+    color: #475569 !important;
+    border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .checkin-table tbody td {
+    border-color: #e2e8f0 !important;
+    color: #1e293b !important;
+}
+
+[data-theme="light"] .checkin-table tbody tr {
+    background: #ffffff !important;
+}
+
+[data-theme="light"] .checkin-table tbody tr:nth-child(even) {
+    background: #f8fafc !important;
+}
+
+[data-theme="light"] .checkin-table tbody tr:hover {
+    background: #f1f5f9 !important;
+}
+
+[data-theme="light"] .checkin-table tbody td strong {
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .checkin-pagination button {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #334155 !important;
+}
+
+[data-theme="light"] .checkin-modal-card {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .checkin-modal-body {
+    background: #ffffff !important;
+}
+
+[data-theme="light"] .detail-item span {
+    color: #0f172a !important;
+}
+
+
+/* =========================================================
+   CHECK-IN MODE HIGHLIGHT — THEME-SAFE TEXT CONTRAST
+   Keep dark text on the intentionally pale yellow/green panel.
+   These selectors override the generic .detail-item span color.
+   ========================================================= */
+
+.checkin-modal-card .detail-item.checkin-mode-detail .checkin-mode-label {
+    color: #92400e !important;
+    font-weight: 800 !important;
+}
+
+.checkin-modal-card .detail-item.checkin-mode-detail.checkin-mode-emergency .checkin-mode-value {
+    color: #92400e !important;
+    font-weight: 800 !important;
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.checkin-modal-card .detail-item.checkin-mode-detail.checkin-mode-standard .checkin-mode-label {
+    color: #166534 !important;
+}
+
+.checkin-modal-card .detail-item.checkin-mode-detail.checkin-mode-standard .checkin-mode-value {
+    color: #166534 !important;
+    font-weight: 800 !important;
+    font-size: 13.5px;
+    line-height: 1.5;
+}
