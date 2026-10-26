@@ -378,7 +378,7 @@ export default function PublicAuditView() {
                     <footer className="public-audit-footer">
                         <div className="footer-company-info">
                             <strong>VINICIA SECURITY SERVICES PVT LTD</strong>
-                            <span>Modern Security Force • Security Operations Centre</span>
+                                    <span>Security Operations Centre</span>
                         </div>
                         <p>© {new Date().getFullYear()} All Rights Reserved. Verified by Device GPS & Timestamp.</p>
                     </footer>
