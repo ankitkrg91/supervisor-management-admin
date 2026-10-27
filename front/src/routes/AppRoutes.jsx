@@ -322,6 +322,25 @@ const AppRoutes = () => {
                 }
             />
 
+            {/* Public pages: no login required */}
+            <Route
+                path="/audit-view/:visitId"
+                element={
+                    <Suspense fallback={<RouteLoading />}>
+                        <PublicAuditView />
+                    </Suspense>
+                }
+            />
+
+            <Route
+                path="/feedback/:visitId"
+                element={
+                    <Suspense fallback={<RouteLoading />}>
+                        <PublicFeedback />
+                    </Suspense>
+                }
+            />
+
             <Route
                 path="/*"
                 element={<ProtectedRoutes />}

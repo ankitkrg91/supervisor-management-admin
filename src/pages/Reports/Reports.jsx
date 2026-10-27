@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
     ArrowLeft,
     BarChart3,
-    CalendarDays,
     CheckCircle2,
     ClipboardCheck,
     Eye,
@@ -1603,10 +1602,6 @@ const Reports = () => {
                                     )
                                 }
                             />
-
-                            <CalendarDays
-                                size={16}
-                            />
                         </div>
                     </div>
 
@@ -1628,10 +1623,6 @@ const Reports = () => {
                                         event.target.value
                                     )
                                 }
-                            />
-
-                            <CalendarDays
-                                size={16}
                             />
                         </div>
                     </div>

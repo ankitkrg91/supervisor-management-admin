@@ -27,12 +27,50 @@ const ROLE_OPTIONS = [
     { value: "SUPER_ADMIN", label: "Super Admin" },
 ];
 
+// These are job designations, not new database access roles.
+// Each designation receives the existing SUPER_ADMIN access role so login
+// and current role-protected APIs continue to work without expanding UserRole.
+const ADMIN_DESIGNATION_OPTIONS = [
+    { value: "DESIGNATION_BH", label: "BH" },
+    { value: "DESIGNATION_AO_AREA_OFFICER", label: "AO-AREA OFFICER" },
+    { value: "DESIGNATION_AO_EXECUTIVE_MSF", label: "AO-EXECUTIVE-MSF" },
+    { value: "DESIGNATION_AO_ASSIGNMENT_OFFICER", label: "AO-ASSIGNMENT OFFICER" },
+    { value: "DESIGNATION_AO_ASST_MANAGER", label: "AO-ASST. MANAGER" },
+    { value: "DESIGNATION_AO_EXECUTIVE_ATM", label: "AO-EXECUTIVE-ATM" },
+    { value: "DESIGNATION_AO_EXECUTIVE_MFM", label: "AO-EXECUTIVE-MFM" },
+    { value: "DESIGNATION_AO_OPERATION_MANAGER", label: "AO-OPERATION MANAGER" },
+    { value: "DESIGNATION_AO_OPERATION_MANAGER_TRG", label: "AO-OPERATION MANAGER-TRG" },
+    { value: "DESIGNATION_AO_TRAINING_OFFICER", label: "AO-TRAINING OFFICER" },
+    { value: "DESIGNATION_AO_OPERATION_MANAGER_MFM", label: "AO-OPERATION MANAGER-MFM" },
+    { value: "DESIGNATION_AO_ELECTRICIAN_MST", label: "AO-ELECTRICIAN-MST" },
+    { value: "DESIGNATION_AO_SR_EXECUTIVE_MFM", label: "AO-SR. EXECUTIVE-MFM" },
+    { value: "DESIGNATION_MFM", label: "MFM" },
+    { value: "DESIGNATION_HR_EXECUTIVE", label: "HR-EXECUTIVE" },
+];
+
+const OTHER_DESIGNATION_VALUE = "OTHER_DESIGNATION";
+const CUSTOM_DESIGNATION_PREFIX = "CUSTOM_DESIGNATION:";
+
+const getDesignationOption = (value) =>
+    ADMIN_DESIGNATION_OPTIONS.find((option) => option.value === value);
+
+const getDesignationValue = (label) =>
+    ADMIN_DESIGNATION_OPTIONS.find((option) => option.label === label)?.value || null;
+
+const getEffectiveRole = (selectedValue) =>
+    getDesignationOption(selectedValue) ||
+        selectedValue === OTHER_DESIGNATION_VALUE ||
+        String(selectedValue || "").startsWith(CUSTOM_DESIGNATION_PREFIX)
+        ? "SUPER_ADMIN"
+        : selectedValue;
+
 const EMPTY_USER = {
     name: "",
     email: "",
     password: "",
     phone: "",
     role: "SUPERVISOR",
+    customDesignation: "",
     siteId: "",
     status: "ACTIVE",
 };
@@ -116,7 +154,8 @@ const formatDate = (value) => {
     });
 };
 
-const roleLabel = (role) => {
+const roleLabel = (role, designation) => {
+    if (designation) return designation;
     const item = ROLE_OPTIONS.find((option) => option.value === role);
     return item?.label || role || "-";
 };
@@ -148,6 +187,46 @@ const Settings = () => {
     const [siteForm, setSiteForm] = useState(EMPTY_SITE);
 
     const [activeSites, setActiveSites] = useState([]);
+
+    // Reuse custom designations already present on user records so a custom
+    // title entered through "Other" remains available in this dropdown later.
+    const customDesignationOptions = useMemo(() => {
+        const predefinedLabels = new Set(
+            ADMIN_DESIGNATION_OPTIONS.map((option) => option.label.toLowerCase())
+        );
+        const seen = new Set();
+
+        return users
+            .map((user) => String(user?.designation || "").trim())
+            .filter((label) => {
+                if (!label || predefinedLabels.has(label.toLowerCase())) return false;
+                const key = label.toLowerCase();
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            })
+            .map((label) => ({
+                value: `${CUSTOM_DESIGNATION_PREFIX}${label}`,
+                label,
+            }));
+    }, [users]);
+
+    const getSelectedDesignation = (selectedValue) => {
+        const fixedOption = getDesignationOption(selectedValue);
+        if (fixedOption) return fixedOption;
+
+        const dynamicOption = customDesignationOptions.find(
+            (option) => option.value === selectedValue
+        );
+        if (dynamicOption) return dynamicOption;
+
+        if (selectedValue === OTHER_DESIGNATION_VALUE) {
+            const customLabel = String(userForm.customDesignation || "").trim();
+            return customLabel ? { value: OTHER_DESIGNATION_VALUE, label: customLabel } : null;
+        }
+
+        return null;
+    };
 
     const showError = (message) => {
         setError(message);
@@ -333,12 +412,18 @@ const Settings = () => {
     const openEditUser = (user) => {
         setEditingItem(user);
 
+        const fixedDesignationValue = getDesignationValue(user.designation);
+        const customSavedDesignationValue = user.designation && !fixedDesignationValue
+            ? `${CUSTOM_DESIGNATION_PREFIX}${String(user.designation).trim()}`
+            : null;
+
         setUserForm({
             name: user.name || "",
             email: user.email || "",
             password: "",
             phone: user.phone || "",
-            role: user.role || "SUPERVISOR",
+            role: fixedDesignationValue || customSavedDesignationValue || user.role || "SUPERVISOR",
+            customDesignation: "",
             siteId: user.siteId || user.site?.id || "",
             status: user.status || "ACTIVE",
         });
@@ -382,6 +467,25 @@ const Settings = () => {
     const handleUserSubmit = async (event) => {
         event.preventDefault();
 
+        const selectedDesignation = getSelectedDesignation(userForm.role);
+        const effectiveRole = getEffectiveRole(userForm.role);
+        const designation = selectedDesignation?.label || null;
+
+        if (userForm.role === OTHER_DESIGNATION_VALUE && !designation) {
+            showError("Please enter the custom designation name.");
+            return;
+        }
+
+        if (designation && designation.length > 80) {
+            showError("Designation must be 80 characters or fewer.");
+            return;
+        }
+
+        if (designation && /[\u0000-\u001F\u007F]/.test(designation)) {
+            showError("Designation cannot contain line breaks or control characters.");
+            return;
+        }
+
         if (!userForm.name.trim()) {
             showError("User name is required.");
             return;
@@ -396,16 +500,16 @@ const Settings = () => {
         // Field Staff does not need a password.
         if (
             !editingItem &&
-            userForm.role !== "FIELD_STAFF" &&
+            effectiveRole !== "FIELD_STAFF" &&
             !userForm.password.trim()
         ) {
-            showError("Password is required for Supervisor and Super Admin.");
+            showError("Password is required for login-enabled roles and admin designations.");
             return;
         }
 
         if (
             !editingItem &&
-            userForm.role !== "FIELD_STAFF" &&
+            effectiveRole !== "FIELD_STAFF" &&
             userForm.password.trim().length < 6
         ) {
             showError("Password must be at least 6 characters.");
@@ -420,10 +524,13 @@ const Settings = () => {
                 name: userForm.name.trim(),
                 email: userForm.email.trim(),
                 phone: userForm.phone.trim() || null,
-                role: userForm.role,
-                // Super Admin can never be assigned to a site.
+                // Designations are stored separately; the actual access role
+                // remains SUPER_ADMIN for each new admin-designation account.
+                role: effectiveRole,
+                designation,
+                // Super Admin and admin-designation users have no site assignment.
                 siteId:
-                    userForm.role === "SUPER_ADMIN"
+                    effectiveRole === "SUPER_ADMIN"
                         ? null
                         : userForm.siteId || null,
             };
@@ -439,7 +546,7 @@ const Settings = () => {
                 showSuccess("User updated successfully.");
             } else {
                 // Only login-capable roles receive a password from the UI.
-                if (userForm.role !== "FIELD_STAFF") {
+                if (effectiveRole !== "FIELD_STAFF") {
                     payload.password = userForm.password;
                 }
 
@@ -563,7 +670,7 @@ const Settings = () => {
                     Name: user.name || "",
                     Email: user.email || "",
                     Phone: user.phone || "",
-                    Role: roleLabel(user.role),
+                    Role: roleLabel(user.role, user.designation),
                     Site: user.site?.name || "Not assigned",
                     SiteCode: user.site?.siteCode || "",
                     City: user.site?.city || "",
@@ -925,7 +1032,7 @@ const Settings = () => {
                                             </td>
 
                                             <td>
-                                                {roleLabel(user.role)}
+                                                {roleLabel(user.role, user.designation)}
                                             </td>
 
                                             <td>
@@ -1254,91 +1361,114 @@ const Settings = () => {
                                     )}
 
                                 <div className="settings-form-field">
-                                    <label>Role *</label>
+                                    <label>Role / Designation *</label>
                                     <select
                                         value={userForm.role}
                                         onChange={(event) => {
-                                            const nextRole =
-                                                event.target.value;
+                                            const nextRole = event.target.value;
 
                                             setUserForm((current) => ({
                                                 ...current,
                                                 role: nextRole,
-                                                // Super Admin never has a site.
+                                                customDesignation:
+                                                    nextRole === OTHER_DESIGNATION_VALUE
+                                                        ? current.customDesignation
+                                                        : "",
+                                                // Admin designations use the existing Super Admin
+                                                // access role and are not assigned to a site.
                                                 siteId:
-                                                    nextRole ===
-                                                        "SUPER_ADMIN"
+                                                    getEffectiveRole(nextRole) === "SUPER_ADMIN"
                                                         ? ""
                                                         : current.siteId,
-                                                // Clear password state when switching
-                                                // to Field Staff; it is not used.
                                                 password:
-                                                    nextRole ===
-                                                        "FIELD_STAFF"
+                                                    nextRole === "FIELD_STAFF"
                                                         ? ""
                                                         : current.password,
                                             }));
                                         }}
                                     >
-                                        {ROLE_OPTIONS.map(
-                                            (option) => (
-                                                <option
-                                                    key={
-                                                        option.value
-                                                    }
-                                                    value={
-                                                        option.value
-                                                    }
-                                                >
-                                                    {option.label}
-                                                </option>
-                                            )
-                                        )}
+                                        {ROLE_OPTIONS.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                        {ADMIN_DESIGNATION_OPTIONS.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                        {customDesignationOptions.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                        <option value={OTHER_DESIGNATION_VALUE}>Other</option>
                                     </select>
                                 </div>
 
-                                {userForm.role !==
-                                    "SUPER_ADMIN" && (
-                                        <div className="settings-form-field">
-                                            <label>Site (Optional)</label>
-                                            <select
-                                                value={userForm.siteId}
-                                                onChange={(event) =>
-                                                    setUserForm({
-                                                        ...userForm,
-                                                        siteId:
-                                                            event.target
-                                                                .value,
-                                                    })
-                                                }
-                                            >
-                                                <option value="">
-                                                    {activeSites.length
-                                                        ? "Select Site"
-                                                        : "No active sites found"}
-                                                </option>
+                                {userForm.role === OTHER_DESIGNATION_VALUE && (
+                                    <div className="settings-form-field">
+                                        <label>Enter designation name *</label>
+                                        <input
+                                            type="text"
+                                            value={userForm.customDesignation}
+                                            maxLength={80}
+                                            onChange={(event) =>
+                                                setUserForm((current) => ({
+                                                    ...current,
+                                                    customDesignation: event.target.value,
+                                                }))
+                                            }
+                                            placeholder="Enter designation name"
+                                            required
+                                        />
+                                        <small className="settings-muted">
+                                            This designation will be saved and available in this list for future users.
+                                        </small>
+                                    </div>
+                                )}
 
-                                                {activeSites.map(
-                                                    (site) => (
-                                                        <option
-                                                            key={
-                                                                site.id
-                                                            }
-                                                            value={
-                                                                site.id
-                                                            }
-                                                        >
-                                                            {site.name} (
-                                                            {
-                                                                site.siteCode
-                                                            }
-                                                            )
-                                                        </option>
-                                                    )
-                                                )}
-                                            </select>
-                                        </div>
-                                    )}
+                                {getEffectiveRole(userForm.role) !== "SUPER_ADMIN" && (
+                                    <div className="settings-form-field">
+                                        <label>Site (Optional)</label>
+                                        <select
+                                            value={userForm.siteId}
+                                            onChange={(event) =>
+                                                setUserForm({
+                                                    ...userForm,
+                                                    siteId:
+                                                        event.target
+                                                            .value,
+                                                })
+                                            }
+                                        >
+                                            <option value="">
+                                                {activeSites.length
+                                                    ? "Select Site"
+                                                    : "No active sites found"}
+                                            </option>
+
+                                            {activeSites.map(
+                                                (site) => (
+                                                    <option
+                                                        key={
+                                                            site.id
+                                                        }
+                                                        value={
+                                                            site.id
+                                                        }
+                                                    >
+                                                        {site.name} (
+                                                        {
+                                                            site.siteCode
+                                                        }
+                                                        )
+                                                    </option>
+                                                )
+                                            )}
+                                        </select>
+                                    </div>
+                                )}
 
                                 {editingItem && (
                                     <div className="settings-form-field">

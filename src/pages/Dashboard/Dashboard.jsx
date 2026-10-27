@@ -32,6 +32,7 @@ import {
 
 import {
     Link,
+    useNavigate,
 } from "react-router-dom";
 
 import {
@@ -415,6 +416,8 @@ const ManagementSection = ({
 
 const Dashboard = () => {
 
+    const navigate = useNavigate();
+
     // ==========================================================
     // FILTER STATE
     // ==========================================================
@@ -586,6 +589,23 @@ const Dashboard = () => {
 
     const { theme } =
         useTheme();
+
+
+    // Open a matching chart-slice site list in the same browser tab.
+    const openSiteVisitList = (period, status) => {
+        const params = new URLSearchParams();
+        const appliedParams = new URLSearchParams(lastQuery);
+
+        ["regions", "branches", "clients"].forEach((key) => {
+            if (appliedParams.has(key)) {
+                params.set(key, appliedParams.get(key) || "");
+            }
+        });
+
+        params.set("period", period);
+        params.set("status", status);
+        navigate(`/dashboard/site-visits?${params.toString()}`);
+    };
 
 
     // ==========================================================
@@ -1705,10 +1725,18 @@ const Dashboard = () => {
 
                                     <Cell
                                         fill="#28a745"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() =>
+                                            openSiteVisitList("current", "VISITED")
+                                        }
                                     />
 
                                     <Cell
                                         fill="#dc3545"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() =>
+                                            openSiteVisitList("current", "NOT-VISITED")
+                                        }
                                     />
 
                                 </Pie>
@@ -1770,10 +1798,18 @@ const Dashboard = () => {
 
                                     <Cell
                                         fill="#28a745"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() =>
+                                            openSiteVisitList("last", "VISITED")
+                                        }
                                     />
 
                                     <Cell
                                         fill="#dc3545"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() =>
+                                            openSiteVisitList("last", "NOT-VISITED")
+                                        }
                                     />
 
                                 </Pie>
@@ -2012,11 +2048,11 @@ const Dashboard = () => {
 
                                                     <span
                                                         className={`dashboard-status ${visit.status
-                                                                ?.toLowerCase()
-                                                                .replace(
-                                                                    /\s+/g,
-                                                                    "-"
-                                                                )
+                                                            ?.toLowerCase()
+                                                            .replace(
+                                                                /\s+/g,
+                                                                "-"
+                                                            )
                                                             }`}
                                                     >
 

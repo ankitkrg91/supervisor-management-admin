@@ -296,9 +296,19 @@
 
 .footer-company-info {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 6px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.footer-company-info img {
+    display: block;
+    width: 190px;
+    max-width: 80%;
+    height: auto;
+    object-fit: contain;
+    background: #ffffff;
+    border-radius: 4px;
 }
 
 .footer-company-info strong {

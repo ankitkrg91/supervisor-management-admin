@@ -12,28 +12,13 @@
 
     background: var(--header-bg);
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.045);
 
     transition:
         background-color 0.25s ease,
         border-color 0.25s ease;
-    isolation: isolate;
-}
-
-.header::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--brand-purple) 0%, var(--brand-magenta) 34%, var(--brand-crimson) 62%, var(--brand-orange) 100%);
-    pointer-events: none;
 }
 
 .header-actions {
-    position: relative;
-    z-index: 1;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -64,9 +49,8 @@
 }
 
 .header-button:hover {
-    background: rgba(244, 125, 50, 0.10);
-    color: var(--brand-magenta);
-    border-color: rgba(214, 45, 120, 0.35);
+    background: var(--card-bg-hover);
+    color: var(--text-primary);
 }
 
 .notification-badge {
@@ -81,7 +65,7 @@
 
     border-radius: 50%;
 
-    background: var(--brand-crimson);
+    background: var(--danger);
     color: #fff;
 
     display: flex;
@@ -92,55 +76,50 @@
     font-weight: 700;
 }
 
-.admin-profile {
+.header-company-logo {
     margin-left: 8px;
-
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.admin-avatar {
-    width: 38px;
-    height: 38px;
-
-    border-radius: 50%;
-
-    background: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-magenta) 72%, var(--brand-purple) 100%);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(214, 45, 120, 0.22);
-
+    width: clamp(145px, 18vw, 220px);
+    height: 58px;
+    min-width: 0;
+    flex: 0 1 220px;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    font-size: 13px;
-    font-weight: 700;
+    overflow: hidden;
+    border-radius: 12px;
+    background: transparent;
 }
 
-.admin-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.admin-info strong {
-    color: var(--text-primary);
-    font-size: 13px;
-}
-
-.admin-info span {
-    color: var(--text-muted);
-    font-size: 11px;
+.header-company-logo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 12px;
 }
 
 @media (max-width: 550px) {
     .header {
-        padding: 0 15px;
+        padding: 0 10px;
     }
 
-    .admin-info {
-        display: none;
+    .header-actions {
+        gap: 5px;
+    }
+
+    .header-company-logo {
+        width: 100px;
+        height: 42px;
+        flex: 0 1 100px;
+        margin-left: 3px;
+    }
+
+    .header-button {
+        width: 34px;
+        height: 34px;
     }
 }
 
@@ -217,8 +196,8 @@
 }
 
 .notification-close:hover {
-    background: rgba(214, 45, 120, 0.10);
-    color: var(--brand-magenta);
+    background: var(--card-bg-hover);
+    color: var(--text-primary);
 }
 
 .notification-list {
@@ -270,8 +249,8 @@
 
     border-radius: 8px;
 
-    background: linear-gradient(135deg, rgba(244, 125, 50, 0.12), rgba(214, 45, 120, 0.12));
-    color: var(--brand-magenta);
+    background: var(--bg-tertiary);
+    color: var(--primary);
 }
 
 .notification-item.danger .notification-item-icon {
@@ -342,16 +321,4 @@
         max-width: none;
     }
 
-}
-
-.header-button:focus-visible,
-.notification-close:focus-visible,
-.notification-item:focus-visible {
-    outline: 2px solid var(--brand-orange);
-    outline-offset: 2px;
-}
-
-.admin-profile {
-    padding-left: 8px;
-    border-left: 1px solid var(--border-color);
 }

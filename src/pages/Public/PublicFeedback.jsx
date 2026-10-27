@@ -9,6 +9,7 @@ import {
     Loader2,
 } from "lucide-react";
 import { PUBLIC_API_BASE } from "../../utils/publicConfig";
+import duckminiLogo from "../../assets/duckmini-logo.png";
 import "./PublicFeedback.css";
 
 const FEEDBACK_QUESTIONS = [
@@ -141,21 +142,14 @@ export default function PublicFeedback() {
     return (
         <div className="feedback-page-wrapper">
             <div className="feedback-app-container">
-                {/* BRAND HEADER BANNER WITH VINICIA LOGO */}
+                {/* DUCKMINI BRAND HEADER */}
                 <header className="feedback-brand-banner">
                     <div className="brand-logo-title-row">
-                        <div className="vinicia-brand-logo-wrap">
+                        <div className="duckmini-brand-logo-wrap">
                             <img
-                                src="/vinicia_logo.jpg"
-                                alt="VINICIA SECURITY SERVICES PVT LTD"
-                                onError={(e) => {
-                                    e.target.style.display = "none";
-                                }}
+                                src={duckminiLogo}
+                                alt="DuckMini — One Platform. Total Visibility."
                             />
-                            <div className="brand-text-fallback">
-                                <strong>VINICIA</strong>
-                                <span>SECURITY SERVICES</span>
-                            </div>
                         </div>
                     </div>
 
@@ -295,7 +289,7 @@ export default function PublicFeedback() {
 
                         <h2>Thank You for Your Feedback!</h2>
                         <p>
-                            Your valuable review has been recorded successfully. Vinicia Security Services Pvt Ltd deeply appreciates your partnership and commitment to quality service.
+                            Your valuable review has been recorded successfully. DuckMini appreciates your partnership and commitment to quality service.
                         </p>
 
                         <div className="soc-support-box">

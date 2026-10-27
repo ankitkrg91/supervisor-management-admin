@@ -8,6 +8,7 @@ import {
     X,
 } from "lucide-react";
 import { PUBLIC_API_BASE } from "../../utils/publicConfig";
+import duckminiLogo from "../../assets/duckmini-logo.png";
 import "./PublicAuditView.css";
 
 const parseSiteEvidence = (notes) => {
@@ -377,8 +378,10 @@ export default function PublicAuditView() {
 
                     <footer className="public-audit-footer">
                         <div className="footer-company-info">
-                            <strong>VINICIA SECURITY SERVICES PVT LTD</strong>
-                                    <span>Security Operations Centre</span>
+                            <img
+                                src={duckminiLogo}
+                                alt="DuckMini — One Platform. Total Visibility."
+                            />
                         </div>
                         <p>© {new Date().getFullYear()} All Rights Reserved. Verified by Device GPS & Timestamp.</p>
                     </footer>

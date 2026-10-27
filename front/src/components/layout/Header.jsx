@@ -8,7 +8,6 @@ import {
 
 import {
     useEffect,
-    useMemo,
     useState,
 } from "react";
 
@@ -24,203 +23,93 @@ import {
     apiFetch,
 } from "../../utils/api";
 
+// IMPORTANT: Logo file must exist at src/assets/vinicia-logo.png
+import viniciaLogo from "../../assets/vinicia-logo.png";
+
 import "./Header.css";
 
-
 const Header = () => {
-    const {
-        theme,
-        toggleTheme,
-    } = useTheme();
-
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
 
-    const [showNotifications, setShowNotifications] =
-        useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [loadingNotifications, setLoadingNotifications] = useState(false);
 
-    const [notifications, setNotifications] =
-        useState([]);
-
-    const [loadingNotifications, setLoadingNotifications] =
-        useState(false);
-
-    const [user, setUser] =
-        useState(null);
-
-
-    // =========================================================
-    // LOAD LOGGED-IN USER
-    // =========================================================
-
-    useEffect(() => {
-        try {
-            const storedUser =
-                localStorage.getItem("user");
-
-            if (storedUser) {
-                setUser(
-                    JSON.parse(storedUser)
-                );
-            }
-        } catch (error) {
-            console.error(
-                "Failed to read logged-in user:",
-                error
-            );
-        }
-    }, []);
-
-
-    // =========================================================
-    // LOAD NOTIFICATIONS
-    // =========================================================
-
+    // Load notifications from backend
     const fetchNotifications = async () => {
         try {
             setLoadingNotifications(true);
 
-            const response =
-                await apiFetch(
-                    "/api/dashboard",
-                    {
-                        method: "GET",
-                    }
-                );
+            const response = await apiFetch("/api/dashboard", {
+                method: "GET",
+            });
 
-            const data =
-                await response.json();
+            const data = await response.json();
 
             if (!response.ok) {
                 throw new Error(
-                    data?.message ||
-                    "Failed to load notifications"
+                    data?.message || "Failed to load notifications"
                 );
             }
 
-            const alerts =
-                data?.data?.alerts || [];
+            const alerts = data?.data?.alerts || [];
 
             setNotifications(
-                Array.isArray(alerts)
-                    ? alerts
-                    : []
+                Array.isArray(alerts) ? alerts : []
             );
         } catch (error) {
-            console.error(
-                "Notification fetch error:",
-                error
-            );
-
+            console.error("Notification fetch error:", error);
             setNotifications([]);
         } finally {
             setLoadingNotifications(false);
         }
     };
 
-
-    // =========================================================
-    // INITIAL NOTIFICATIONS
-    // =========================================================
-
+    // Initial notifications and refresh every 60 seconds
     useEffect(() => {
         fetchNotifications();
 
-        const interval =
-            setInterval(() => {
-                fetchNotifications();
-            }, 60000);
+        const interval = setInterval(() => {
+            fetchNotifications();
+        }, 60000);
 
-        return () =>
-            clearInterval(
-                interval
-            );
+        return () => clearInterval(interval);
     }, []);
 
-
-    // =========================================================
-    // CLOSE DROPDOWN WITH ESC
-    // =========================================================
-
+    // Close notification dropdown with Escape
     useEffect(() => {
-        const handleEscape = (
-            event
-        ) => {
-            if (
-                event.key === "Escape"
-            ) {
-                setShowNotifications(
-                    false
-                );
+        const handleEscape = (event) => {
+            if (event.key === "Escape") {
+                setShowNotifications(false);
             }
         };
 
-        document.addEventListener(
-            "keydown",
-            handleEscape
-        );
+        document.addEventListener("keydown", handleEscape);
 
         return () => {
-            document.removeEventListener(
-                "keydown",
-                handleEscape
-            );
+            document.removeEventListener("keydown", handleEscape);
         };
     }, []);
 
+    const notificationCount = notifications.length;
 
-    // =========================================================
-    // NOTIFICATION COUNT
-    // =========================================================
-
-    const notificationCount =
-        notifications.length;
-
-
-    // =========================================================
-    // USER DISPLAY
-    // =========================================================
-
-    const displayName =
-        user?.name ||
-        "Admin";
-
-    const displayRole =
-        user?.role ===
-            "SUPER_ADMIN"
-            ? "Super Admin"
-            : "Admin";
-
-    const avatarLetter =
-        displayName
-            .charAt(0)
-            .toUpperCase();
-
-
-    // =========================================================
-    // FULLSCREEN
-    // =========================================================
-
-    const handleFullscreen = () => {
-        if (
-            !document.fullscreenElement
-        ) {
-            document.documentElement.requestFullscreen?.();
-        } else {
-            document.exitFullscreen?.();
+    // Fullscreen toggle
+    const handleFullscreen = async () => {
+        try {
+            if (!document.fullscreenElement) {
+                await document.documentElement.requestFullscreen?.();
+            } else {
+                await document.exitFullscreen?.();
+            }
+        } catch (error) {
+            console.error("Fullscreen error:", error);
         }
     };
 
-
-    // =========================================================
-    // NOTIFICATION ROUTE
-    // =========================================================
-
-    const getNotificationRoute = (
-        notification
-    ) => {
-        switch (
-        notification?.id
-        ) {
+    // Select page based on notification type
+    const getNotificationRoute = (notification) => {
+        switch (notification?.id) {
             case "offline":
                 return "/field-tracker/offline";
 
@@ -238,97 +127,54 @@ const Header = () => {
         }
     };
 
-
-    // =========================================================
-    // OPEN NOTIFICATION
-    // =========================================================
-
-    const handleNotificationClick = (
-        notification
-    ) => {
-        setShowNotifications(
-            false
-        );
-
-        navigate(
-            getNotificationRoute(
-                notification
-            )
-        );
+    const handleNotificationClick = (notification) => {
+        setShowNotifications(false);
+        navigate(getNotificationRoute(notification));
     };
 
-
-    // =========================================================
-    // TOGGLE NOTIFICATIONS
-    // =========================================================
-
     const handleNotificationToggle = () => {
-        setShowNotifications(
-            (current) => !current
-        );
+        const nextState = !showNotifications;
+        setShowNotifications(nextState);
 
-        if (
-            !showNotifications
-        ) {
+        if (nextState) {
             fetchNotifications();
         }
     };
 
-
     return (
         <header className="header">
-
             <div className="header-actions">
 
-                {/* =================================================
-                    NOTIFICATIONS
-                ================================================= */}
-
+                {/* Notifications */}
                 <div className="header-notification-wrapper">
-
                     <button
                         type="button"
                         className="header-button"
                         aria-label="Notifications"
-                        aria-expanded={
-                            showNotifications
-                        }
-                        onClick={
-                            handleNotificationToggle
-                        }
+                        aria-expanded={showNotifications}
+                        onClick={handleNotificationToggle}
                     >
-                        <Bell
-                            size={20}
-                        />
+                        <Bell size={20} />
 
-                        {notificationCount >
-                            0 && (
-                                <span className="notification-badge">
-                                    {notificationCount >
-                                        99
-                                        ? "99+"
-                                        : notificationCount}
-                                </span>
-                            )}
+                        {notificationCount > 0 && (
+                            <span className="notification-badge">
+                                {notificationCount > 99
+                                    ? "99+"
+                                    : notificationCount}
+                            </span>
+                        )}
                     </button>
-
 
                     {showNotifications && (
                         <div className="notification-panel">
-
                             <div className="notification-header">
-
                                 <div>
-                                    <strong>
-                                        Notifications
-                                    </strong>
+                                    <strong>Notifications</strong>
 
                                     <span>
-                                        {notificationCount ===
-                                            0
+                                        {notificationCount === 0
                                             ? "No pending alerts"
-                                            : `${notificationCount} alert${notificationCount !==
-                                                1
+                                            : `${notificationCount} alert${notificationCount !== 1
                                                 ? "s"
                                                 : ""
                                             }`}
@@ -339,48 +185,31 @@ const Header = () => {
                                     type="button"
                                     className="notification-close"
                                     onClick={() =>
-                                        setShowNotifications(
-                                            false
-                                        )
+                                        setShowNotifications(false)
                                     }
                                     aria-label="Close notifications"
                                 >
-                                    <X
-                                        size={16}
-                                    />
+                                    <X size={16} />
                                 </button>
-
                             </div>
 
-
                             <div className="notification-list">
-
                                 {loadingNotifications ? (
                                     <div className="notification-empty">
                                         Loading notifications...
                                     </div>
-                                ) : notifications.length ===
-                                    0 ? (
+                                ) : notifications.length === 0 ? (
                                     <div className="notification-empty">
-                                        <Bell
-                                            size={24}
-                                        />
-
-                                        <span>
-                                            No new notifications
-                                        </span>
+                                        <Bell size={24} />
+                                        <span>No new notifications</span>
                                     </div>
                                 ) : (
                                     notifications.map(
-                                        (
-                                            notification,
-                                            index
-                                        ) => (
+                                        (notification, index) => (
                                             <button
                                                 type="button"
                                                 key={
-                                                    notification.id ||
-                                                    index
+                                                    notification.id || index
                                                 }
                                                 className={`notification-item ${notification.type ||
                                                     "warning"
@@ -392,17 +221,12 @@ const Header = () => {
                                                 }
                                             >
                                                 <div className="notification-item-icon">
-                                                    <Bell
-                                                        size={16}
-                                                    />
+                                                    <Bell size={16} />
                                                 </div>
 
                                                 <div className="notification-item-content">
-
                                                     <strong>
-                                                        {
-                                                            notification.title
-                                                        }
+                                                        {notification.title}
                                                     </strong>
 
                                                     <span>
@@ -410,96 +234,49 @@ const Header = () => {
                                                             notification.description
                                                         }
                                                     </span>
-
                                                 </div>
                                             </button>
                                         )
                                     )
                                 )}
-
                             </div>
-
                         </div>
                     )}
-
                 </div>
 
-
-                {/* =================================================
-                    THEME
-                ================================================= */}
-
+                {/* Theme toggle */}
                 <button
                     type="button"
                     className="header-button"
-                    onClick={
-                        toggleTheme
-                    }
+                    onClick={toggleTheme}
                     aria-label="Toggle theme"
                 >
-                    {theme ===
-                        "dark" ? (
-                        <Sun
-                            size={20}
-                        />
+                    {theme === "dark" ? (
+                        <Sun size={20} />
                     ) : (
-                        <Moon
-                            size={20}
-                        />
+                        <Moon size={20} />
                     )}
                 </button>
 
-
-                {/* =================================================
-                    FULLSCREEN
-                ================================================= */}
-
+                {/* Fullscreen toggle */}
                 <button
                     type="button"
                     className="header-button"
-                    onClick={
-                        handleFullscreen
-                    }
+                    onClick={handleFullscreen}
                     aria-label="Fullscreen"
                 >
-                    <Maximize
-                        size={19}
-                    />
+                    <Maximize size={19} />
                 </button>
 
-
-                {/* =================================================
-                    ADMIN PROFILE
-                ================================================= */}
-
-                <div className="admin-profile">
-
-                    <div className="admin-avatar">
-                        {
-                            avatarLetter
-                        }
-                    </div>
-
-                    <div className="admin-info">
-
-                        <strong>
-                            {
-                                displayName
-                            }
-                        </strong>
-
-                        <span>
-                            {
-                                displayRole
-                            }
-                        </span>
-
-                    </div>
-
+                {/* Vinicia logo replaces Super Admin profile */}
+                <div className="header-company-logo">
+                    <img
+                        src={viniciaLogo}
+                        alt="Vinicia Security Services Pvt Ltd"
+                    />
                 </div>
 
             </div>
-
         </header>
     );
 };
