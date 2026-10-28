@@ -148,9 +148,6 @@ const LatestCheckIn = () => {
             checkInPhotoUrl: item.checkInPhotoUrl || item.photoUrl || item.selfieUrl || null,
             isAlternate: Boolean(item.isAlternate),
             alternateReason: item.alternateReason || null,
-            emergencyAuditReason: item.emergencyAuditReason || null,
-            emergencyAuditRemark: item.emergencyAuditRemark || null,
-            isEmergencyAudit: Boolean(item.isEmergencyAudit || item.emergencyAuditReason || item.emergencyAuditRemark),
             rawItem: item,
         }));
     }, [checkIns]);
@@ -187,9 +184,6 @@ const LatestCheckIn = () => {
             "Check-Out Time": it.checkOutTime,
             "Distance Travelled": it.distance,
             "Check-In Mode": it.isAlternate ? `Rain/Emergency (${it.alternateReason || "Geofence Bypassed"})` : "Standard (Within 100m)",
-            "Emergency Audit": it.isEmergencyAudit ? "Yes" : "No",
-            "Emergency Audit Reason": it.emergencyAuditReason || "",
-            "Emergency Audit Remark": it.emergencyAuditRemark || "",
             Role: it.role,
             Site: it.site,
             "Site Code": it.siteCode,
@@ -221,11 +215,6 @@ const LatestCheckIn = () => {
         <td>${item.checkOutDate}</td>
         <td><strong>${item.checkOutTime || "—"}</strong></td>
         <td style="font-weight: 600; color: #2563eb;">${item.distance}</td>
-        <td>${item.isEmergencyAudit
-            ? "<strong style=\"color:#b45309;\">Emergency Audit</strong><br>" +
-              (item.emergencyAuditReason || "Reason not provided") +
-              (item.emergencyAuditRemark ? "<br><small>" + item.emergencyAuditRemark + "</small>" : "")
-            : "—"}</td>
         <td><strong>${item.site}</strong> (${item.siteCode})</td>
       </tr>
     `).join("");
@@ -259,7 +248,6 @@ const LatestCheckIn = () => {
               <th>Check-Out Date</th>
               <th>Check-Out Time</th>
               <th>Distance</th>
-              <th>Emergency Audit Reason / Remark</th>
               <th>Site & Code</th>
             </tr>
           </thead>
@@ -341,9 +329,6 @@ const LatestCheckIn = () => {
             checkInPhotoUrl: photoUrl,
             isAlternate: item.isAlternate,
             alternateReason: item.alternateReason,
-            isEmergencyAudit: item.isEmergencyAudit,
-            emergencyAuditReason: item.emergencyAuditReason,
-            emergencyAuditRemark: item.emergencyAuditRemark,
         });
     };
 
@@ -457,20 +442,19 @@ const LatestCheckIn = () => {
                                 <th>Check-Out Date</th>
                                 <th>Check-Out Time</th>
                                 <th>Distance Travelled</th>
-                                <th>Emergency Audit</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan="9" className="empty-state">
+                                    <td colSpan="8" className="empty-state">
                                         <Loader2 size={24} style={{ animation: "spin 1s linear infinite", margin: "0 auto 8px" }} />
                                         <div>Loading check-in records...</div>
                                     </td>
                                 </tr>
                             ) : rows.length === 0 ? (
                                 <tr>
-                                    <td colSpan="9" className="empty-state">
+                                    <td colSpan="8" className="empty-state">
                                         No check-in records found.
                                     </td>
                                 </tr>
@@ -533,21 +517,6 @@ const LatestCheckIn = () => {
                                         <td>{item.checkOutDate}</td>
                                         <td><strong style={{ color: "#0f172a" }}>{item.checkOutTime || "—"}</strong></td>
                                         <td style={{ fontWeight: 700, color: "#2563eb" }}>{item.distance}</td>
-                                        <td className="emergency-audit-cell">
-                                            {item.isEmergencyAudit ? (
-                                                <div className="emergency-audit-summary">
-                                                    <span className="emergency-audit-badge">🚨 Emergency Audit</span>
-                                                    <span className="emergency-audit-reason">
-                                                        <strong>Reason:</strong> {item.emergencyAuditReason || "Not recorded"}
-                                                    </span>
-                                                    {item.emergencyAuditRemark ? (
-                                                        <span className="emergency-audit-remark">
-                                                            <strong>Remark:</strong> {item.emergencyAuditRemark}
-                                                        </span>
-                                                    ) : null}
-                                                </div>
-                                            ) : "—"}
-                                        </td>
                                     </tr>
                                 ))
                             )}
@@ -663,18 +632,6 @@ const LatestCheckIn = () => {
                                             : "Standard Verified Check-In (Within 100m)"}
                                     </span>
                                 </div>
-
-                                {selectedCheckIn.isEmergencyAudit && (
-                                    <div className="detail-item full-width emergency-audit-modal-detail">
-                                        <label>Emergency Audit</label>
-                                        <span><strong>Reason:</strong> {selectedCheckIn.emergencyAuditReason || "Not recorded"}</span>
-                                        {selectedCheckIn.emergencyAuditRemark ? (
-                                            <span><strong>Supervisor Remark:</strong> {selectedCheckIn.emergencyAuditRemark}</span>
-                                        ) : (
-                                            <span><strong>Supervisor Remark:</strong> Not provided</span>
-                                        )}
-                                    </div>
-                                )}
                             </div>
 
                             {/* SUPERVISOR SELFIE */}
