@@ -19,6 +19,10 @@ const Dashboard = lazy(
     () => import("../pages/Dashboard/Dashboard")
 );
 
+const SiteVisitList = lazy(
+    () => import("../pages/Dashboard/SiteVisitList")
+);
+
 
 const Online = lazy(
     () => import("../pages/FieldTracker/Online")
@@ -155,6 +159,11 @@ const ProtectedRoutes = () => {
                     <Route
                         path="/dashboard"
                         element={<Dashboard />}
+                    />
+
+                    <Route
+                        path="/dashboard/site-visits"
+                        element={<SiteVisitList />}
                     />
 
                     <Route

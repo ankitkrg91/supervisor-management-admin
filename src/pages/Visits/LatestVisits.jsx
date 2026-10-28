@@ -62,6 +62,29 @@ export const parseVsfReport = (visit) => {
     return null;
 };
 
+// Emergency Audit metadata is sent by the Supervisor app in dedicated payload fields
+// and also stored in Visit.notes as: [EMERGENCY_AUDIT]: reason | remark.
+export const parseEmergencyAudit = (visit) => {
+    if (!visit) return null;
+    const report = parseVsfReport(visit);
+    let reason = String(visit.emergencyReason || report?.emergency?.reason || "").trim();
+    let remark = String(visit.emergencyRemark || report?.emergency?.remark || "").trim();
+
+    const notes = typeof visit.notes === "string" ? visit.notes : "";
+    const marker = notes.match(/\[EMERGENCY_AUDIT\]:\s*([^\n|]+?)(?:\s*\|\s*([^\n]+))?(?:\n|$)/i);
+    if (!reason && marker?.[1]) reason = marker[1].trim();
+    if (!remark && marker?.[2]) remark = marker[2].trim();
+
+    const reportType = String(visit.reportType || "").trim().toUpperCase().replace(/[_-]+/g, " ");
+    const isEmergency = Boolean(
+        visit.isEmergencyAudit === true ||
+        reportType.includes("EMERGENCY AUDIT") ||
+        marker ||
+        report?.emergency
+    );
+    return isEmergency ? { isEmergency: true, reason: reason || "Reason not recorded", remark: remark || "Remark not recorded" } : null;
+};
+
 export const isVsfVisit = (visit) => Boolean(
     String(visit?.reportType || "").toUpperCase().includes("VSF") ||
     (typeof visit?.notes === "string" && visit.notes.includes("[VINICA_VSF_REPORT]:"))
@@ -344,8 +367,10 @@ const LatestVisits = ({ showVerificationTabs = false }) => {
             if (toDate && new Date(it.visitAt).getTime() > new Date(`${toDate}T23:59:59.999Z`).getTime()) return false;
             if (searchText.trim()) {
                 const q = searchText.trim().toLowerCase();
-                return [it.user?.name, it.user?.email, it.site?.name, it.site?.siteCode, it.clientName].some((v) =>
-                    v?.toLowerCase().includes(q)
+                const emergency = parseEmergencyAudit(it);
+                return [it.user?.name, it.user?.email, it.site?.name, it.site?.siteCode, it.clientName,
+                it.reportType, emergency?.reason, emergency?.remark].some((v) =>
+                    String(v || "").toLowerCase().includes(q)
                 );
             }
             return true;
@@ -370,6 +395,9 @@ const LatestVisits = ({ showVerificationTabs = false }) => {
             "Visit Date": formatDate(it.visitAt),
             "Visit Time": formatTime(it.visitAt),
             Status: it.status || "PENDING",
+            "Report Type": parseEmergencyAudit(it) ? "Emergency Audit" : (it.reportType || "Site Visit"),
+            "Emergency Reason": parseEmergencyAudit(it)?.reason || "—",
+            "Emergency Remark": parseEmergencyAudit(it)?.remark || "—",
             "GPS Latitude": it.latitude ?? "—",
             "GPS Longitude": it.longitude ?? "—",
         }));
@@ -397,6 +425,7 @@ const LatestVisits = ({ showVerificationTabs = false }) => {
         const submittedAt = report?.submittedAt || visit.visitAt;
         const vDate = submittedAt ? new Date(submittedAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "medium" }) : "N/A";
         const fb = extractClientFeedback(visit);
+        const emergency = parseEmergencyAudit(visit);
         const safe = escapeReportHtml;
 
         let previousSection = "";
@@ -432,6 +461,7 @@ const LatestVisits = ({ showVerificationTabs = false }) => {
             <header><img class="brand-logo" src="${brandLogoUrl}" alt="DuckMini — One Platform. Total Visibility."><div class="sub"><strong>${report ? "SITE VISIT REPORT" : "SITE AUDIT REPORT"}</strong><br>${report ? "VSF Inspection Report" : "Audit & Visit Report"}</div></header>
             <h1>${safe(siteName)} — ${report ? "VSF INSPECTION REPORT" : "SITE AUDIT REPORT"}</h1>
             ${metadataHtml}
+            ${emergency ? `<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:12px;margin:12px 0"><strong style="color:#9a3412">EMERGENCY AUDIT</strong><p style="margin:7px 0 0"><strong>Reason:</strong> ${safe(emergency.reason)}</p><p style="margin:5px 0 0"><strong>Remark:</strong> ${safe(emergency.remark)}</p></div>` : ""}
             ${report ? `<div class="summary"><div class="stat"><b>${qs.length}</b><span>Responses</span></div><div class="stat"><b>${yesCount}</b><span>Yes</span></div><div class="stat"><b>${noCount}</b><span>No</span></div><div class="stat"><b>${coverPhotoItems.length + qs.reduce((n, q) => n + (q.photos?.length || 0), 0)}</b><span>Photos</span></div></div>` : ""}
             ${evidenceHtml ? `<div class="section-title">Photo Evidence</div><div class="evidence-grid">${evidenceHtml}</div>` : ""}
             ${fb ? `<div class="feedback"><strong>Client Feedback:</strong> ${safe(fb.rating || "—")} ${fb.clientName ? `· ${safe(fb.clientName)} (${safe(fb.clientPhone || "")})` : ""}${fb.comments ? `<div>${safe(fb.comments)}</div>` : ""}</div>` : ""}
@@ -466,6 +496,7 @@ const LatestVisits = ({ showVerificationTabs = false }) => {
 
     const v = selectedAuditVisit;
     const vsfReport = v ? parseVsfReport(v) : null;
+    const emergencyAudit = v ? parseEmergencyAudit(v) : null;
     const realQuestions = v ? extractAuditQuestions(v, activeChecklist) : [];
     const siteEvidencePhotos = v ? extractSiteEvidencePhotos(v) : [];
     const clientFeedback = v ? extractClientFeedback(v) : null;
@@ -595,9 +626,14 @@ const LatestVisits = ({ showVerificationTabs = false }) => {
                                         <tr key={item.id}>
                                             <td><strong>{(page - 1) * PAGE_SIZE + idx + 1}</strong></td>
                                             <td>
-                                                <button type="button" className="btn-review-audit" onClick={() => handleOpenAuditModal(item)}>
-                                                    <FileText size={15} /> <span>{isVsfVisit(item) ? "Review VSF Report" : "Review Audit"}</span>
+                                                <button type="button" className="btn-review-audit" onClick={() => handleOpenAuditModal(item)} title={parseEmergencyAudit(item) ? `Emergency Audit — ${parseEmergencyAudit(item).reason}` : "Open visit report"}>
+                                                    <FileText size={15} /> <span>{parseEmergencyAudit(item) ? "Emergency Audit" : (isVsfVisit(item) ? "Review VSF Report" : "Review Audit")}</span>
                                                 </button>
+                                                {parseEmergencyAudit(item) && (
+                                                    <div style={{ marginTop: "6px", maxWidth: "230px", padding: "6px 8px", borderRadius: "7px", background: "#fff7ed", border: "1px solid #fdba74", color: "#9a3412", fontSize: "11px", lineHeight: 1.4 }}>
+                                                        <strong>Reason:</strong> {parseEmergencyAudit(item).reason}
+                                                    </div>
+                                                )}
                                             </td>
                                             <td>
                                                 <div style={{ display: "flex", flexDirection: "column" }}>
@@ -684,7 +720,7 @@ const LatestVisits = ({ showVerificationTabs = false }) => {
                     <div className="audit-modal-dialog" onClick={(e) => e.stopPropagation()}>
                         <div className="audit-modal-top-header">
                             <div>
-                                <h3>{vsfReport ? "DUCKMINI VSF Inspection Report" : `${currentSite} — Audit & Visit Verification Details`}</h3>
+                                <h3>{emergencyAudit ? "🚨 Emergency Audit Report" : (vsfReport ? "DUCKMINI VSF Inspection Report" : `${currentSite} — Audit & Visit Verification Details`)}</h3>
                                 <p>{currentSite} ({v.site?.siteCode || "N/A"}) • {formatDate(v.visitAt)}, {formatTime(v.visitAt)}</p>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -697,7 +733,7 @@ const LatestVisits = ({ showVerificationTabs = false }) => {
                             <div className="audit-score-banner">
                                 <div className="score-badge-circle"><span className="score-num">{scorePct}</span><span className="score-max">/100</span></div>
                                 <div className="score-info">
-                                    <h4>{vsfReport ? `${currentSite.toUpperCase()} — VSF INSPECTION` : `${currentSite.toUpperCase()} — SITE AUDIT CHECKLIST`}</h4>
+                                    <h4>{emergencyAudit ? `${currentSite.toUpperCase()} — EMERGENCY AUDIT` : (vsfReport ? `${currentSite.toUpperCase()} — VSF INSPECTION` : `${currentSite.toUpperCase()} — SITE AUDIT CHECKLIST`)}</h4>
                                     <p>{scoreQuestions.length > 0 ? `${passedQ} of ${scoreQuestions.length} Yes/No checkpoints marked YES` : `${totalQ} submitted responses`}</p>
                                     <div className="score-meta">
                                         <span className="badge-pass"><ShieldCheck size={14} /> COMPLIANCE: {scorePct}%</span>
@@ -706,6 +742,14 @@ const LatestVisits = ({ showVerificationTabs = false }) => {
                                     </div>
                                 </div>
                             </div>
+
+                            {emergencyAudit && (
+                                <div style={{ margin: "0 0 16px", padding: "16px 18px", borderRadius: "10px", background: "#fff7ed", border: "1px solid #fdba74", color: "#7c2d12" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 800, fontSize: "14px", marginBottom: "12px" }}>🚨 EMERGENCY AUDIT — REASON & REMARK</div>
+                                    <div style={{ marginBottom: "10px" }}><div style={{ fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>Emergency Reason</div><div style={{ fontSize: "14px", fontWeight: 700, whiteSpace: "pre-wrap" }}>{emergencyAudit.reason}</div></div>
+                                    <div><div style={{ fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>Supervisor Remark</div><div style={{ fontSize: "13px", lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{emergencyAudit.remark}</div></div>
+                                </div>
+                            )}
 
                             <div className="audit-details-grid">
                                 <div className="audit-detail-cell"><label>{vsfReport ? "Server Visit ID" : "Visit / Task ID"}</label><p>{v.id}</p></div>

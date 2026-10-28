@@ -16,8 +16,7 @@ import "./Login.css";
 const Login = () => {
     const navigate = useNavigate();
 
-    const [email, setEmail] =
-        useState("");
+    const [identifier, setIdentifier] = useState("");
 
     const [password, setPassword] =
         useState("");
@@ -37,11 +36,11 @@ const Login = () => {
         setError("");
 
         if (
-            !email.trim() ||
+            !identifier.trim() ||
             !password.trim()
         ) {
             setError(
-                "Please enter email and password."
+                "Please enter your email or mobile number and password."
             );
 
             return;
@@ -63,8 +62,7 @@ const Login = () => {
 
                         body:
                             JSON.stringify({
-                                email:
-                                    email.trim(),
+                                identifier: identifier.trim(),
                                 password,
                             }),
                     }
@@ -183,26 +181,27 @@ const Login = () => {
                     onSubmit={handleSubmit}
                 >
 
-                    {/* Email */}
+                    {/* Email or Mobile Number */}
                     <div className="login-field">
-                        <label htmlFor="email">
-                            Email Address
+                        <label htmlFor="identifier">
+                            Email or Mobile Number
                         </label>
 
                         <div className="login-input-wrapper">
                             <Mail size={18} />
 
                             <input
-                                id="email"
-                                type="email"
-                                placeholder="Enter your email"
-                                value={email}
+                                id="identifier"
+                                type="text"
+                                inputMode="text"
+                                placeholder="Enter email or mobile number"
+                                value={identifier}
                                 onChange={(e) =>
-                                    setEmail(
+                                    setIdentifier(
                                         e.target.value
                                     )
                                 }
-                                autoComplete="email"
+                                autoComplete="username"
                             />
                         </div>
                     </div>

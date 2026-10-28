@@ -788,9 +788,18 @@
     font-size: 13px;
 }
 
-/* Keep native date controls readable in dark theme. */
-.report-date-input input[type="date"] {
+/* Use the browser's native calendar icon and match it to the active theme. */
+[data-theme="light"] .report-date-input input[type="date"] {
+    color-scheme: light;
+}
+
+[data-theme="dark"] .report-date-input input[type="date"] {
     color-scheme: dark;
+}
+
+.report-date-input input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 1;
+    cursor: pointer;
 }
 
 .generate-report-button:disabled,
