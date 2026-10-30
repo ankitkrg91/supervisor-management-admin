@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import {
     ArrowLeft,
@@ -60,8 +61,15 @@ const getClientEmail = (item) => {
 };
 
 const Reports = () => {
+    const [searchParams] = useSearchParams();
+    const requestedReportType = searchParams.get("type");
+    const initialReportType = reportTypes.includes(requestedReportType)
+        ? requestedReportType
+        : "Task Report";
+    const autoRunKey = useRef("");
+
     const [reportType, setReportType] =
-        useState("Task Report");
+        useState(initialReportType);
 
     const [fromDate, setFromDate] =
         useState("");
@@ -500,6 +508,26 @@ const Reports = () => {
             timeStyle: "short",
         });
     };
+
+    useEffect(() => {
+        const requestedType = searchParams.get("type");
+        const shouldGenerate = searchParams.get("generate") === "1";
+        const requestKey = searchParams.toString();
+
+        if (
+            !shouldGenerate ||
+            !reportTypes.includes(requestedType) ||
+            autoRunKey.current === requestKey
+        ) {
+            return;
+        }
+
+        autoRunKey.current = requestKey;
+        setReportType(requestedType);
+        setPage(1);
+        setGenerated(true);
+        fetchReport({ reportType: requestedType, page: 1 });
+    }, [searchParams]);
 
     useEffect(() => {
         if (!generated) {

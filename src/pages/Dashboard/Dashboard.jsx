@@ -568,6 +568,7 @@ const Dashboard = () => {
             assigned: 0,
             inProgress: 0,
             completed: 0,
+            missed: 0,
 
         });
 
@@ -847,22 +848,15 @@ const Dashboard = () => {
             // TASKS
             // ==================================================
 
-            setTasks(
-                dashboard.tasks ||
-                {
-                    total:
-                        0,
+            const taskCounts = dashboard.tasks || {};
 
-                    assigned:
-                        0,
-
-                    inProgress:
-                        0,
-
-                    completed:
-                        0,
-                }
-            );
+            setTasks({
+                total: taskCounts.total ?? 0,
+                assigned: taskCounts.assigned ?? 0,
+                inProgress: taskCounts.inProgress ?? 0,
+                completed: taskCounts.completed ?? 0,
+                missed: taskCounts.missed ?? 0,
+            });
 
 
             // ==================================================
@@ -1319,19 +1313,19 @@ const Dashboard = () => {
 
         {
             title:
-                "Assigned",
+                "Missed Tasks",
 
             value:
-                tasks.assigned,
+                tasks.missed,
 
             icon:
-                Users,
+                AlertTriangle,
 
             type:
-                "assigned",
+                "warning",
 
             path:
-                "/tasks/dashboard",
+                "/reports?type=Missed%20Task%20Report&generate=1",
         },
 
 
