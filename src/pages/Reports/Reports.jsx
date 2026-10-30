@@ -9,6 +9,8 @@ import {
     FileSpreadsheet,
     FileText,
     MapPin,
+    ExternalLink,
+    Camera,
     Printer,
     RotateCcw,
     Search,
@@ -28,7 +30,7 @@ const reportTypes = [
     "Task Report",
     "Visit Report",
     "Audit Report",
-    "Check-In / Check-Out Report",
+    "Missed Task Report",
     "Field Force Performance",
     "Distance Report",
 ];
@@ -94,6 +96,9 @@ const Reports = () => {
             completed: 0,
             pending: 0,
             missed: 0,
+            auditVerified: 0,
+            auditUnverified: 0,
+            auditPending: 0,
             totalDistance: 0,
         });
 
@@ -137,6 +142,9 @@ const Reports = () => {
 
     const [auditDetailError, setAuditDetailError] =
         useState("");
+
+    const [visitDetail, setVisitDetail] =
+        useState(null);
 
     const fetchReport = async (overrides = {}) => {
         try {
@@ -194,49 +202,49 @@ const Reports = () => {
             if (currentFromDate) {
                 params.set(
                     "fromDate",
-                    fromDate
+                    currentFromDate
                 );
             }
 
             if (currentToDate) {
                 params.set(
                     "toDate",
-                    toDate
+                    currentToDate
                 );
             }
 
             if (currentRegion) {
                 params.set(
                     "region",
-                    region
+                    currentRegion
                 );
             }
 
             if (currentBranch) {
                 params.set(
                     "branch",
-                    branch
+                    currentBranch
                 );
             }
 
             if (currentClient) {
                 params.set(
                     "client",
-                    client
+                    currentClient
                 );
             }
 
             if (currentUser) {
                 params.set(
                     "user",
-                    user
+                    currentUser
                 );
             }
 
             if (currentSearch.trim()) {
                 params.set(
                     "search",
-                    search.trim()
+                    currentSearch.trim()
                 );
             }
 
@@ -283,6 +291,9 @@ const Reports = () => {
                     completed: 0,
                     pending: 0,
                     missed: 0,
+                    auditVerified: 0,
+                    auditUnverified: 0,
+                    auditPending: 0,
                     totalDistance: 0,
                 }
             );
@@ -320,6 +331,9 @@ const Reports = () => {
                 completed: 0,
                 pending: 0,
                 missed: 0,
+                auditVerified: 0,
+                auditUnverified: 0,
+                auditPending: 0,
                 totalDistance: 0,
             });
 
@@ -397,6 +411,10 @@ const Reports = () => {
         }
     };
 
+    const handleVisitDetail = (item) => {
+        setVisitDetail(item || null);
+    };
+
     const handleSupervisorClick = (supervisorName) => {
         const name = String(
             supervisorName || ""
@@ -410,6 +428,7 @@ const Reports = () => {
         setUser(name);
         setAuditDetail(null);
         setAuditDetailError("");
+        setVisitDetail(null);
         setPage(1);
 
         if (generated) {
@@ -536,6 +555,9 @@ const Reports = () => {
             completed: 0,
             pending: 0,
             missed: 0,
+            auditVerified: 0,
+            auditUnverified: 0,
+            auditPending: 0,
             totalDistance: 0,
         });
 
@@ -560,12 +582,14 @@ const Reports = () => {
         setAuditDetail(null);
         setAuditDetailError("");
         setAuditDetailLoading(false);
+        setVisitDetail(null);
     };
 
     const handleReportTypeChange = (
         value
     ) => {
         setReportType(value);
+        setVisitDetail(null);
 
         setRegion("");
         setBranch("");
@@ -593,19 +617,52 @@ const Reports = () => {
 
     const handleExcel = () => {
         try {
-            const exportRows = rows.map((item, index) => ({
-                "#": index + 1,
-                Date: item.date || "-",
-                "Field Force": item.user || "-",
-                Client: item.client || "-",
-                "Client Email": getClientEmail(item),
-                Site: item.site || "-",
-                "Task / Visit Type": item.type || "-",
-                Status: item.status || "-",
-                "Check In": item.checkIn || "-",
-                "Check Out": item.checkOut || "-",
-                "Distance (KM)": item.distance || "0.00",
-            }));
+            const exportRows = rows.map((item, index) => {
+                if (["Field Force Performance", "Distance Report"].includes(reportType)) {
+                    return {
+                        "#": index + 1,
+                        Date: item.date || "-",
+                        "Field Force": item.user || "-",
+                        Client: item.client || "-",
+                        "Client Email": getClientEmail(item),
+                        Site: item.site || "-",
+                        "Task / Visit Type": item.type || "-",
+                        Status: item.status || "-",
+                        "Check In": item.checkIn || "-",
+                        "Check Out": item.checkOut || "-",
+                        "Distance (KM)": item.distance || "0.00",
+                    };
+                }
+                return {
+                    "#": index + 1,
+                    Date: item.date || "-",
+                    "Date & Time": item.dateTime || item.missedDateTime || "-",
+                    "Site Visited At": item.visitDateTime || "-",
+                    "Field Force / Supervisor": item.user || "-",
+                    "Created By": item.createdBy || "-",
+                    Client: item.client || "-",
+                    "Client Email": getClientEmail(item),
+                    "Task ID": item.taskId || "-",
+                    "Task Title": item.taskTitle || "-",
+                    "Task Type": item.taskType || item.type || "-",
+                    "Site": item.site || "-",
+                    "Site Code": item.siteCode || "-",
+                    Address: item.address || "-",
+                    "Scheduled Date": item.scheduledDate || "-",
+                    "Scheduled Time": item.scheduledTime || "-",
+                    "Due Date": item.dueDate || "-",
+                    "Due Time": item.dueTime || "-",
+                    "Check In": item.checkIn || "-",
+                    "Check Out": item.checkOut || "-",
+                    "Check-In Status": item.checkInStatus || "-",
+                    "Visit / Audit Status": item.status || "-",
+                    "Audit Questions": item.answerCount ?? "-",
+                    "Check-In Photo": item.checkInPhotoUrl || "-",
+                    "Audit Review Link": item.auditReviewUrl ? `${window.location.origin}${item.auditReviewUrl}` : "-",
+                    "Map Link": item.mapUrl || "-",
+                    "Distance (KM)": item.distance || "0.00",
+                };
+            });
 
             const workbook = XLSX.utils.book_new();
 
@@ -622,19 +679,9 @@ const Reports = () => {
                 ]);
             }
 
-            worksheet["!cols"] = [
-                { wch: 6 },
-                { wch: 15 },
-                { wch: 25 },
-                { wch: 25 },
-                { wch: 25 },
-                { wch: 30 },
-                { wch: 25 },
-                { wch: 18 },
-                { wch: 15 },
-                { wch: 15 },
-                { wch: 17 },
-            ];
+            worksheet["!cols"] = exportRows.length > 0
+                ? Object.keys(exportRows[0]).map((header) => ({ wch: Math.min(Math.max(String(header).length + 3, 14), 36) }))
+                : [{ wch: 24 }];
 
             XLSX.utils.book_append_sheet(
                 workbook,
@@ -705,39 +752,19 @@ const Reports = () => {
                 metaY
             );
 
-            const tableHead = [
-                "#",
-                "Date",
-                "Field Force",
-                "Client",
-                "Client Email",
-                "Site",
-                "Task / Visit Type",
-                "Status",
-                "Check In",
-                "Check Out",
-                "Distance (KM)",
-            ];
-
-            const tableBody = rows.map((item, index) => [
-                index + 1,
-                item.date || "-",
-                item.user || "-",
-                item.client || "-",
-                getClientEmail(item),
-                item.site || "-",
-                item.type || "-",
-                item.status || "-",
-                item.checkIn || "-",
-                item.checkOut || "-",
-                item.distance || "0.00",
-            ]);
+            const tableHead = reportColumns;
+            const tableBody = rows.map((item, index) => reportColumns.map((column) => {
+                if (column === "Map") return item.mapUrl || "-";
+                if (column === "Check-In Report") return item.checkInPhotoUrl || "No photo";
+                if (column === "Audit Review") return item.auditReviewUrl ? `${window.location.origin}${item.auditReviewUrl}` : "No audit link";
+                return getRowCell(item, column, index);
+            }));
 
             if (tableBody.length === 0) {
                 autoTable(doc, {
                     startY: metaY + 7,
                     head: [tableHead],
-                    body: [["", "", "", "", "", "No records found", "", "", "", "", ""]],
+                    body: [Array.from({ length: tableHead.length }, (_, index) => index === Math.floor(tableHead.length / 2) ? "No records found" : "")],
                     theme: "grid",
                     styles: {
                         fontSize: 8,
@@ -761,8 +788,8 @@ const Reports = () => {
                     body: tableBody,
                     theme: "grid",
                     styles: {
-                        fontSize: 7.5,
-                        cellPadding: 2.5,
+                        fontSize: tableHead.length > 12 ? 5.5 : 7.5,
+                        cellPadding: 2.0,
                         overflow: "linebreak",
                         valign: "middle",
                     },
@@ -1224,24 +1251,27 @@ const Reports = () => {
 
         const filterText = filters.length > 0 ? filters.join(" &nbsp;|&nbsp; ") : "All Records";
 
+        const escapePrintHtml = (value) => String(value ?? "-")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+
+        const tableHeadHtml = reportColumns
+            .map((column) => `<th>${escapePrintHtml(column)}</th>`)
+            .join("");
+
         const tableRowsHtml = rows
-            .map(
-                (item, index) => `
-            <tr>
-                <td style="text-align: center;">${index + 1}</td>
-                <td>${item.date || "-"}</td>
-                <td><strong>${item.user || "-"}</strong></td>
-                <td>${item.client || "-"}</td>
-                <td style="font-size: 11px; color: #475569;">${getClientEmail(item)}</td>
-                <td>${item.site || "-"}</td>
-                <td>${item.type || "-"}</td>
-                <td><strong style="color: ${item.status === 'COMPLETED' || item.status === 'VERIFIED' ? '#15803d' : '#d97706'}">${item.status || "-"}</strong></td>
-                <td>${item.checkIn || "-"}</td>
-                <td>${item.checkOut || "-"}</td>
-                <td style="text-align: right; font-weight: bold;">${item.distance || "0.00"} KM</td>
-            </tr>
-        `
-            )
+            .map((item, index) => {
+                const values = reportColumns.map((column) => {
+                    if (column === "Map") return item.mapUrl || "-";
+                    if (column === "Check-In Report") return item.checkInPhotoUrl || "No photo";
+                    if (column === "Audit Review") return item.auditReviewUrl ? `${window.location.origin}${item.auditReviewUrl}` : "No audit link";
+                    return getRowCell(item, column, index);
+                });
+                return `<tr>${values.map((value) => `<td>${escapePrintHtml(value)}</td>`).join("")}</tr>`;
+            })
             .join("");
 
         const html = `
@@ -1283,21 +1313,7 @@ const Reports = () => {
                 </div>
 
                 <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 35px; text-align: center;">#</th>
-                            <th>Date</th>
-                            <th>Field Force</th>
-                            <th>Client</th>
-                            <th>Client Email</th>
-                            <th>Site</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Check In</th>
-                            <th>Check Out</th>
-                            <th style="text-align: right;">Distance</th>
-                        </tr>
-                    </thead>
+                    <thead><tr>${tableHeadHtml}</tr></thead>
                     <tbody>
                         ${tableRowsHtml}
                     </tbody>
@@ -1436,6 +1452,50 @@ const Reports = () => {
             pagination.totalPages,
         ]);
 
+    const isTaskReport = reportType === "Task Report";
+    const isMissedTaskReport = reportType === "Missed Task Report";
+    const isVisitReport = reportType === "Visit Report";
+    const isAuditReport = reportType === "Audit Report";
+    const isPerformanceOrDistance = ["Field Force Performance", "Distance Report"].includes(reportType);
+
+    const reportColumns = isPerformanceOrDistance
+        ? ["#", "Date", "Field Force", "Client", "Client Email", "Site", "Task / Visit Type", "Status", "Check In", "Check Out", "Distance (KM)"]
+        : isTaskReport
+            ? ["#", "Created", "Field Force", "Created By", "Client", "Client Email", "Task", "Task Type", "Site", "Address", "Scheduled For", "Due By", "Status", "Map"]
+            : isMissedTaskReport
+                ? ["#", "Missed Date", "Field Force", "Client", "Client Email", "Task", "Task Type", "Site", "Address", "Scheduled For", "Due By", "Status", "Map"]
+                : isVisitReport
+                    ? ["#", "Visit Date & Time", "Field Force", "Client", "Client Email", "Task Type", "Site", "Address", "Check In", "Check Out", "Check-In Status", "Visit Status", "Check-In Report", "Map"]
+                    : ["#", "Audit Date & Time", "Visited At", "Field Force", "Client", "Client Email", "Task Type / Template", "Site", "Address", "Questions", "Verification Status", "Audit Review", "Map"];
+
+    const getRowCell = (item, column, index) => {
+        const scheduled = [item.scheduledDate, item.scheduledTime].filter(Boolean).join(" · ") || "-";
+        const due = [item.dueDate, item.dueTime].filter(Boolean).join(" · ") || "-";
+        if (column === "#") return (pagination.page - 1) * pagination.limit + index + 1;
+        if (column === "Date") return item.date || "-";
+        if (column === "Created") return [item.createdDate, item.createdTime].filter(Boolean).join(" · ") || item.date || "-";
+        if (column === "Missed Date") return item.missedDateTime || item.date || "-";
+        if (column === "Visit Date & Time" || column === "Audit Date & Time") return item.dateTime || item.date || "-";
+        if (column === "Visited At") return item.visitDateTime || "-";
+        if (column === "Field Force") return item.user || "-";
+        if (column === "Created By") return item.createdBy || "-";
+        if (column === "Client") return item.client || "-";
+        if (column === "Client Email") return getClientEmail(item);
+        if (column === "Task") return item.taskTitle || item.type || "-";
+        if (column === "Task / Visit Type" || column === "Task Type" || column === "Task Type / Template") return item.taskType || item.type || "-";
+        if (column === "Site") return item.site || "-";
+        if (column === "Address") return item.address || "-";
+        if (column === "Scheduled For") return scheduled;
+        if (column === "Due By") return due;
+        if (column === "Status" || column === "Visit Status" || column === "Verification Status") return item.status || "-";
+        if (column === "Check In") return item.checkIn || "-";
+        if (column === "Check Out") return item.checkOut || "-";
+        if (column === "Check-In Status") return item.checkInStatus || "-";
+        if (column === "Distance (KM)") return item.distance || "0.00";
+        if (column === "Questions") return item.answerCount ?? 0;
+        return "-";
+    };
+
     return (
         <div className="reports-page">
 
@@ -1474,7 +1534,7 @@ const Reports = () => {
 
                     <div>
                         <span>
-                            TOTAL RECORDS
+                            {isTaskReport ? "TASKS CREATED" : isMissedTaskReport ? "MISSED TASKS" : isVisitReport ? "TOTAL VISITS" : isAuditReport ? "TOTAL AUDITS" : "TOTAL RECORDS"}
                         </span>
 
                         <strong>
@@ -1496,17 +1556,15 @@ const Reports = () => {
 
                     <div>
                         <span>
-                            COMPLETED / VERIFIED
+                            {isAuditReport ? "VERIFIED AUDITS" : isMissedTaskReport ? "MISSED TASKS" : "COMPLETED / VERIFIED"}
                         </span>
 
                         <strong>
-                            {
-                                summary.completed
-                            }
+                            {isAuditReport ? summary.auditVerified : isMissedTaskReport ? summary.missed : summary.completed}
                         </strong>
 
                         <small>
-                            Successful records
+                            {isAuditReport ? "Audits approved / verified" : isMissedTaskReport ? "Tasks past their due date" : "Successful records"}
                         </small>
                     </div>
                 </div>
@@ -1518,20 +1576,15 @@ const Reports = () => {
 
                     <div>
                         <span>
-                            PENDING / MISSED
+                            {isAuditReport ? "UNVERIFIED / PENDING" : isMissedTaskReport ? "SUPERVISOR COUNT" : "PENDING / MISSED"}
                         </span>
 
                         <strong>
-                            {
-                                summary.pending +
-                                summary.missed
-                            }
+                            {isAuditReport ? summary.auditUnverified + summary.auditPending : isMissedTaskReport ? filterOptions.users.length : summary.pending + summary.missed}
                         </strong>
 
                         <small>
-                            {
-                                summary.missed
-                            } missed
+                            {isAuditReport ? `${summary.auditUnverified} unverified · ${summary.auditPending} pending review` : isMissedTaskReport ? "Supervisors with tasks in selected report" : `${summary.missed} missed`}
                         </small>
                     </div>
                 </div>
@@ -2276,62 +2329,34 @@ const Reports = () => {
                                 <Printer size={16} />
                                 Print
                             </button>
+                            {reportType !== "Distance Report" && (
+                                <a className="distance-report-shortcut" href="/distance-report">
+                                    <MapPin size={15} /> Distance Details
+                                </a>
+                            )}
 
                         </div>
                     </div>
 
                     <div className="report-result-stats">
-
-                        <div>
-                            <span>
-                                Total Distance
-                            </span>
-
-                            <strong>
-                                {
-                                    formatDistance(
-                                        summary.totalDistance
-                                    )
-                                } KM
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>
-                                Completed / Verified
-                            </span>
-
-                            <strong className="success-text">
-                                {
-                                    summary.completed
-                                }
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>
-                                Pending
-                            </span>
-
-                            <strong className="warning-text">
-                                {
-                                    summary.pending
-                                }
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>
-                                Missed
-                            </span>
-
-                            <strong className="danger-text">
-                                {
-                                    summary.missed
-                                }
-                            </strong>
-                        </div>
-
+                        {isAuditReport ? (
+                            <>
+                                <div><span>Total Audits Submitted</span><strong>{summary.totalRecords}</strong></div>
+                                <div><span>Verified</span><strong className="success-text">{summary.auditVerified}</strong></div>
+                                <div><span>Unverified</span><strong className="danger-text">{summary.auditUnverified}</strong></div>
+                                <div><span>Pending Review</span><strong className="warning-text">{summary.auditPending}</strong></div>
+                            </>
+                        ) : (
+                            <>
+                                <div>
+                                    <span>{isMissedTaskReport ? "Missed Tasks" : isTaskReport ? "Tasks Created" : isVisitReport ? "Total Visits" : "Total Distance"}</span>
+                                    <strong>{isMissedTaskReport || isTaskReport || isVisitReport ? summary.totalRecords : `${formatDistance(summary.totalDistance)} KM`}</strong>
+                                </div>
+                                <div><span>{isVisitReport ? "Verified Visits" : "Completed / Verified"}</span><strong className="success-text">{summary.completed}</strong></div>
+                                <div><span>{isVisitReport ? "Pending / Unverified Visits" : "Pending"}</span><strong className="warning-text">{summary.pending}</strong></div>
+                                <div><span>Missed</span><strong className="danger-text">{summary.missed}</strong></div>
+                            </>
+                        )}
                     </div>
 
                     <div className="reports-table-toolbar">
@@ -2415,201 +2440,56 @@ const Reports = () => {
                     <div className="reports-table-wrapper">
 
                         <table className="reports-table">
-
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>Date</th>
-                                    <th>Field Force</th>
-                                    <th>Client</th>
-                                    <th>Client Email</th>
-                                    <th>Site</th>
-                                    <th>
-                                        Task / Visit Type
-                                    </th>
-                                    <th>Status</th>
-                                    <th>Check In</th>
-                                    <th>Check Out</th>
-                                    <th>Distance (KM)</th>
+                                    {reportColumns.map((column) => (
+                                        <th key={column}>{column}</th>
+                                    ))}
                                 </tr>
                             </thead>
-
                             <tbody>
-
                                 {loading ? (
-                                    <tr>
-                                        <td
-                                            colSpan="11"
-                                            className="reports-empty"
-                                        >
-                                            Generating report...
-                                        </td>
-                                    </tr>
+                                    <tr><td colSpan={reportColumns.length} className="reports-empty">Generating report...</td></tr>
                                 ) : rows.length > 0 ? (
-                                    rows.map(
-                                        (item, index) => (
-                                            <tr
-                                                key={
-                                                    item.id
+                                    rows.map((item, index) => (
+                                        <tr key={item.id || `${item.taskId || "row"}-${index}`}>
+                                            {reportColumns.map((column) => {
+                                                if (column === "Map") {
+                                                    return <td key={column}>
+                                                        {item.mapUrl ? <a className="report-action-link" href={item.mapUrl} target="_blank" rel="noreferrer"><MapPin size={14} /> View Map</a> : "-"}
+                                                    </td>;
                                                 }
-                                            >
-                                                <td>
-                                                    {
-                                                        (
-                                                            pagination.page -
-                                                            1
-                                                        ) *
-                                                        pagination.limit +
-                                                        index +
-                                                        1
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        item.date
-                                                    }
-                                                </td>
-
-                                                <td className="report-user">
-                                                    {reportType === "Audit Report" ? (
-                                                        <button
-                                                            type="button"
-                                                            onClick={(event) => {
-                                                                event.stopPropagation();
-                                                                handleSupervisorClick(
-                                                                    item.user
-                                                                );
-                                                            }}
-                                                            title="Show this supervisor's audits"
-                                                            style={{
-                                                                border: 0,
-                                                                background: "transparent",
-                                                                padding: 0,
-                                                                margin: 0,
-                                                                font: "inherit",
-                                                                color: "inherit",
-                                                                cursor: "pointer",
-                                                                textAlign: "left",
-                                                                fontWeight: 600,
-                                                            }}
-                                                        >
-                                                            {item.user}
+                                                if (column === "Check-In Report") {
+                                                    return <td key={column}>
+                                                        <button type="button" className="report-action-link report-action-button" onClick={() => handleVisitDetail(item)}>
+                                                            <Camera size={14} /> View Check-In
                                                         </button>
-                                                    ) : (
-                                                        item.user
-                                                    )}
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        item.client
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        getClientEmail(item)
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    <span className="report-site">
-                                                        <MapPin size={13} />
-                                                        {
-                                                            item.site
-                                                        }
-                                                    </span>
-                                                </td>
-
-                                                <td>
-                                                    {reportType === "Audit Report" ? (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                handleAuditClick(
-                                                                    item
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                !item.visitId ||
-                                                                loading
-                                                            }
-                                                            title={
-                                                                item.visitId
-                                                                    ? "Open audit details"
-                                                                    : "Audit visit ID is not available"
-                                                            }
-                                                            style={{
-                                                                display: "inline-flex",
-                                                                alignItems: "center",
-                                                                gap: 6,
-                                                                border: 0,
-                                                                background: "transparent",
-                                                                padding: 0,
-                                                                margin: 0,
-                                                                font: "inherit",
-                                                                color: "#2563eb",
-                                                                cursor: item.visitId
-                                                                    ? "pointer"
-                                                                    : "not-allowed",
-                                                                textAlign: "left",
-                                                                fontWeight: 600,
-                                                            }}
-                                                        >
-                                                            {item.type}
-                                                            <Eye size={14} />
-                                                        </button>
-                                                    ) : (
-                                                        item.type
-                                                    )}
-                                                </td>
-
-                                                <td>
-                                                    <span
-                                                        className={`report-status ${getStatusClass(
-                                                            item.status
-                                                        )}`}
-                                                    >
-                                                        {
-                                                            item.status
-                                                        }
-                                                    </span>
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        item.checkIn
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        item.checkOut
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        item.distance
-                                                    }
-                                                </td>
-                                            </tr>
-                                        )
-                                    )
+                                                        {item.checkInPhotoUrl ? <a className="report-action-link report-photo-link" href={item.checkInPhotoUrl} target="_blank" rel="noreferrer">Photo</a> : <span className="report-muted">No photo</span>}
+                                                    </td>;
+                                                }
+                                                if (column === "Audit Review") {
+                                                    return <td key={column}>
+                                                        <div className="report-link-stack">
+                                                            <button type="button" className="report-action-link report-action-button" disabled={!item.visitId || loading} onClick={() => handleAuditClick(item)}><Eye size={14} /> Review Audit</button>
+                                                            {item.auditReviewUrl ? <a className="report-action-link report-photo-link" href={item.auditReviewUrl} target="_blank" rel="noreferrer"><ExternalLink size={13} /> Open Report</a> : <span className="report-muted">No link</span>}
+                                                        </div>
+                                                    </td>;
+                                                }
+                                                if (column === "Status" || column === "Visit Status" || column === "Verification Status" || column === "Check-In Status") {
+                                                    const status = getRowCell(item, column, index);
+                                                    return <td key={column}><span className={`report-status ${getStatusClass(status)}`}>{status}</span></td>;
+                                                }
+                                                if (column === "Field Force" && isAuditReport) {
+                                                    return <td key={column} className="report-user"><button type="button" className="report-text-link" onClick={() => handleSupervisorClick(item.user)}>{item.user || "-"}</button></td>;
+                                                }
+                                                return <td key={column}>{getRowCell(item, column, index)}</td>;
+                                            })}
+                                        </tr>
+                                    ))
                                 ) : (
-                                    <tr>
-                                        <td
-                                            colSpan="10"
-                                            className="reports-empty"
-                                        >
-                                            No matching records found
-                                        </td>
-                                    </tr>
+                                    <tr><td colSpan={reportColumns.length} className="reports-empty">No matching records found</td></tr>
                                 )}
-
                             </tbody>
-
                         </table>
 
                     </div>
@@ -2732,6 +2612,46 @@ const Reports = () => {
                     </div>
 
                 </section>
+            )}
+
+            {visitDetail && (
+                <div className="report-detail-backdrop" onClick={() => setVisitDetail(null)}>
+                    <section className="report-detail-modal" onClick={(event) => event.stopPropagation()}>
+                        <div className="report-detail-header">
+                            <div>
+                                <h2>Visit / Check-In Report</h2>
+                                <p>{visitDetail.site || "-"} · {visitDetail.user || "-"}</p>
+                            </div>
+                            <button type="button" onClick={() => setVisitDetail(null)} aria-label="Close visit details">×</button>
+                        </div>
+                        <div className="report-detail-grid">
+                            <div><span>Visit Date & Time</span><strong>{visitDetail.dateTime || visitDetail.date || "-"}</strong></div>
+                            <div><span>Check-In</span><strong>{visitDetail.checkIn || "-"}</strong></div>
+                            <div><span>Check-Out</span><strong>{visitDetail.checkOut || "-"}</strong></div>
+                            <div><span>Check-In Status</span><strong>{visitDetail.checkInStatus || "-"}</strong></div>
+                            <div><span>Visit Status</span><strong>{visitDetail.visitStatus || visitDetail.status || "-"}</strong></div>
+                            <div><span>Task Type</span><strong>{visitDetail.taskType || visitDetail.type || "-"}</strong></div>
+                            <div><span>Client</span><strong>{visitDetail.client || "-"}</strong></div>
+                            <div><span>Address</span><strong>{visitDetail.address || "-"}</strong></div>
+                            <div><span>Distance</span><strong>{visitDetail.distance || "0.00"} KM</strong></div>
+                        </div>
+                        {(visitDetail.checkInPhotoUrl || visitDetail.photoUrl) ? (
+                            <div className="report-detail-photo-wrap">
+                                <h3>Check-In Photo / Site Evidence</h3>
+                                <a href={visitDetail.checkInPhotoUrl || visitDetail.photoUrl} target="_blank" rel="noreferrer">
+                                    <img src={visitDetail.checkInPhotoUrl || visitDetail.photoUrl} alt="Supervisor check-in evidence" />
+                                </a>
+                                <a className="report-action-link" href={visitDetail.checkInPhotoUrl || visitDetail.photoUrl} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Open original photo</a>
+                            </div>
+                        ) : (
+                            <p className="report-muted">No check-in photo was saved for this visit.</p>
+                        )}
+                        <div className="report-detail-actions">
+                            {visitDetail.mapUrl && <a className="generate-report-button" href={visitDetail.mapUrl} target="_blank" rel="noreferrer"><MapPin size={15} /> Open Site Location</a>}
+                            <button type="button" className="reset-report-button" onClick={() => setVisitDetail(null)}>Close</button>
+                        </div>
+                    </section>
+                </div>
             )}
 
         </div>
