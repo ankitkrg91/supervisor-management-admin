@@ -24,7 +24,7 @@ import { apiFetch } from "../../utils/api";
 
 import "./Online.css";
 
-const ONLINE_THRESHOLD_MS = 5 * 60 * 1000;
+const ONLINE_THRESHOLD_MS = 2 * 60 * 1000;
 
 const Online = () => {
     const navigate = useNavigate();
@@ -153,7 +153,7 @@ const Online = () => {
         const refreshInterval =
             setInterval(() => {
                 fetchData();
-            }, 60000);
+            }, 15000);
 
         const handleLiveLocation = (event) => {
             const data = event.detail;

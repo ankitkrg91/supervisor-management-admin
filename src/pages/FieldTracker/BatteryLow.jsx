@@ -52,7 +52,7 @@ const BatteryLowPage = () => {
             new Date(recordedAt).getTime();
 
         return age <=
-            5 * 60 * 1000
+            2 * 60 * 1000
             ? "ONLINE"
             : "OFFLINE";
     };
@@ -164,7 +164,7 @@ const BatteryLowPage = () => {
         const refreshInterval =
             setInterval(() => {
                 fetchData();
-            }, 60000);
+            }, 15000);
 
         const handleLiveLocation = (
             event
@@ -718,9 +718,9 @@ const BatteryLowPage = () => {
                                     card.path
                                 }
                                 className={`battery-low-card-link ${card.type ===
-                                        "battery"
-                                        ? "card-current"
-                                        : ""
+                                    "battery"
+                                    ? "card-current"
+                                    : ""
                                     }`}
                             >
                                 <div

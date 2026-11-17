@@ -197,7 +197,7 @@ const TrackFieldForce = () => {
         const refreshInterval =
             setInterval(() => {
                 fetchData();
-            }, 60000);
+            }, 15000);
 
         const handleLiveLocation = (event) => {
             const data = event.detail;

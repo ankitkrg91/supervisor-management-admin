@@ -808,3 +808,234 @@
     opacity: 0.55;
     cursor: not-allowed;
 }
+
+/* =========================
+   REPORT ACTION LINKS / DETAIL VIEWS
+========================= */
+.report-action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.report-action-link:hover {
+    text-decoration: underline;
+}
+
+.report-action-button {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.report-action-button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.report-photo-link {
+    margin-left: 8px;
+}
+
+.report-link-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.report-muted {
+    display: inline-block;
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.report-text-link {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--primary);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.distance-report-shortcut {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--primary);
+    background: var(--card-bg);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.distance-report-shortcut:hover {
+    background: var(--bg-tertiary);
+}
+
+.report-detail-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, .62);
+}
+
+.report-detail-modal {
+    width: min(760px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 22px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--card-bg);
+    box-shadow: 0 22px 70px rgba(0, 0, 0, .25);
+}
+
+.report-detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.report-detail-header h2 {
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.report-detail-header p {
+    margin-top: 4px;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.report-detail-header button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.report-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 18px 0;
+}
+
+.report-detail-grid>div {
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    background: var(--bg-tertiary);
+}
+
+.report-detail-grid span,
+.report-detail-grid strong {
+    display: block;
+}
+
+.report-detail-grid span {
+    margin-bottom: 5px;
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.report-detail-grid strong {
+    overflow-wrap: anywhere;
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.report-detail-photo-wrap {
+    padding-top: 14px;
+    border-top: 1px solid var(--border-color);
+}
+
+.report-detail-photo-wrap h3 {
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.report-detail-photo-wrap img {
+    display: block;
+    max-width: 100%;
+    max-height: 360px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    object-fit: contain;
+    background: #0f172a;
+}
+
+.report-detail-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.report-detail-actions .generate-report-button,
+.report-detail-actions .reset-report-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    width: auto;
+    padding: 0 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+@media (max-width: 700px) {
+    .report-detail-backdrop {
+        padding: 10px;
+    }
+
+    .report-detail-modal {
+        padding: 15px;
+    }
+
+    .report-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-detail-actions {
+        flex-direction: column;
+    }
+
+    .distance-report-shortcut {
+        width: 100%;
+    }
+}

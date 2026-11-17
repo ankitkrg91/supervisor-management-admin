@@ -98,7 +98,7 @@ const NotCheckedIn = () => {
 
         const refreshInterval = setInterval(() => {
             fetchData();
-        }, 60000);
+        }, 15000);
 
         const handleLiveLocation = (event) => {
             const data = event.detail;
@@ -712,9 +712,9 @@ const NotCheckedIn = () => {
                             key={card.title}
                             to={card.path}
                             className={`not-checked-in-card-link ${card.type ===
-                                    "not-checked"
-                                    ? "card-current"
-                                    : ""
+                                "not-checked"
+                                ? "card-current"
+                                : ""
                                 }`}
                         >
                             <div
