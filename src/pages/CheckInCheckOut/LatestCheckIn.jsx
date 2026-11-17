@@ -146,6 +146,7 @@ const LatestCheckIn = () => {
             checkOutLatitude: item.checkOutLatitude,
             checkOutLongitude: item.checkOutLongitude,
             checkInPhotoUrl: item.checkInPhotoUrl || item.photoUrl || item.selfieUrl || null,
+            checkOutPhotoUrl: item.checkOutPhotoUrl || item.selfieOut || null,
             isAlternate: Boolean(item.isAlternate),
             alternateReason: item.alternateReason || null,
             rawItem: item,
@@ -309,6 +310,7 @@ const LatestCheckIn = () => {
             : "NA";
 
         const photoUrl = item.checkInPhotoUrl || item.rawItem?.checkInPhotoUrl || item.rawItem?.photoUrl || item.rawItem?.selfieUrl || null;
+        const checkOutPhotoUrl = item.checkOutPhotoUrl || item.rawItem?.checkOutPhotoUrl || item.rawItem?.selfieOut || null;
 
         setSelectedCheckIn({
             checkInId,
@@ -327,6 +329,7 @@ const LatestCheckIn = () => {
             siteLongitude: item.siteLongitude,
             distanceTravelled: item.distance,
             checkInPhotoUrl: photoUrl,
+            checkOutPhotoUrl,
             isAlternate: item.isAlternate,
             alternateReason: item.alternateReason,
         });
@@ -634,8 +637,8 @@ const LatestCheckIn = () => {
                                 </div>
                             </div>
 
-                            {/* SUPERVISOR SELFIE */}
-                            <div className="selfies-container">
+                            {/* SUPERVISOR SELFIES (CHECK-IN & CHECK-OUT) */}
+                            <div className="selfies-container" style={{ gap: "20px", flexWrap: "wrap" }}>
                                 <div className="selfie-card">
                                     <div
                                         className="selfie-image-wrap"
@@ -643,7 +646,7 @@ const LatestCheckIn = () => {
                                             if (selectedCheckIn.checkInPhotoUrl) {
                                                 setEnlargedPhoto({
                                                     url: selectedCheckIn.checkInPhotoUrl,
-                                                    title: `Supervisor Selfie - ${selectedCheckIn.name}`,
+                                                    title: `Check-In Selfie - ${selectedCheckIn.name}`,
                                                 });
                                             }
                                         }}
@@ -658,11 +661,46 @@ const LatestCheckIn = () => {
                                             </div>
                                         ) : (
                                             <div className="selfie-placeholder">
-                                                <span className="placeholder-text">No Selfie Photo Attached</span>
+                                                <span className="placeholder-text">No Check-In Selfie Attached</span>
                                             </div>
                                         )}
                                     </div>
                                     <span className="selfie-caption">Selfie (Check In) Image</span>
+                                </div>
+
+                                <div className="selfie-card">
+                                    <div
+                                        className="selfie-image-wrap"
+                                        onClick={() => {
+                                            if (selectedCheckIn.checkOutPhotoUrl) {
+                                                setEnlargedPhoto({
+                                                    url: selectedCheckIn.checkOutPhotoUrl,
+                                                    title: `Check-Out Selfie - ${selectedCheckIn.name}`,
+                                                });
+                                            }
+                                        }}
+                                        style={{ cursor: selectedCheckIn.checkOutPhotoUrl ? "pointer" : "default" }}
+                                    >
+                                        {selectedCheckIn.checkOutPhotoUrl ? (
+                                            <div className="selfie-img-container">
+                                                <img src={selectedCheckIn.checkOutPhotoUrl} alt="Check-Out Selfie" />
+                                                <div className="selfie-hover-hint">
+                                                    <ZoomIn size={14} /> Click to Zoom
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="selfie-placeholder">
+                                                <span className="placeholder-text">
+                                                    {selectedCheckIn.checkOutDateTime &&
+                                                        selectedCheckIn.checkOutDateTime !== "NA" &&
+                                                        selectedCheckIn.checkOutDateTime !== "NA (Currently Active)"
+                                                        ? "No Check-Out Selfie Attached"
+                                                        : "Check-Out Pending"}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="selfie-caption">Selfie (Check Out) Image</span>
                                 </div>
                             </div>
                         </div>

@@ -771,6 +771,7 @@ const DistanceReport = () => {
 
         const site = ci.site || {};
         const checkInPhotoUrl = stop.selfieIn || ci.photoUrl || ci.checkInPhotoUrl || ci.selfieUrl || null;
+        const checkOutPhotoUrl = stop.selfieOut || stop.checkOutPhotoUrl || ci.checkOutPhotoUrl || ci.selfieOut || null;
 
         const dateTag = inDate && !isNaN(inDate.getTime())
             ? inDate.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }).replace(/\s+/g, "_")
@@ -798,6 +799,7 @@ const DistanceReport = () => {
             siteLongitude: site.longitude ?? null,
             distanceTravelled: stop.distanceTravelled || stop.distanceFromPrevKm || "0.00 KM",
             checkInPhotoUrl,
+            checkOutPhotoUrl,
             isAlternate: stop.isAlternate || ci.isAlternate || false,
             alternateReason: stop.alternateReason || ci.alternateReason || null,
         });
@@ -1651,8 +1653,8 @@ const DistanceReport = () => {
                                 </div>
                             </div>
 
-                            {/* SUPERVISOR SELFIE */}
-                            <div className="selfies-container">
+                            {/* SUPERVISOR SELFIES (CHECK-IN & CHECK-OUT) */}
+                            <div className="selfies-container" style={{ gap: "20px", flexWrap: "wrap" }}>
                                 <div className="selfie-card">
                                     <div
                                         className="selfie-image-wrap"
@@ -1660,7 +1662,7 @@ const DistanceReport = () => {
                                             if (selectedCheckIn.checkInPhotoUrl) {
                                                 setPreviewPhoto({
                                                     url: selectedCheckIn.checkInPhotoUrl,
-                                                    title: `Supervisor Selfie - ${selectedCheckIn.name}`,
+                                                    title: `Check-In Selfie - ${selectedCheckIn.name}`,
                                                 });
                                             }
                                         }}
@@ -1675,11 +1677,46 @@ const DistanceReport = () => {
                                             </div>
                                         ) : (
                                             <div className="selfie-placeholder">
-                                                <span className="placeholder-text">No Selfie Photo Attached</span>
+                                                <span className="placeholder-text">No Check-In Selfie Attached</span>
                                             </div>
                                         )}
                                     </div>
                                     <span className="selfie-caption">Selfie (Check In) Image</span>
+                                </div>
+
+                                <div className="selfie-card">
+                                    <div
+                                        className="selfie-image-wrap"
+                                        onClick={() => {
+                                            if (selectedCheckIn.checkOutPhotoUrl) {
+                                                setPreviewPhoto({
+                                                    url: selectedCheckIn.checkOutPhotoUrl,
+                                                    title: `Check-Out Selfie - ${selectedCheckIn.name}`,
+                                                });
+                                            }
+                                        }}
+                                        style={{ cursor: selectedCheckIn.checkOutPhotoUrl ? "pointer" : "default" }}
+                                    >
+                                        {selectedCheckIn.checkOutPhotoUrl ? (
+                                            <div className="selfie-img-container">
+                                                <img src={selectedCheckIn.checkOutPhotoUrl} alt="Check-Out Selfie" />
+                                                <div className="selfie-hover-hint">
+                                                    <ZoomIn size={14} /> Click to Zoom
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="selfie-placeholder">
+                                                <span className="placeholder-text">
+                                                    {selectedCheckIn.checkOutDateTime &&
+                                                        selectedCheckIn.checkOutDateTime !== "NA" &&
+                                                        selectedCheckIn.checkOutDateTime !== "NA (Currently Active)"
+                                                        ? "No Check-Out Selfie Attached"
+                                                        : "Check-Out Pending"}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="selfie-caption">Selfie (Check Out) Image</span>
                                 </div>
                             </div>
                         </div>
